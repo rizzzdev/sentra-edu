@@ -30,6 +30,7 @@
       { path: '/admin/tentors', label: 'Data Tentor', icon: 'badge', group: 'Kelola Tentor' },
       { path: '/admin/tentors/magic-links', label: 'Magic Link Tentor', icon: 'link', group: 'Kelola Tentor' },
       { path: '/admin/candidates', label: 'Rekrutmen & Pelamar', icon: 'person_search', group: 'Kelola Tentor' },
+      { path: '/admin/classes', label: 'Kelas', icon: 'stairs', group: 'Master Data' },
       { path: '/admin/subjects', label: 'Mata Pelajaran', icon: 'menu_book', group: 'Master Data' },
       { path: '/admin/levels', label: 'Jenjang', icon: 'stairs', group: 'Master Data' },
       { path: '/admin/packages', label: 'Paket Les', icon: 'sell', group: 'Master Data' },
