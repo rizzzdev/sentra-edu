@@ -143,7 +143,7 @@
       <div class="s-icon tone-rose"><Icon name="payments" size="lg" /></div>
       <div>
         <div class="s-val">{pendingClaimsCount}</div>
-        <div class="s-lbl">Klaim Gaji Masuk</div>
+        <div class="s-lbl">Penggajian Masuk</div>
       </div>
     </div>
     <div class="stat">

@@ -67,20 +67,16 @@
 
 <div class="page-head">
   <div>
-    <h3><Icon name="payments" size="lg" /> Klaim Gaji</h3>
+    <h3><Icon name="payments" size="lg" /> Penggajian</h3>
     <div class="desc">
       {#if currentUser?.role === 'SUPER_ADMIN'}
-        Proses klaim honor tentor. Honor dihitung otomatis dari sesi APPROVED.
+        Proses penggajian tentor. Honor dihitung otomatis dari sesi yang disetujui.
       {:else}
-        Ajukan klaim honor mengajar dari sesi les yang telah diverifikasi.
+        Lihat riwayat penggajian dari sesi les yang telah diverifikasi.
       {/if}
     </div>
   </div>
-  {#if currentUser?.role === 'TENTOR'}
-    <button type="button" class="btn btn-primary" on:click={() => { claimModalOpen = true; }}>
-      <Icon name="payments" size="sm" /> Ajukan Klaim
-    </button>
-  {/if}
+
 </div>
 
 {#if currentUser?.role === 'SUPER_ADMIN'}

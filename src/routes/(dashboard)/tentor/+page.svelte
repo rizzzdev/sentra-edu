@@ -106,7 +106,7 @@
       Presensi Saya
     </Button>
     <Button variant="outline" icon="payments" on:click={() => goto('/tentor/payroll')}>
-      Klaim Gaji
+      Penggajian
     </Button>
   </div>
 

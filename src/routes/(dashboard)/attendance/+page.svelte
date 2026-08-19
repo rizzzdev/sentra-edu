@@ -102,7 +102,7 @@
   <div class="page-head">
     <div>
       <h3><Icon name="fact_check" size="lg" /> Verifikasi Presensi</h3>
-      <div class="desc">Setujui atau tolak presensi tentor. Sesi yang disetujui masuk klaim gaji & tagihan SPP.</div>
+      <div class="desc">Setujui atau tolak presensi tentor. Sesi yang disetujui masuk penggajian & tagihan SPP.</div>
     </div>
   </div>
 

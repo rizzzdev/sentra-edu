@@ -22,7 +22,7 @@
       { path: '/admin', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
       { path: '/admin/jobs', label: 'Lowongan Les', icon: 'work', group: 'Operasional' },
       { path: '/admin/attendance', label: 'Verifikasi Presensi', icon: 'fact_check', group: 'Operasional' },
-      { path: '/admin/payroll', label: 'Klaim Gaji', icon: 'payments', group: 'Operasional' },
+      { path: '/admin/payroll', label: 'Penggajian', icon: 'payments', group: 'Operasional' },
       { path: '/admin/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Operasional' },
       { path: '/admin/students', label: 'Data Murid', icon: 'school', group: 'Kelola Murid & Wali' },
       { path: '/admin/students/wali', label: 'Data Wali Murid', icon: 'family_restroom', group: 'Kelola Murid & Wali' },
@@ -42,7 +42,7 @@
       { path: '/tentor', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
       { path: '/tentor/jobboard', label: 'Cari Lowongan', icon: 'search', group: 'Pekerjaan' },
       { path: '/tentor/attendance', label: 'Presensi Saya', icon: 'location_on', group: 'Pekerjaan' },
-      { path: '/tentor/payroll', label: 'Klaim Gaji', icon: 'payments', group: 'Pekerjaan' },
+      { path: '/tentor/payroll', label: 'Penggajian', icon: 'payments', group: 'Pekerjaan' },
       { path: '/tentor/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ],
     STUDENT: [
