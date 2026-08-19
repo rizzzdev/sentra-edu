@@ -4,6 +4,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { Subject } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let editingSubject: Subject | null = null;
@@ -46,7 +48,7 @@
   <form id="form-subject" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_name">Nama Mapel <i class="req">*</i></label>
-      <input
+      <Input
         id="f_name"
         type="text"
         placeholder="cth: Matematika"
@@ -67,11 +69,11 @@
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-subject" class="btn btn-primary">
-      <Icon name="save" size="sm" /> {editingSubject ? 'Simpan Perubahan' : 'Tambah Mapel'}
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-subject" icon="save">
+      {editingSubject ? 'Simpan Perubahan' : 'Tambah Mapel'}
+    </Button>
   </svelte:fragment>
 </Modal>

@@ -96,6 +96,12 @@ export const PACKAGE_PERIOD_LABEL: Record<string, string> = {
   HARIAN: 'Harian'
 };
 
+// ── User Active Status ──────────────────────────────────────
+export const USER_ACTIVE_LABEL: Record<string, string> = {
+  true: 'Aktif',
+  false: 'Belum Aktif'
+};
+
 // ── Generic Badge CSS Class Map ─────────────────────────────
 // Maps status keys to their corresponding badge CSS class
 export const STATUS_BADGE_CLASS: Record<string, string> = {

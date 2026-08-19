@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { authStore } from '$lib/shared/stores/auth-store';
+  import { authStore, getRoleDefaultPath } from '$lib/shared/stores/auth-store';
   import { goto } from '$app/navigation';
 
   onMount(() => {
     if ($authStore) {
-      goto('/dashboard');
+      goto(getRoleDefaultPath($authStore.role));
     } else {
       goto('/login');
     }

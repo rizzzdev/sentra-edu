@@ -4,6 +4,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { RecruitmentCandidate, CandidateStatus } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
 
   export let open: boolean = false;
   export let candidate: RecruitmentCandidate | null = null;
@@ -82,17 +83,17 @@
   {/if}
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
     {#if status === 'ACCEPTED'}
-      <button type="button" class="btn btn-primary" on:click={handleConvertToTentor}>
-        <Icon name="how_to_reg" size="sm" /> Konversi Jadi Akun Tentor
-      </button>
+      <Button variant="primary" on:click={handleConvertToTentor} icon="how_to_reg">
+        Konversi Jadi Akun Tentor
+      </Button>
     {:else}
-      <button type="button" class="btn btn-primary" on:click={handleUpdateStatus}>
-        <Icon name="save" size="sm" /> Simpan Status
-      </button>
+      <Button variant="primary" on:click={handleUpdateStatus} icon="save">
+        Simpan Status
+      </Button>
     {/if}
   </svelte:fragment>
 </Modal>

@@ -7,6 +7,7 @@
   import type { User } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   $: token = $page.url.searchParams.get('token') || '';
 
@@ -120,7 +121,8 @@
         <div>
           <h2 style="font-size:1.3rem;font-weight:800">Pendaftaran Tentor Berhasil!</h2>
           <p style="color:var(--muted-fg);font-size:.9rem;margin-top:6px">
-            Selamat <strong>{createdTentor.fullName}</strong>! Akun Tentor/Mentor Anda telah aktif di SentraEdu.
+            Selamat <strong>{createdTentor.fullName}</strong>! Akun Anda telah berhasil dibuat.
+            <br/><span style="color:var(--warn);font-weight:600">Akun sedang dalam proses verifikasi oleh admin. Anda akan menerima notifikasi setelah akun aktif.</span>
           </p>
         </div>
 
@@ -263,19 +265,13 @@
 
           <div class="field">
             <label for="reg-ten-subjects">Keahlian Mata Pelajaran</label>
-            <div id="reg-ten-subjects" class="multi-group" style="padding:10px;background:var(--muted);border:1px solid var(--border);border-radius:12px;max-height:160px;overflow-y:auto">
-              {#each $dbStore.subjects as s}
-                {@const isChecked = selectedSubjectIds.includes(s.id)}
-                <button
-                  type="button"
-                  class="multi-opt"
-                  on:click={() => toggleSubject(s.id)}
-                >
-                  <input type="checkbox" checked={isChecked} />
-                  {s.name}
-                </button>
-              {/each}
-            </div>
+            <SelectSearch
+              id="reg-ten-subjects"
+              multiple
+              bind:value={selectedSubjectIds}
+              placeholder="Pilih mata pelajaran yang dikuasai..."
+              options={$dbStore.subjects.map((s) => ({ value: s.id, label: s.name }))}
+            />
           </div>
 
           <div class="field">

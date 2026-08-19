@@ -5,6 +5,8 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import type { PayrollClaim } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let claim: PayrollClaim | null = null;
@@ -49,7 +51,7 @@
 
     <div class="field">
       <label for="f_transferProof">URL Bukti Transfer Bank</label>
-      <input
+      <Input
         id="f_transferProof"
         type="text"
         placeholder="https://..."
@@ -59,11 +61,11 @@
   {/if}
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="button" class="btn btn-primary" on:click={handleProcessPayment}>
-      <Icon name="check" size="sm" /> Konfirmasi Telah Ditransfer
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button variant="primary" on:click={handleProcessPayment} icon="check">
+      Konfirmasi Telah Ditransfer
+    </Button>
   </svelte:fragment>
 </Modal>

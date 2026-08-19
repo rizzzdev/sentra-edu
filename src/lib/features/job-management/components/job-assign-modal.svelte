@@ -5,6 +5,7 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import type { JobPost } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
@@ -78,9 +79,9 @@
               <div class="text-muted-fg text-[0.76rem]">{t.education || '—'} · {t.experienceYears || 0} thn</div>
             </div>
           </div>
-          <button type="button" class="btn btn-sm btn-primary" on:click={() => handleAssign(t.id, t.fullName)}>
-            <Icon name="how_to_reg" size="xs" /> Tugaskan
-          </button>
+          <Button variant="primary" size="sm" on:click={() => handleAssign(t.id, t.fullName)} icon="how_to_reg">
+            Tugaskan
+          </Button>
         </div>
       {/each}
     {/if}
@@ -98,17 +99,17 @@
               <div class="text-muted-fg text-[0.76rem]">{t.education || '—'}</div>
             </div>
           </div>
-          <button type="button" class="btn btn-sm btn-outline" on:click={() => handleAssign(t.id, t.fullName)}>
-            <Icon name="how_to_reg" size="xs" /> Tugaskan
-          </button>
+          <Button variant="outline" size="sm" on:click={() => handleAssign(t.id, t.fullName)} icon="how_to_reg">
+            Tugaskan
+          </Button>
         </div>
       {/each}
     {/if}
   {/if}
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Tutup
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Tutup
+    </Button>
   </svelte:fragment>
 </Modal>

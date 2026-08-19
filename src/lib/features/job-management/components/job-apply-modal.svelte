@@ -4,6 +4,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { JobPost, User } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
@@ -51,11 +52,11 @@
   {/if}
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="button" class="btn btn-primary" on:click={handleApply}>
-      <Icon name="send" size="sm" /> Kirim Lamaran
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button variant="primary" on:click={handleApply} icon="send">
+      Kirim Lamaran
+    </Button>
   </svelte:fragment>
 </Modal>

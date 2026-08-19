@@ -148,8 +148,9 @@
             {#if isExistingWali}
               Siswa <strong>{createdAccounts.student.fullName}</strong> berhasil didaftarkan dan ditautkan ke Wali Murid <strong>{createdAccounts.wali.fullName}</strong>.
             {:else}
-              Akun Siswa & Akun Wali Murid Baru telah berhasil diaktifkan.
+              Akun Siswa & Akun Wali Murid Baru telah berhasil dibuat.
             {/if}
+            <br/><span style="color:var(--warn);font-weight:600">Akun Anda sedang menunggu verifikasi dari admin sebelum bisa digunakan.</span>
           </p>
         </div>
 
@@ -397,17 +398,17 @@
                 />
               </div>
             </div>
-          {/if}
 
-          <div class="field">
-            <label for="reg-address">Alamat Tempat Tinggal</label>
-            <Input
-              type="text"
-              id="reg-address"
-              placeholder="Alamat lengkap rumah..."
-              bind:value={address}
-            />
-          </div>
+            <div class="field">
+              <label for="reg-address">Alamat Tempat Tinggal</label>
+              <Input
+                type="text"
+                id="reg-address"
+                placeholder="Alamat lengkap rumah..."
+                bind:value={address}
+              />
+            </div>
+          {/if}
 
           {#if errorMessage}
             <div class="form-error" style="display:block">

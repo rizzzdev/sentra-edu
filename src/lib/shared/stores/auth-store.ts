@@ -1,6 +1,22 @@
 import { writable, derived } from 'svelte/store';
 import type { User, UserRole, ApiResponse } from '$lib/shared/types/common.types';
 import { dbStore } from '$lib/shared/stores/db-store';
+import { goto } from '$app/navigation';
+
+export function getRoleDefaultPath(role?: UserRole | null): string {
+  switch (role) {
+    case 'SUPER_ADMIN':
+      return '/admin';
+    case 'TENTOR':
+      return '/tentor';
+    case 'STUDENT':
+      return '/student';
+    case 'WALI_MURID':
+      return '/wali';
+    default:
+      return '/admin';
+  }
+}
 
 const SESSION_STORAGE_KEY = 'bms_session_v9';
 
@@ -48,6 +64,15 @@ function createAuthStore() {
           error: true,
           statusCode: 401,
           message: 'Email atau kata sandi tidak valid.',
+          data: null
+        };
+      }
+
+      if (matchedUser.isActive === false) {
+        return {
+          error: true,
+          statusCode: 403,
+          message: 'Akun Anda belum aktif. Silakan tunggu verifikasi dari admin.',
           data: null
         };
       }
@@ -108,8 +133,12 @@ function createAuthStore() {
         localStorage.removeItem(SESSION_STORAGE_KEY);
       }
       sessionWritable.set({ userId: null, loginAt: null });
+      if (typeof window !== 'undefined') {
+        goto('/login');
+      }
     }
   };
 }
 
 export const authStore = createAuthStore();
+

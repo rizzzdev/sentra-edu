@@ -4,6 +4,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { Enrollment } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let editingEnrollment: Enrollment | null = null;
@@ -115,7 +117,7 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_parentName">Nama Wali</label>
-        <input
+        <Input
           id="f_parentName"
           type="text"
           placeholder="Nama orang tua / wali"
@@ -125,7 +127,7 @@
 
       <div class="field">
         <label for="f_parentPhone">Telepon Wali</label>
-        <input
+        <Input
           id="f_parentPhone"
           type="tel"
           placeholder="08xx-xxxx-xxxx"
@@ -136,7 +138,7 @@
 
     <div class="field">
       <label for="f_fullAddress">Alamat Rumah (lokasi les) <i class="req">*</i></label>
-      <input
+      <Input
         id="f_fullAddress"
         type="text"
         placeholder="Alamat lengkap rumah siswa"
@@ -148,7 +150,7 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_latitude">Latitude <i class="req">*</i></label>
-        <input
+        <Input
           id="f_latitude"
           type="number"
           step="0.0001"
@@ -159,7 +161,7 @@
 
       <div class="field">
         <label for="f_longitude">Longitude <i class="req">*</i></label>
-        <input
+        <Input
           id="f_longitude"
           type="number"
           step="0.0001"
@@ -171,11 +173,11 @@
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-enrollment" class="btn btn-primary">
-      <Icon name="save" size="sm" /> {editingEnrollment ? 'Simpan Perubahan' : 'Daftarkan Siswa'}
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-enrollment" icon="save">
+      {editingEnrollment ? 'Simpan Perubahan' : 'Daftarkan Siswa'}
+    </Button>
   </svelte:fragment>
 </Modal>

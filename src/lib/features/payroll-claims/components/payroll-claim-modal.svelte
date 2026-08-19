@@ -5,6 +5,8 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import type { User } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let tentor: User | null = null;
@@ -118,17 +120,17 @@
 
       <div class="field">
         <label for="f_year">Tahun <i class="req">*</i></label>
-        <input id="f_year" type="number" min="2026" required bind:value={selectedYear} />
+        <Input id="f_year" type="number" min="2026" required bind:value={selectedYear} />
       </div>
     </div>
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-claim" class="btn btn-primary">
-      <Icon name="payments" size="sm" /> Ajukan Pencairan
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-claim" icon="payments">
+      Ajukan Pencairan
+    </Button>
   </svelte:fragment>
 </Modal>

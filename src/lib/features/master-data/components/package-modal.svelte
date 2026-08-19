@@ -4,6 +4,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { PackagePlan } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let editingPackage: PackagePlan | null = null;
@@ -74,7 +76,7 @@
   <form id="form-package" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_name">Nama Paket <i class="req">*</i></label>
-      <input
+      <Input
         id="f_name"
         type="text"
         placeholder="cth: Paket Bulanan Private"
@@ -104,7 +106,7 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_price">Biaya Wali Murid (Rp) <i class="req">*</i></label>
-        <input
+        <Input
           id="f_price"
           type="number"
           min="0"
@@ -117,7 +119,7 @@
 
       <div class="field">
         <label for="f_tentorFee">Honor Tentor per Sesi (Rp) <i class="req">*</i></label>
-        <input
+        <Input
           id="f_tentorFee"
           type="number"
           min="0"
@@ -132,7 +134,7 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_sessionsPerPeriod">Jumlah Sesi per Periode <i class="req">*</i></label>
-        <input
+        <Input
           id="f_sessionsPerPeriod"
           type="number"
           min="1"
@@ -145,7 +147,7 @@
       {#if mode === 'KELOMPOK'}
         <div class="field">
           <label for="f_maxStudents">Maks Siswa (untuk mode Kelompok)</label>
-          <input
+          <Input
             id="f_maxStudents"
             type="number"
             min="1"
@@ -176,11 +178,11 @@
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-package" class="btn btn-primary">
-      <Icon name="save" size="sm" /> {editingPackage ? 'Simpan Perubahan' : 'Tambah Paket'}
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-package" icon="save">
+      {editingPackage ? 'Simpan Perubahan' : 'Tambah Paket'}
+    </Button>
   </svelte:fragment>
 </Modal>

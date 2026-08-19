@@ -14,7 +14,8 @@ import type {
   ClassLevel,
   PackagePlan,
   Enrollment,
-  NotificationItem
+  NotificationItem,
+  MagicLinkRegistration
 } from '$lib/shared/types/common.types';
 import { createInitialDatabaseSeed } from '$lib/shared/db/seed-data';
 import { generateEntityId } from '$lib/shared/utils/id-generator';
@@ -971,6 +972,510 @@ function createDatabaseStore() {
       );
       persistDatabase({ ...currentDb, invoices: updatedList });
       return { error: false, statusCode: 200, message: 'Tagihan SPP berhasil dihapus.', data: null };
+    },
+
+    // Magic Link & Master Data Operations
+    createMagicLink: (payload: {
+      title?: string;
+      daysValid: number;
+      targetRole?: 'STUDENT' | 'TENTOR';
+      classId?: string;
+      packageId?: string;
+      createdBy?: string;
+    }): ApiResponse<MagicLinkRegistration> => {
+      const currentDb = get(store);
+      const now = new Date();
+      const expires = new Date(now.getTime() + payload.daysValid * 24 * 60 * 60 * 1000);
+      const randomStr = Math.random().toString(36).substring(2, 8);
+      const token = `ml-${randomStr}${Date.now().toString(36)}`;
+      const newId = generateEntityId('ml');
+
+      const newMagicLink: MagicLinkRegistration = {
+        id: newId,
+        token,
+        title: payload.title || (payload.targetRole === 'TENTOR' ? 'Pendaftaran Tentor / Mentor' : 'Pendaftaran Siswa'),
+        daysValid: payload.daysValid,
+        expiresAt: expires.toISOString(),
+        usedCount: 0,
+        active: true,
+        targetRole: payload.targetRole || 'STUDENT',
+        classId: payload.classId,
+        packageId: payload.packageId,
+        createdBy: payload.createdBy,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        deletedAt: null
+      };
+
+      const existingLinks = currentDb.magicLinks || [];
+      const updatedLinks = [newMagicLink, ...existingLinks];
+      persistDatabase({ ...currentDb, magicLinks: updatedLinks });
+
+      return {
+        error: false,
+        statusCode: 201,
+        message: `Magic link berhasil dibuat (Kadaluarsa dalam ${payload.daysValid} hari).`,
+        data: newMagicLink
+      };
+    },
+
+    toggleMagicLinkStatus: (id: string): ApiResponse<MagicLinkRegistration> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+      let updatedRecord: MagicLinkRegistration | null = null;
+      const links: MagicLinkRegistration[] = (currentDb.magicLinks || []).map((l) => {
+        if (l.id === id) {
+          updatedRecord = { ...l, active: !l.active, updatedAt: nowTimestamp };
+          return updatedRecord;
+        }
+        return l;
+      });
+      persistDatabase({ ...currentDb, magicLinks: links });
+      const isActive = updatedRecord !== null && (updatedRecord as MagicLinkRegistration).active;
+      return {
+        error: false,
+        statusCode: 200,
+        message: isActive ? 'Magic link diaktifkan.' : 'Magic link dinonaktifkan.',
+        data: updatedRecord
+      };
+    },
+
+    deleteMagicLink: (id: string): ApiResponse<null> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+      const links = (currentDb.magicLinks || []).map((l) =>
+        l.id === id ? { ...l, deletedAt: nowTimestamp, updatedAt: nowTimestamp } : l
+      );
+      persistDatabase({ ...currentDb, magicLinks: links });
+      return { error: false, statusCode: 200, message: 'Magic link berhasil dihapus.', data: null };
+    },
+
+    validateMagicToken: (token: string): { valid: boolean; message: string; magicLink: MagicLinkRegistration | null } => {
+      const currentDb = get(store);
+      const link = (currentDb.magicLinks || []).find((l) => l.token === token && l.deletedAt === null);
+
+      if (!link) {
+        return { valid: false, message: 'Magic link tidak ditemukan atau sudah dihapus.', magicLink: null };
+      }
+      if (!link.active) {
+        return { valid: false, message: 'Magic link pendaftaran ini telah kadaluarsa.', magicLink: link };
+      }
+      const now = new Date();
+      const expiresAt = new Date(link.expiresAt);
+      if (now > expiresAt) {
+        return { valid: false, message: `Magic link telah kadaluarsa pada ${expiresAt.toLocaleDateString('id-ID')}.`, magicLink: link };
+      }
+
+      return { valid: true, message: 'Magic link valid.', magicLink: link };
+    },
+
+    registerStudentViaMagicLink: (payload: {
+      token: string;
+      studentFullName: string;
+      studentEmail: string;
+      studentPassword?: string;
+      studentPhone?: string;
+      school?: string;
+      address?: string;
+      isExistingWali?: boolean;
+      waliFullName?: string;
+      waliEmail: string;
+      waliPassword?: string;
+      waliPhone?: string;
+      waliOccupation?: string;
+    }): ApiResponse<{ student: User; wali: User }> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+
+      const stuEmailClean = payload.studentEmail.trim().toLowerCase();
+      const waliEmailClean = payload.waliEmail.trim().toLowerCase();
+
+      if (stuEmailClean === waliEmailClean) {
+        return {
+          error: true,
+          statusCode: 400,
+          message: 'Email siswa dan email wali murid harus berbeda.',
+          data: null
+        };
+      }
+
+      // Check duplicate student email
+      const existingStudentEmail = currentDb.users.find(
+        (u) => u.deletedAt === null && u.email.toLowerCase() === stuEmailClean
+      );
+      if (existingStudentEmail) {
+        return {
+          error: true,
+          statusCode: 400,
+          message: `Email siswa (${stuEmailClean}) sudah terdaftar. Gunakan email lain.`,
+          data: null
+        };
+      }
+
+      let targetWaliUser: User | null = null;
+      let isNewWaliCreated = false;
+
+      if (payload.isExistingWali) {
+        // Find existing Wali Murid user by email
+        const existingWali = currentDb.users.find(
+          (u) => u.deletedAt === null && u.role === 'WALI_MURID' && u.email.toLowerCase() === waliEmailClean
+        );
+        if (!existingWali) {
+          return {
+            error: true,
+            statusCode: 404,
+            message: `Akun Wali Murid dengan email (${waliEmailClean}) tidak ditemukan. Silakan pilih opsi 'Wali Murid Baru' atau periksa kembali email wali.`,
+            data: null
+          };
+        }
+        targetWaliUser = existingWali;
+      } else {
+        // Check duplicate wali email for NEW Wali creation
+        const existingWaliUser = currentDb.users.find(
+          (u) => u.deletedAt === null && u.email.toLowerCase() === waliEmailClean
+        );
+        if (existingWaliUser) {
+          return {
+            error: true,
+            statusCode: 400,
+            message: `Email wali murid (${waliEmailClean}) sudah terdaftar. Jika wali sudah memiliki akun, silakan pilih opsi 'Wali Murid Sudah Punya Akun'.`,
+            data: null
+          };
+        }
+
+        // Create New Wali Murid User
+        const waliId = generateEntityId('u-wali');
+        targetWaliUser = {
+          id: waliId,
+          fullName: (payload.waliFullName || 'Wali Murid').trim(),
+          email: waliEmailClean,
+          password: payload.waliPassword || 'password123',
+          phone: payload.waliPhone || '',
+          occupation: payload.waliOccupation || '',
+          address: payload.address || '',
+          role: 'WALI_MURID',
+          isActive: false,
+          createdAt: nowTimestamp,
+          updatedAt: nowTimestamp,
+          deletedAt: null
+        };
+        isNewWaliCreated = true;
+      }
+
+      // Create Student User linked to Wali Murid
+      const studentId = generateEntityId('u-student');
+      const newStudentUser: User = {
+        id: studentId,
+        fullName: payload.studentFullName.trim(),
+        email: stuEmailClean,
+        password: payload.studentPassword || 'password123',
+        phone: payload.studentPhone || '',
+        role: 'STUDENT',
+        school: payload.school || '',
+        address: payload.address || '',
+        waliUserId: targetWaliUser.id,
+        isActive: false,
+        createdAt: nowTimestamp,
+        updatedAt: nowTimestamp,
+        deletedAt: null
+      };
+
+      const updatedUsers = [...currentDb.users, newStudentUser];
+      if (isNewWaliCreated && targetWaliUser) {
+        updatedUsers.push(targetWaliUser);
+      }
+
+      // Update usedCount on MagicLink
+      const updatedMagicLinks = (currentDb.magicLinks || []).map((l) =>
+        l.token === payload.token ? { ...l, usedCount: l.usedCount + 1, updatedAt: nowTimestamp } : l
+      );
+
+      persistDatabase({
+        ...currentDb,
+        users: updatedUsers,
+        magicLinks: updatedMagicLinks
+      });
+
+      return {
+        error: false,
+        statusCode: 201,
+        message: isNewWaliCreated
+          ? `Pendaftaran berhasil! Dua akun telah dibuat: Akun Siswa (${newStudentUser.fullName}) dan Akun Wali Murid Baru (${targetWaliUser.fullName}).`
+          : `Pendaftaran siswa ${newStudentUser.fullName} berhasil dan telah ditautkan ke akun Wali Murid (${targetWaliUser.fullName}).`,
+        data: {
+          student: newStudentUser,
+          wali: targetWaliUser
+        }
+      };
+    },
+
+    saveStudentMaster: (data: {
+      id?: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      password?: string;
+      school?: string;
+      address?: string;
+      waliUserId?: string;
+    }): ApiResponse<User> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+
+      if (data.id) {
+        let updatedUser: User | null = null;
+        const users = currentDb.users.map((u) => {
+          if (u.id === data.id) {
+            updatedUser = {
+              ...u,
+              fullName: data.fullName,
+              email: data.email,
+              phone: data.phone,
+              school: data.school || u.school,
+              address: data.address || u.address,
+              waliUserId: data.waliUserId,
+              updatedAt: nowTimestamp
+            };
+            return updatedUser;
+          }
+          return u;
+        });
+        persistDatabase({ ...currentDb, users });
+        return { error: false, statusCode: 200, message: 'Data Master Siswa berhasil diperbarui.', data: updatedUser };
+      } else {
+        const studentId = generateEntityId('u-student');
+        const newStudent: User = {
+          id: studentId,
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          password: data.password || 'password123',
+          role: 'STUDENT',
+          school: data.school || '',
+          address: data.address || '',
+          waliUserId: data.waliUserId,
+          createdAt: nowTimestamp,
+          updatedAt: nowTimestamp,
+          deletedAt: null
+        };
+        persistDatabase({ ...currentDb, users: [...currentDb.users, newStudent] });
+        return { error: false, statusCode: 201, message: 'Data Master Siswa baru berhasil ditambahkan.', data: newStudent };
+      }
+    },
+
+    deleteStudentMaster: (studentId: string): ApiResponse<null> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+      const users = currentDb.users.map((u) =>
+        u.id === studentId ? { ...u, deletedAt: nowTimestamp, updatedAt: nowTimestamp } : u
+      );
+      persistDatabase({ ...currentDb, users });
+      return { error: false, statusCode: 200, message: 'Data Master Siswa berhasil dihapus.', data: null };
+    },
+
+    saveWaliMaster: (data: {
+      id?: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      occupation?: string;
+      address?: string;
+    }): ApiResponse<User> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+
+      if (data.id) {
+        let updatedWali: User | null = null;
+        const users = currentDb.users.map((u) => {
+          if (u.id === data.id) {
+            updatedWali = {
+              ...u,
+              fullName: data.fullName,
+              email: data.email,
+              phone: data.phone,
+              occupation: data.occupation || u.occupation,
+              address: data.address || u.address,
+              updatedAt: nowTimestamp
+            };
+            return updatedWali;
+          }
+          return u;
+        });
+        persistDatabase({ ...currentDb, users });
+        return { error: false, statusCode: 200, message: 'Data Master Wali Murid berhasil diperbarui.', data: updatedWali };
+      } else {
+        const waliId = generateEntityId('u-wali');
+        const newWali: User = {
+          id: waliId,
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          password: 'password123',
+          role: 'WALI_MURID',
+          occupation: data.occupation || '',
+          address: data.address || '',
+          createdAt: nowTimestamp,
+          updatedAt: nowTimestamp,
+          deletedAt: null
+        };
+        persistDatabase({ ...currentDb, users: [...currentDb.users, newWali] });
+        return { error: false, statusCode: 201, message: 'Data Master Wali Murid berhasil ditambahkan.', data: newWali };
+      }
+    },
+
+    deleteWaliMaster: (waliId: string): ApiResponse<null> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+      const users = currentDb.users.map((u) =>
+        u.id === waliId ? { ...u, deletedAt: nowTimestamp, updatedAt: nowTimestamp } : u
+      );
+      persistDatabase({ ...currentDb, users });
+      return { error: false, statusCode: 200, message: 'Data Master Wali Murid berhasil dihapus.', data: null };
+    },
+
+    saveTentorMaster: (data: {
+      id?: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      education?: string;
+      subjectIds?: string[];
+      address?: string;
+    }): ApiResponse<User> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+
+      if (data.id) {
+        let updatedTentor: User | null = null;
+        const users = currentDb.users.map((u) => {
+          if (u.id === data.id) {
+            updatedTentor = {
+              ...u,
+              fullName: data.fullName,
+              email: data.email,
+              phone: data.phone,
+              education: data.education || u.education,
+              subjectIds: data.subjectIds || u.subjectIds,
+              address: data.address || u.address,
+              updatedAt: nowTimestamp
+            };
+            return updatedTentor;
+          }
+          return u;
+        });
+        persistDatabase({ ...currentDb, users });
+        return { error: false, statusCode: 200, message: 'Data Master Tentor berhasil diperbarui.', data: updatedTentor };
+      } else {
+        const tentorId = generateEntityId('u-tentor');
+        const newTentor: User = {
+          id: tentorId,
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          password: 'password123',
+          role: 'TENTOR',
+          education: data.education || '',
+          subjectIds: data.subjectIds || [],
+          address: data.address || '',
+          createdAt: nowTimestamp,
+          updatedAt: nowTimestamp,
+          deletedAt: null
+        };
+        persistDatabase({ ...currentDb, users: [...currentDb.users, newTentor] });
+        return { error: false, statusCode: 201, message: 'Data Master Tentor baru berhasil ditambahkan.', data: newTentor };
+      }
+    },
+
+    deleteTentorMaster: (tentorId: string): ApiResponse<null> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+      const users = currentDb.users.map((u) =>
+        u.id === tentorId ? { ...u, deletedAt: nowTimestamp, updatedAt: nowTimestamp } : u
+      );
+      persistDatabase({ ...currentDb, users });
+      return { error: false, statusCode: 200, message: 'Data Master Tentor berhasil dihapus.', data: null };
+    },
+
+    registerTentorViaMagicLink: (payload: {
+      token: string;
+      fullName: string;
+      email: string;
+      password?: string;
+      phone?: string;
+      education?: string;
+      subjectIds?: string[];
+      address?: string;
+    }): ApiResponse<User> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+
+      const emailClean = payload.email.trim().toLowerCase();
+      const existingUser = currentDb.users.find(
+        (u) => u.deletedAt === null && u.email.toLowerCase() === emailClean
+      );
+      if (existingUser) {
+        return {
+          error: true,
+          statusCode: 400,
+          message: `Email (${emailClean}) sudah terdaftar. Silakan gunakan email lain atau login.`,
+          data: null
+        };
+      }
+
+      const tentorId = generateEntityId('u-tentor');
+      const newTentor: User = {
+        id: tentorId,
+        fullName: payload.fullName.trim(),
+        email: emailClean,
+        password: payload.password || 'password123',
+        phone: payload.phone || '',
+        role: 'TENTOR',
+        education: payload.education || '',
+        subjectIds: payload.subjectIds || [],
+        address: payload.address || '',
+        isActive: false,
+        candidateStatus: 'REGISTERED',
+        createdAt: nowTimestamp,
+        updatedAt: nowTimestamp,
+        deletedAt: null
+      };
+
+      // Create candidate record for recruitment pipeline
+      const newCandidate: RecruitmentCandidate = {
+        id: generateEntityId('cand'),
+        fullName: payload.fullName.trim(),
+        email: emailClean,
+        phone: payload.phone || '',
+        education: payload.education || '',
+        experienceYears: 0,
+        subjectIds: payload.subjectIds || [],
+        levelIds: [],
+        cvUrl: '',
+        status: 'REGISTERED',
+        notes: `Pendaftaran via Magic Link. User ID: ${tentorId}`,
+        createdAt: nowTimestamp,
+        updatedAt: nowTimestamp,
+        deletedAt: null
+      };
+
+      const updatedUsers = [...currentDb.users, newTentor];
+      const updatedMagicLinks = (currentDb.magicLinks || []).map((l) =>
+        l.token === payload.token ? { ...l, usedCount: l.usedCount + 1, updatedAt: nowTimestamp } : l
+      );
+
+      persistDatabase({
+        ...currentDb,
+        users: updatedUsers,
+        candidates: [newCandidate, ...currentDb.candidates],
+        magicLinks: updatedMagicLinks
+      });
+
+      return {
+        error: false,
+        statusCode: 201,
+        message: `Pendaftaran Tentor/Mentor (${newTentor.fullName}) berhasil! Akun Anda sedang dalam proses verifikasi oleh admin.`,
+        data: newTentor
+      };
     }
   };
 }

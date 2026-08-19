@@ -1,6 +1,7 @@
 <script lang="ts">
   import Modal from '$lib/components/molecules/modal.svelte';
   import Icon from '$lib/components/atoms/icon.svelte';
+  import Button from '$lib/components/atoms/button.svelte';
 
   export let open: boolean = false;
   export let title: string = 'Konfirmasi';
@@ -17,15 +18,15 @@
   <p class="confirm-msg">{message}</p>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onCancel}>
-      <Icon name="close" size="sm" /> {cancelText}
-    </button>
-    <button
-      type="button"
-      class="btn {confirmVariant === 'danger' ? 'btn-danger' : 'btn-primary'}"
+    <Button variant="outline" on:click={onCancel} icon="close">
+      {cancelText}
+    </Button>
+    <Button
+      variant={confirmVariant}
       on:click={onConfirm}
+      icon="check"
     >
-      <Icon name="check" size="sm" /> {confirmText}
-    </button>
+      {confirmText}
+    </Button>
   </svelte:fragment>
 </Modal>

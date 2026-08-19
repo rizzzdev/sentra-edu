@@ -6,6 +6,60 @@
 		"src/routes/+layout.ts",
 		"src/routes/+layout.ts"
 	],
+	"/(dashboard)/admin": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/analitik": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/attendance": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/candidates": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/invoices": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/jobs": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/laporan": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/levels": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/magic-links": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/packages": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/payroll": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/profile": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/students": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/students/wali": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/subjects": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/tentors": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/tentors/magic-links": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/admin/users": [
+		"src/routes/+layout.ts"
+	],
 	"/(dashboard)/analitik": [
 		"src/routes/+layout.ts"
 	],
@@ -39,6 +93,9 @@
 	"/(auth)/login": [
 		"src/routes/+layout.ts"
 	],
+	"/(dashboard)/magic-links": [
+		"src/routes/+layout.ts"
+	],
 	"/(dashboard)/packages": [
 		"src/routes/+layout.ts"
 	],
@@ -51,16 +108,79 @@
 	"/(dashboard)/program": [
 		"src/routes/+layout.ts"
 	],
+	"/(auth)/register-tentor": [
+		"src/routes/+layout.ts"
+	],
+	"/(auth)/register": [
+		"src/routes/+layout.ts"
+	],
 	"/(dashboard)/reports": [
 		"src/routes/+layout.ts"
 	],
 	"/(dashboard)/students": [
 		"src/routes/+layout.ts"
 	],
+	"/(dashboard)/students/wali": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/student": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/student/attendance": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/student/profile": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/student/program": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/student/reports": [
+		"src/routes/+layout.ts"
+	],
 	"/(dashboard)/subjects": [
 		"src/routes/+layout.ts"
 	],
+	"/(dashboard)/tentors": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/tentors/magic-links": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/tentor": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/tentor/attendance": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/tentor/jobboard": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/tentor/payroll": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/tentor/profile": [
+		"src/routes/+layout.ts"
+	],
 	"/(dashboard)/users": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/wali": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/wali/attendance": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/wali/children": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/wali/invoices": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/wali/profile": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/wali/reports": [
 		"src/routes/+layout.ts"
 	]
 }

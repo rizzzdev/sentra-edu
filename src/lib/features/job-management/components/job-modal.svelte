@@ -4,6 +4,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { JobPost, JobType, JobMode } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let editingJob: JobPost | null = null;
@@ -131,9 +133,9 @@
   {#if mode !== 'ONLINE'}
     <div id="job-gps-box" style="margin-bottom:14px">
       <div class="quick-actions" style="margin-bottom:8px">
-        <button type="button" class="btn btn-sm btn-soft" on:click={handleTakeFromStudent}>
-          <Icon name="home_pin" size="sm" /> Ambil Lokasi dari Siswa
-        </button>
+        <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" on:click={handleTakeFromStudent} icon="home_pin">
+          Ambil Lokasi dari Siswa
+        </Button>
       </div>
       <div id="job-gps-status">
         {#if latitude && longitude}
@@ -152,7 +154,7 @@
   <form id="form-job" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_title">Judul Lowongan <i class="req">*</i></label>
-      <input
+      <Input
         id="f_title"
         type="text"
         placeholder="cth: Les Privat Matematika Kelas 12 SMA"
@@ -243,7 +245,7 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_preferredTime">Jam Mulai <i class="req">*</i></label>
-        <input
+        <Input
           id="f_preferredTime"
           type="text"
           placeholder="16:00"
@@ -254,7 +256,7 @@
 
       <div class="field">
         <label for="f_transportAllowance">Tunjangan Transport (Rp/sesi)</label>
-        <input
+        <Input
           id="f_transportAllowance"
           type="number"
           min="0"
@@ -268,7 +270,7 @@
       <div class="form-grid">
         <div class="field">
           <label for="f_latitude">Latitude — Lokasi Les (GPS) <i class="req">*</i></label>
-          <input
+          <Input
             id="f_latitude"
             type="number"
             step="0.000001"
@@ -279,7 +281,7 @@
 
         <div class="field">
           <label for="f_longitude">Longitude — Lokasi Les (GPS) <i class="req">*</i></label>
-          <input
+          <Input
             id="f_longitude"
             type="number"
             step="0.000001"
@@ -302,11 +304,11 @@
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-job" class="btn btn-primary">
-      <Icon name="save" size="sm" /> {editingJob ? 'Simpan Perubahan' : 'Buat Lowongan'}
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-job" icon="save">
+      {editingJob ? 'Simpan Perubahan' : 'Buat Lowongan'}
+    </Button>
   </svelte:fragment>
 </Modal>

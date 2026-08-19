@@ -3,6 +3,8 @@
   import Icon from '$lib/components/atoms/icon.svelte';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let onClose: () => void = () => {};
@@ -92,17 +94,17 @@
 
       <div class="field">
         <label for="f_year">Tahun <i class="req">*</i></label>
-        <input id="f_year" type="number" min="2026" required bind:value={selectedYear} />
+        <Input id="f_year" type="number" min="2026" required bind:value={selectedYear} />
       </div>
     </div>
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-gen-invoice" class="btn btn-primary">
-      <Icon name="receipt_long" size="sm" /> Terbitkan Tagihan
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-gen-invoice" icon="receipt_long">
+      Terbitkan Tagihan
+    </Button>
   </svelte:fragment>
 </Modal>

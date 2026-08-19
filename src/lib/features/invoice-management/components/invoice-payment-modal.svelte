@@ -5,6 +5,8 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import type { InvoiceRecord, User } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let invoice: InvoiceRecord | null = null;
@@ -54,7 +56,7 @@
 
     <div class="field">
       <label for="f_paymentProof">URL Bukti Transfer / Pembayaran</label>
-      <input
+      <Input
         id="f_paymentProof"
         type="text"
         placeholder="https://..."
@@ -64,17 +66,17 @@
   {/if}
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Tutup
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Tutup
+    </Button>
     {#if currentUser.role === 'SUPER_ADMIN'}
-      <button type="button" class="btn btn-primary" on:click={handleConfirmPayment}>
-        <Icon name="check_circle" size="sm" /> Konfirmasi Lunas (Admin)
-      </button>
+      <Button variant="primary" on:click={handleConfirmPayment} icon="check_circle">
+        Konfirmasi Lunas (Admin)
+      </Button>
     {:else}
-      <button type="button" class="btn btn-primary" on:click={handleConfirmPayment}>
-        <Icon name="upload" size="sm" /> Kirim Bukti Pembayaran
-      </button>
+      <Button variant="primary" on:click={handleConfirmPayment} icon="upload">
+        Kirim Bukti Pembayaran
+      </Button>
     {/if}
   </svelte:fragment>
 </Modal>

@@ -4,6 +4,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { User } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let tentor: User;
@@ -107,12 +109,12 @@
 <Modal {open} {onClose} title="Check-in Presensi" icon="location_on" maxWidth="620px">
   <div id="gps-box" style="margin-bottom:12px">
     <div class="quick-actions" style="margin-bottom:10px">
-      <button type="button" class="btn btn-sm btn-soft" on:click={handleGetGps}>
-        <Icon name="gps_fixed" size="sm" /> Ambil Lokasi GPS
-      </button>
-      <button type="button" class="btn btn-sm btn-outline" on:click={handleSimulateGps}>
-        <Icon name="my_location" size="sm" /> Simulasi GPS (lokasi les)
-      </button>
+      <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" on:click={handleGetGps} icon="gps_fixed">
+        Ambil Lokasi GPS
+      </Button>
+      <Button variant="outline" size="sm" on:click={handleSimulateGps} icon="my_location">
+        Simulasi GPS (lokasi les)
+      </Button>
     </div>
   </div>
 
@@ -138,31 +140,31 @@
 
     <div class="field">
       <label for="f_sessionDate">Tanggal Sesi <i class="req">*</i></label>
-      <input id="f_sessionDate" type="date" required bind:value={sessionDate} />
+      <Input id="f_sessionDate" type="date" required bind:value={sessionDate} />
     </div>
 
     <div class="form-grid">
       <div class="field">
         <label for="f_startTime">Jam Mulai <i class="req">*</i></label>
-        <input id="f_startTime" type="text" placeholder="09:00" required bind:value={startTime} />
+        <Input id="f_startTime" type="text" placeholder="09:00" required bind:value={startTime} />
       </div>
 
       <div class="field">
         <label for="f_endTime">Jam Selesai <i class="req">*</i></label>
-        <input id="f_endTime" type="text" placeholder="10:30" required bind:value={endTime} />
+        <Input id="f_endTime" type="text" placeholder="10:30" required bind:value={endTime} />
       </div>
     </div>
 
     <div class="form-grid">
       <div class="field">
         <label for="f_durationMinutes">Lama Pembelajaran (menit)</label>
-        <input id="f_durationMinutes" type="number" readonly value={durationMinutes} />
+        <Input id="f_durationMinutes" type="number" readonly value={durationMinutes} />
         <div class="help">Dihitung otomatis dari jam mulai & selesai.</div>
       </div>
 
       <div class="field">
         <label for="f_sessionsCount">Jumlah Sesi (90 menit/sesi)</label>
-        <input id="f_sessionsCount" type="number" readonly value={sessionsCount} />
+        <Input id="f_sessionsCount" type="number" readonly value={sessionsCount} />
         <div class="help">Dihitung otomatis: lama ÷ 90 menit.</div>
       </div>
     </div>
@@ -170,18 +172,18 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_latitudeCheckIn">Latitude (GPS) <i class="req">*</i></label>
-        <input id="f_latitudeCheckIn" type="number" step="0.000001" required bind:value={latitudeCheckIn} />
+        <Input id="f_latitudeCheckIn" type="number" step="0.000001" required bind:value={latitudeCheckIn} />
       </div>
 
       <div class="field">
         <label for="f_longitudeCheckIn">Longitude (GPS) <i class="req">*</i></label>
-        <input id="f_longitudeCheckIn" type="number" step="0.000001" required bind:value={longitudeCheckIn} />
+        <Input id="f_longitudeCheckIn" type="number" step="0.000001" required bind:value={longitudeCheckIn} />
       </div>
     </div>
 
     <div class="field">
       <label for="f_topicTaught">Topik Materi <i class="req">*</i></label>
-      <input
+      <Input
         id="f_topicTaught"
         type="text"
         placeholder="cth: Matematika: Turunan & Aplikasinya"
@@ -202,11 +204,11 @@
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-checkin" class="btn btn-primary">
-      <Icon name="location_on" size="sm" /> Kirim Presensi
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-checkin" icon="location_on">
+      Kirim Presensi
+    </Button>
   </svelte:fragment>
 </Modal>

@@ -4,6 +4,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { ClassLevel } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let editingClass: ClassLevel | null = null;
@@ -54,7 +56,7 @@
   <form id="form-class" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_className">Nama Kelas <i class="req">*</i></label>
-      <input
+      <Input
         id="f_className"
         type="text"
         placeholder="cth: Kelas 10 SMA"
@@ -75,7 +77,7 @@
 
     <div class="field">
       <label for="f_baseRatePer90Min">Tarif Dasar / 90 Menit (Rp) <i class="req">*</i></label>
-      <input
+      <Input
         id="f_baseRatePer90Min"
         type="number"
         min="0"
@@ -97,11 +99,11 @@
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-class" class="btn btn-primary">
-      <Icon name="save" size="sm" /> {editingClass ? 'Simpan Perubahan' : 'Tambah Kelas'}
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-class" icon="save">
+      {editingClass ? 'Simpan Perubahan' : 'Tambah Kelas'}
+    </Button>
   </svelte:fragment>
 </Modal>

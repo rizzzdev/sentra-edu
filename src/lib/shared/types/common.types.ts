@@ -40,6 +40,8 @@ export interface User extends BaseEntity {
   address?: string;
   occupation?: string;
   waliUserId?: string;
+  isActive?: boolean;
+  candidateStatus?: CandidateStatus;
 }
 
 export interface EducationLevel extends BaseEntity {
@@ -218,6 +220,19 @@ export interface NotificationItem {
   createdAt: string;
 }
 
+export interface MagicLinkRegistration extends BaseEntity {
+  token: string;
+  title: string;
+  daysValid: number;
+  expiresAt: string;
+  usedCount: number;
+  active: boolean;
+  targetRole?: 'STUDENT' | 'TENTOR';
+  classId?: string;
+  packageId?: string;
+  createdBy?: string;
+}
+
 export interface DatabaseSchema {
   version: number;
   seededAt: string;
@@ -234,4 +249,6 @@ export interface DatabaseSchema {
   payrollClaims: PayrollClaim[];
   candidates: RecruitmentCandidate[];
   notifications: NotificationItem[];
+  magicLinks?: MagicLinkRegistration[];
 }
+

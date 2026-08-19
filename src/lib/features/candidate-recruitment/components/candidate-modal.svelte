@@ -4,6 +4,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { RecruitmentCandidate } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   export let open: boolean = false;
   export let editingCandidate: RecruitmentCandidate | null = null;
@@ -96,7 +98,7 @@
   <form id="form-candidate" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_fullName">Nama Lengkap <i class="req">*</i></label>
-      <input
+      <Input
         id="f_fullName"
         type="text"
         placeholder="cth: Fajar Ramadhan"
@@ -108,7 +110,7 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_email">Email <i class="req">*</i></label>
-        <input
+        <Input
           id="f_email"
           type="email"
           placeholder="calon@email.com"
@@ -119,7 +121,7 @@
 
       <div class="field">
         <label for="f_phone">Telepon</label>
-        <input
+        <Input
           id="f_phone"
           type="tel"
           placeholder="08xx-xxxx-xxxx"
@@ -131,7 +133,7 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_education">Pendidikan Terakhir</label>
-        <input
+        <Input
           id="f_education"
           type="text"
           placeholder="cth: S1 Pendidikan Matematika"
@@ -141,7 +143,7 @@
 
       <div class="field">
         <label for="f_experienceYears">Pengalaman Mengajar (tahun)</label>
-        <input
+        <Input
           id="f_experienceYears"
           type="number"
           min="0"
@@ -201,11 +203,11 @@
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-candidate" class="btn btn-primary">
-      <Icon name="save" size="sm" /> {editingCandidate ? 'Simpan Perubahan' : 'Daftarkan Kandidat'}
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-candidate" icon="save">
+      {editingCandidate ? 'Simpan Perubahan' : 'Daftarkan Kandidat'}
+    </Button>
   </svelte:fragment>
 </Modal>
