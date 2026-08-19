@@ -101,12 +101,6 @@
       </Button>
     </form>
 
-    <!-- Register Links -->
-    <div style="margin-top:18px;text-align:center;font-size:.84rem;color:var(--muted-fg)">
-      Belum punya akun?
-      <a href="/register" style="color:var(--primary);font-weight:600;text-decoration:none">Daftar Siswa</a>
-      atau
-      <a href="/register-tentor" style="color:var(--primary);font-weight:600;text-decoration:none">Daftar Tentor</a>
-    </div>
+
   </div>
 </div>
