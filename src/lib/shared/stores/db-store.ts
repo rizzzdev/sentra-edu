@@ -26,7 +26,23 @@ const DATABASE_STORAGE_KEY = 'bms_db_v13';
 const SANITY_MODE = !!PUBLIC_SANITY_PROJECT_ID && PUBLIC_SANITY_PROJECT_ID !== 'your_project_id_here';
 
 async function loadDatabaseFromStorage(): Promise<DatabaseSchema> {
-  // Sanity mode: fetch from Sanity cloud
+  // 1. Try Neon via BFF API
+  if (typeof window !== 'undefined') {
+    try {
+      console.log('[SentraEdu] Loading data from Neon (BFF)...');
+      const res = await fetch('/api/db');
+      const json = await res.json();
+      if (!json.error && json.data) {
+        console.log('[SentraEdu] Neon data loaded successfully.');
+        localStorage.setItem(DATABASE_STORAGE_KEY, JSON.stringify(json.data));
+        return json.data;
+      }
+    } catch (err) {
+      console.warn('[SentraEdu] Neon load failed, trying Sanity...', err);
+    }
+  }
+
+  // 2. Try Sanity
   if (SANITY_MODE && typeof window !== 'undefined') {
     try {
       console.log('[SentraEdu] Loading data from Sanity...');
@@ -38,7 +54,7 @@ async function loadDatabaseFromStorage(): Promise<DatabaseSchema> {
     }
   }
 
-  // Fallback: localStorage
+  // 3. Fallback: localStorage
   if (typeof window === 'undefined') {
     return createInitialDatabaseSeed();
   }
@@ -51,7 +67,6 @@ async function loadDatabaseFromStorage(): Promise<DatabaseSchema> {
       return initialSeed;
     }
     const parsedData: DatabaseSchema = JSON.parse(rawData);
-    // ensure version check or fallback
     if (!parsedData.users || !parsedData.jobs) {
       const initialSeed = createInitialDatabaseSeed();
       localStorage.setItem(DATABASE_STORAGE_KEY, JSON.stringify(initialSeed));
