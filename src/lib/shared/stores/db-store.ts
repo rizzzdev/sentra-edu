@@ -19,10 +19,26 @@ import type {
 } from '$lib/shared/types/common.types';
 import { createInitialDatabaseSeed } from '$lib/shared/db/seed-data';
 import { generateEntityId } from '$lib/shared/utils/id-generator';
+import { PUBLIC_SANITY_PROJECT_ID } from '$env/static/public';
+import { sanityAdapter } from '$lib/shared/sanity/sanity-adapter';
 
 const DATABASE_STORAGE_KEY = 'bms_db_v13';
+const SANITY_MODE = !!PUBLIC_SANITY_PROJECT_ID && PUBLIC_SANITY_PROJECT_ID !== 'your_project_id_here';
 
-function loadDatabaseFromStorage(): DatabaseSchema {
+async function loadDatabaseFromStorage(): Promise<DatabaseSchema> {
+  // Sanity mode: fetch from Sanity cloud
+  if (SANITY_MODE && typeof window !== 'undefined') {
+    try {
+      console.log('[SentraEdu] Loading data from Sanity...');
+      const data = await sanityAdapter.loadDatabase();
+      console.log('[SentraEdu] Sanity data loaded successfully.');
+      return data;
+    } catch (err) {
+      console.error('[SentraEdu] Sanity load failed, falling back to localStorage:', err);
+    }
+  }
+
+  // Fallback: localStorage
   if (typeof window === 'undefined') {
     return createInitialDatabaseSeed();
   }
@@ -50,7 +66,14 @@ function loadDatabaseFromStorage(): DatabaseSchema {
 }
 
 function createDatabaseStore() {
-  const store = writable<DatabaseSchema>(loadDatabaseFromStorage());
+  const store = writable<DatabaseSchema>(createInitialDatabaseSeed());
+
+  // Async initialization: load from Sanity or localStorage
+  if (typeof window !== 'undefined') {
+    loadDatabaseFromStorage().then((data) => {
+      store.set(data);
+    });
+  }
 
   function persistDatabase(updatedDatabase: DatabaseSchema): void {
     if (typeof window !== 'undefined') {
