@@ -146,10 +146,22 @@ export function isJsonRequest(request: Request): boolean {
 import type { Cookies } from '@sveltejs/kit';
 
 export function getSessionUser(cookies: Cookies): { id: string; email: string; fullName: string; role: string } | null {
+  const session = cookies.get('session');
   const sessionUser = cookies.get('session_user');
-  if (!sessionUser) return null;
+  if (!session || !sessionUser) return null;
+
+  // Validate session token format (UUID)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(session)) return null;
+
+  // Validate session_user JSON structure
   try {
-    return JSON.parse(sessionUser);
+    const user = JSON.parse(sessionUser);
+    if (!user.id || !user.email || !user.role) return null;
+    // Validate role is a known value
+    const validRoles = ['SUPER_ADMIN', 'TENTOR', 'STUDENT', 'WALI_MURID'];
+    if (!validRoles.includes(user.role)) return null;
+    return user;
   } catch {
     return null;
   }
