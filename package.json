@@ -24,6 +24,7 @@
   "dependencies": {
     "@sanity/client": "^8.2.0",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
     "sanity": "^6.10.1",
     "tailwind-merge": "^3.0.1",
     "zod": "^3.25.76"
