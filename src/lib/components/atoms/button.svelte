@@ -8,6 +8,7 @@
   export let icon: string | undefined = undefined;
   export let iconFilled: boolean = false;
   export let fullWidth: boolean = false;
+  export let isIconOnly: boolean = false;
   export let className: string = '';
   export let ariaLabel: string | undefined = undefined;
 
@@ -22,10 +23,10 @@
     secondary: 'bg-[var(--color-primary-soft)] text-[var(--color-primary)] hover:bg-[var(--color-primary-soft-hover)] border-transparent'
   };
 
-  const sizeClassMap: Record<string, string> = {
-    sm: 'h-8 px-3 text-xs gap-1.5 rounded-[var(--radius-xs)]',
-    md: 'h-10 px-4 text-sm gap-2 rounded-[var(--radius-sm)]',
-    lg: 'h-12 px-6 text-base gap-2.5 rounded-[var(--radius-md)]'
+  $: sizeClassMap = {
+    sm: isIconOnly ? 'h-8 w-8 text-xs rounded-[var(--radius-xs)] p-0' : 'h-8 px-3 text-xs gap-1.5 rounded-[var(--radius-xs)]',
+    md: isIconOnly ? 'h-10 w-10 text-sm rounded-[var(--radius-sm)] p-0' : 'h-10 px-4 text-sm gap-2 rounded-[var(--radius-sm)]',
+    lg: isIconOnly ? 'h-12 w-12 text-base rounded-[var(--radius-md)] p-0' : 'h-12 px-6 text-base gap-2.5 rounded-[var(--radius-md)]'
   };
 </script>
 
@@ -34,6 +35,7 @@
   {disabled}
   aria-label={ariaLabel}
   class="inline-flex items-center justify-center font-semibold border transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none {variantClassMap[variant]} {sizeClassMap[size]} {fullWidth ? 'w-full' : ''} {className}"
+  {...$$restProps}
   on:click
 >
   {#if icon}
