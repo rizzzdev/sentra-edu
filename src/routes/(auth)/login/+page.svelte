@@ -10,36 +10,6 @@
   let passwordInput: string = '';
   let errorMessage: string | null = null;
 
-  const PERSONAS = [
-    {
-      role: 'SUPER_ADMIN',
-      icon: 'admin_panel_settings',
-      label: 'Admin',
-      desc: 'Data master, lowongan, presensi, rekrutmen',
-      email: 'admin@sentraedu.id'
-    },
-    {
-      role: 'TENTOR',
-      icon: 'school',
-      label: 'Tentor',
-      desc: 'Lamar les, presensi GPS, klaim honor',
-      email: 'tentor.andi@sentraedu.id'
-    },
-    {
-      role: 'STUDENT',
-      icon: 'school',
-      label: 'Siswa',
-      desc: 'Lihat les aktif, presensi, laporan',
-      email: 'raka@sentraedu.id'
-    },
-    {
-      role: 'WALI_MURID',
-      icon: 'family_restroom',
-      label: 'Wali Murid',
-      desc: 'Pantau les anak & bayar SPP',
-      email: 'wali.raka@sentraedu.id'
-    }
-  ];
 
   function handleSubmit() {
     errorMessage = null;
@@ -55,15 +25,6 @@
     }
 
     goto(getRoleDefaultPath(response.data.role));
-  }
-
-  function handlePersonaClick(personaEmail: string) {
-    const response = authStore.loginAsPersona(personaEmail);
-    if (!response.error && response.data) {
-      goto(getRoleDefaultPath(response.data.role));
-    } else {
-      errorMessage = response.message;
-    }
   }
 </script>
 
@@ -140,32 +101,12 @@
       </Button>
     </form>
 
-    <!-- Divider -->
-    <div style="display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--muted-fg);font-size:.78rem">
-      <span style="flex:1;height:1px;background:var(--border)"></span>
-      atau login cepat sebagai
-      <span style="flex:1;height:1px;background:var(--border)"></span>
-    </div>
-
-    <!-- Fast Persona Login Grid -->
-    <div class="persona-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      {#each PERSONAS as p}
-        <Button
-          variant="outline"
-          className="persona-btn"
-          on:click={() => handlePersonaClick(p.email)}
-        >
-          <span style="color:var(--primary);font-size:22px">
-            <Icon name={p.icon} filled={true} />
-          </span>
-          <span style="font-weight:700;font-size:.88rem">
-            {p.label}
-          </span>
-          <span style="color:var(--muted-fg);font-size:.72rem;font-weight:400">
-            {p.desc}
-          </span>
-        </Button>
-      {/each}
+    <!-- Register Links -->
+    <div style="margin-top:18px;text-align:center;font-size:.84rem;color:var(--muted-fg)">
+      Belum punya akun?
+      <a href="/register" style="color:var(--primary);font-weight:600;text-decoration:none">Daftar Siswa</a>
+      atau
+      <a href="/register-tentor" style="color:var(--primary);font-weight:600;text-decoration:none">Daftar Tentor</a>
     </div>
   </div>
 </div>
