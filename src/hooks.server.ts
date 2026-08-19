@@ -17,7 +17,7 @@ export const handle: Handle = async ({ event, resolve }) => {
       await initDatabase();
       dbInitialized = true;
       console.log('[SentraEdu] Neon database initialized.');
-    } catch (err: any) {
+    } catch (err_raw) { const err = err_raw as Error;
       console.error('[SentraEdu] DB init failed:', err.message);
     }
   }

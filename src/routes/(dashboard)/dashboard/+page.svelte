@@ -393,13 +393,13 @@
   </div>
 
   <div class="quick-actions">
-    <a href="/tentor/jobboard" class="btn btn-primary">
+    <a href="/tutor/job-board" class="btn btn-primary">
       <Icon name="search" size="sm" /> Cari Lowongan
     </a>
-    <a href="/tentor/attendance" class="btn btn-outline">
+    <a href="/tutor/attendance" class="btn btn-outline">
       <Icon name="location_on" size="sm" /> Presensi Hari Ini
     </a>
-    <a href="/tentor/payroll" class="btn btn-outline">
+    <a href="/tutor/payroll" class="btn btn-outline">
       <Icon name="payments" size="sm" /> Riwayat Penggajian
     </a>
   </div>
@@ -575,10 +575,10 @@
   </div>
 
   <div class="quick-actions">
-    <a href="/wali/children" class="btn btn-primary">
+    <a href="/parent/children" class="btn btn-primary">
       <Icon name="school" size="sm" /> Program Les Anak
     </a>
-    <a href="/wali/invoices" class="btn btn-outline">
+    <a href="/parent/invoices" class="btn btn-outline">
       <Icon name="receipt_long" size="sm" /> Tagihan SPP
     </a>
   </div>

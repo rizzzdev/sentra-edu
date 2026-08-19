@@ -1,1 +1,1 @@
-export { default as component } from "../../../../src/routes/(dashboard)/wali/profile/+page.svelte";
+export { default as component } from "../../../../src/routes/(dashboard)/tutor/profile/+page.svelte";

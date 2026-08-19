@@ -25,26 +25,26 @@
       { path: '/admin/payroll', label: 'Penggajian', icon: 'payments', group: 'Operasional' },
       { path: '/admin/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Operasional' },
       { path: '/admin/students', label: 'Data Murid', icon: 'school', group: 'Kelola Murid & Wali' },
-      { path: '/admin/students/wali', label: 'Data Wali Murid', icon: 'family_restroom', group: 'Kelola Murid & Wali' },
+      { path: '/admin/students/parent', label: 'Data Wali Murid', icon: 'family_restroom', group: 'Kelola Murid & Wali' },
       { path: '/admin/magic-links', label: 'Magic Link Pendaftaran', icon: 'link', group: 'Kelola Murid & Wali' },
-      { path: '/admin/tentors', label: 'Data Tentor', icon: 'badge', group: 'Kelola Tentor' },
-      { path: '/admin/tentors/magic-links', label: 'Magic Link Tentor', icon: 'link', group: 'Kelola Tentor' },
+      { path: '/admin/tutors', label: 'Data Tentor', icon: 'badge', group: 'Kelola Tentor' },
+      { path: '/admin/tutors/magic-links', label: 'Magic Link Tentor', icon: 'link', group: 'Kelola Tentor' },
       { path: '/admin/candidates', label: 'Rekrutmen & Pelamar', icon: 'person_search', group: 'Kelola Tentor' },
       { path: '/admin/classes', label: 'Kelas', icon: 'stairs', group: 'Master Data' },
       { path: '/admin/subjects', label: 'Mata Pelajaran', icon: 'menu_book', group: 'Master Data' },
       { path: '/admin/levels', label: 'Jenjang', icon: 'stairs', group: 'Master Data' },
       { path: '/admin/packages', label: 'Paket Les', icon: 'sell', group: 'Master Data' },
       { path: '/admin/users', label: 'Akun Pengguna', icon: 'manage_accounts', group: 'Master Data' },
-      { path: '/admin/analitik', label: 'Analitik', icon: 'monitoring', group: 'Insight' },
-      { path: '/admin/laporan', label: 'Laporan', icon: 'summarize', group: 'Insight' },
+      { path: '/admin/analytics', label: 'Analitik', icon: 'monitoring', group: 'Insight' },
+      { path: '/admin/reports-admin', label: 'Laporan', icon: 'summarize', group: 'Insight' },
       { path: '/admin/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ],
     TENTOR: [
-      { path: '/tentor', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
-      { path: '/tentor/jobboard', label: 'Cari Lowongan', icon: 'search', group: 'Pekerjaan' },
-      { path: '/tentor/attendance', label: 'Presensi Saya', icon: 'location_on', group: 'Pekerjaan' },
-      { path: '/tentor/payroll', label: 'Penggajian', icon: 'payments', group: 'Pekerjaan' },
-      { path: '/tentor/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
+      { path: '/tutor', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
+      { path: '/tutor/job-board', label: 'Cari Lowongan', icon: 'search', group: 'Pekerjaan' },
+      { path: '/tutor/attendance', label: 'Presensi Saya', icon: 'location_on', group: 'Pekerjaan' },
+      { path: '/tutor/payroll', label: 'Penggajian', icon: 'payments', group: 'Pekerjaan' },
+      { path: '/tutor/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ],
     STUDENT: [
       { path: '/student', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
@@ -54,12 +54,12 @@
       { path: '/student/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ],
     WALI_MURID: [
-      { path: '/wali', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
-      { path: '/wali/children', label: 'Program Les Anak', icon: 'school', group: 'Monitoring Anak' },
-      { path: '/wali/attendance', label: 'Presensi Anak', icon: 'fact_check', group: 'Monitoring Anak' },
-      { path: '/wali/reports', label: 'Laporan Hasil Belajar', icon: 'summarize', group: 'Monitoring Anak' },
-      { path: '/wali/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Keuangan' },
-      { path: '/wali/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
+      { path: '/parent', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
+      { path: '/parent/children', label: 'Program Les Anak', icon: 'school', group: 'Monitoring Anak' },
+      { path: '/parent/attendance', label: 'Presensi Anak', icon: 'fact_check', group: 'Monitoring Anak' },
+      { path: '/parent/reports', label: 'Laporan Hasil Belajar', icon: 'summarize', group: 'Monitoring Anak' },
+      { path: '/parent/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Keuangan' },
+      { path: '/parent/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ]
   };
 

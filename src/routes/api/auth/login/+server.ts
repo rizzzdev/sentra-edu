@@ -113,7 +113,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     }, {
       headers: { 'X-RateLimit-Remaining': String(remaining) }
     });
-  } catch (err: any) {
+  } catch (err_raw) { const err = err_raw as Error;
     console.error('[API] /api/auth/login error:', err.message);
     return json({ error: true, statusCode: 500, message: 'Terjadi kesalahan server.', data: null }, { status: 500 });
   }

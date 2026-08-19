@@ -30,7 +30,7 @@
         return;
       }
       goto(getRoleDefaultPath(response.data.role));
-    } catch (err: any) {
+    } catch (err_raw) { const err = err_raw as Error;
       errorMessage = err.message || 'Gagal login.';
       isSubmitting = false;
     }

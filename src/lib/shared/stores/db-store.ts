@@ -31,7 +31,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<{ error
       headers: { 'Content-Type': 'application/json', ...options?.headers }
     });
     return await res.json();
-  } catch (err: any) {
+  } catch (err_raw) { const err = err_raw as Error;
     return { error: true, data: null, message: err.message };
   }
 }

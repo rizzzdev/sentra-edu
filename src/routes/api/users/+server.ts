@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
     // Strip passwords from response
     const users = rows.map(mapUserRow).map((u: any) => ({ ...u, password: undefined }));
     return json({ error: false, statusCode: 200, data: users });
-  } catch (err: any) {
+  } catch (err_raw) { const err = err_raw as Error;
     return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
   }
 };
@@ -108,7 +108,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       if (user) (user as any).password = undefined;
       return json({ error: false, statusCode: 201, message: 'User dibuat.', data: user });
     }
-  } catch (err: any) {
+  } catch (err_raw) { const err = err_raw as Error;
     return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
   }
 };
@@ -127,7 +127,7 @@ export const DELETE: RequestHandler = async ({ url, cookies }) => {
     const now = new Date().toISOString();
     await sql`UPDATE users SET deleted_at = ${now}, updated_at = ${now} WHERE id = ${id}`;
     return json({ error: false, statusCode: 200, message: 'User dihapus.', data: null });
-  } catch (err: any) {
+  } catch (err_raw) { const err = err_raw as Error;
     return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
   }
 };

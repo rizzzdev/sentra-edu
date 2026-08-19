@@ -42,7 +42,7 @@
       }
       toastStore.success(loginResponse.message || 'Login berhasil!');
       goto('/dashboard');
-    } catch (err: any) {
+    } catch (err_raw) { const err = err_raw as Error;
       formErrorMessage = err.message || 'Gagal login.';
       isSubmitting = false;
     }

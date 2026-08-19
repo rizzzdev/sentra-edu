@@ -61,7 +61,7 @@
 
   function getFullMagicUrl(link: MagicLinkRegistration): string {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
-    const basePath = link.targetRole === 'TENTOR' ? '/register-tentor' : '/register';
+    const basePath = link.targetRole === 'TENTOR' ? '/register-tutor' : '/register';
     return `${origin}${basePath}?token=${link.token}`;
   }
 
@@ -99,7 +99,7 @@
       <div>
         <h4 class="font-bold text-[1.1rem]">Magic Link {targetRole === 'TENTOR' ? 'Tentor' : 'Murid'} Berhasil Dibuat!</h4>
         <p class="text-muted-fg text-[0.88rem] mt-1">
-          Bagikan link berikut ke calon {targetRole === 'TENTOR' ? 'tentor/mentor' : 'murid/wali murid'}. Link berlaku selama <strong>{generatedLink.daysValid} hari</strong> (kadaluarsa: {new Date(generatedLink.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}).
+          Bagikan link berikut ke calon {targetRole === 'TENTOR' ? 'tentor/mentor' : 'murid/parent murid'}. Link berlaku selama <strong>{generatedLink.daysValid} hari</strong> (kadaluarsa: {new Date(generatedLink.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}).
         </p>
       </div>
 

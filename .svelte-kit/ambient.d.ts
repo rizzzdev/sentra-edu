@@ -38,52 +38,29 @@
  * The above values will be the same _even if_ different values for `ENVIRONMENT` or `PUBLIC_BASE_URL` are set at runtime, as they are statically replaced in your code with their build time values.
  */
 declare module '$env/static/private' {
-	export const ACLOCAL_PATH: string;
+	export const SANITY_AUTH_TOKEN: string;
+	export const ADMIN_EMAIL: string;
+	export const ADMIN_PASSWORD: string;
+	export const DATABASE_URL: string;
 	export const ALLUSERSPROFILE: string;
 	export const APPDATA: string;
 	export const BLACKBOX_INSTALL_DIR: string;
 	export const ChocolateyInstall: string;
 	export const ChocolateyLastPathUpdate: string;
-	export const CODEBUFF_LAUNCHER_PID: string;
-	export const CODEBUFF_RG_PATH: string;
 	export const COLOR: string;
-	export const COMMONPROGRAMFILES: string;
+	export const CommonProgramFiles: string;
 	export const CommonProgramW6432: string;
 	export const COMPUTERNAME: string;
-	export const COMSPEC: string;
-	export const CONFIG_SITE: string;
-	export const DISPLAY: string;
+	export const ComSpec: string;
 	export const DriverData: string;
 	export const EDITOR: string;
-	export const EFC_29600_1262719628: string;
-	export const EFC_29600_1592913036: string;
-	export const EFC_29600_2283032206: string;
-	export const EFC_29600_2775293581: string;
-	export const EFC_29600_2946480783: string;
-	export const EFC_29600_3789132940: string;
-	export const EFC_29600_4126798990: string;
-	export const EXEPATH: string;
-	export const FPS_BROWSER_APP_PROFILE_STRING: string;
-	export const FPS_BROWSER_USER_PROFILE_STRING: string;
 	export const GOPATH: string;
 	export const HOME: string;
 	export const HOMEDRIVE: string;
 	export const HOMEPATH: string;
-	export const HOSTNAME: string;
-	export const INFOPATH: string;
 	export const INIT_CWD: string;
-	export const LC_CTYPE: string;
 	export const LOCALAPPDATA: string;
 	export const LOGONSERVER: string;
-	export const MANPATH: string;
-	export const MINGW_CHOST: string;
-	export const MINGW_PACKAGE_PREFIX: string;
-	export const MINGW_PREFIX: string;
-	export const MSYS: string;
-	export const MSYSTEM: string;
-	export const MSYSTEM_CARCH: string;
-	export const MSYSTEM_CHOST: string;
-	export const MSYSTEM_PREFIX: string;
 	export const NODE: string;
 	export const NODE_ENV: string;
 	export const npm_command: string;
@@ -108,46 +85,33 @@ declare module '$env/static/private' {
 	export const NUMBER_OF_PROCESSORS: string;
 	export const OneDrive: string;
 	export const OPENSSL_CONF: string;
-	export const ORIGINAL_PATH: string;
-	export const ORIGINAL_TEMP: string;
-	export const ORIGINAL_TMP: string;
 	export const OS: string;
-	export const PATH: string;
+	export const Path: string;
 	export const PATHEXT: string;
-	export const PKG_CONFIG_PATH: string;
-	export const PKG_CONFIG_SYSTEM_INCLUDE_PATH: string;
-	export const PKG_CONFIG_SYSTEM_LIBRARY_PATH: string;
-	export const PLINK_PROTOCOL: string;
 	export const PROCESSOR_ARCHITECTURE: string;
 	export const PROCESSOR_IDENTIFIER: string;
 	export const PROCESSOR_LEVEL: string;
 	export const PROCESSOR_REVISION: string;
 	export const ProgramData: string;
-	export const PROGRAMFILES: string;
+	export const ProgramFiles: string;
 	export const ProgramW6432: string;
 	export const PROMPT: string;
 	export const PSModulePath: string;
 	export const PUBLIC: string;
-	export const PWD: string;
 	export const SESSIONNAME: string;
-	export const SHELL: string;
-	export const SHLVL: string;
-	export const SSH_ASKPASS: string;
-	export const SYSTEMDRIVE: string;
-	export const SYSTEMROOT: string;
+	export const SystemDrive: string;
+	export const SystemRoot: string;
 	export const TEMP: string;
-	export const TERM: string;
-	export const TERM_PROGRAM: string;
-	export const TERM_PROGRAM_VERSION: string;
 	export const TMP: string;
-	export const TMPDIR: string;
 	export const USERDOMAIN: string;
 	export const USERDOMAIN_ROAMINGPROFILE: string;
 	export const USERNAME: string;
 	export const USERPROFILE: string;
-	export const WINDIR: string;
+	export const windir: string;
+	export const WSLENV: string;
+	export const WT_PROFILE_ID: string;
+	export const WT_SESSION: string;
 	export const ZES_ENABLE_SYSMAN: string;
-	export const _: string;
 }
 
 /**
@@ -184,7 +148,9 @@ declare module '$env/static/private' {
  * The above values will be the same _even if_ different values for `ENVIRONMENT` or `PUBLIC_BASE_URL` are set at runtime, as they are statically replaced in your code with their build time values.
  */
 declare module '$env/static/public' {
-	
+	export const PUBLIC_SANITY_PROJECT_ID: string;
+	export const PUBLIC_SANITY_DATASET: string;
+	export const PUBLIC_SANITY_API_VERSION: string;
 }
 
 /**
@@ -234,52 +200,29 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
-		ACLOCAL_PATH: string;
+		SANITY_AUTH_TOKEN: string;
+		ADMIN_EMAIL: string;
+		ADMIN_PASSWORD: string;
+		DATABASE_URL: string;
 		ALLUSERSPROFILE: string;
 		APPDATA: string;
 		BLACKBOX_INSTALL_DIR: string;
 		ChocolateyInstall: string;
 		ChocolateyLastPathUpdate: string;
-		CODEBUFF_LAUNCHER_PID: string;
-		CODEBUFF_RG_PATH: string;
 		COLOR: string;
-		COMMONPROGRAMFILES: string;
+		CommonProgramFiles: string;
 		CommonProgramW6432: string;
 		COMPUTERNAME: string;
-		COMSPEC: string;
-		CONFIG_SITE: string;
-		DISPLAY: string;
+		ComSpec: string;
 		DriverData: string;
 		EDITOR: string;
-		EFC_29600_1262719628: string;
-		EFC_29600_1592913036: string;
-		EFC_29600_2283032206: string;
-		EFC_29600_2775293581: string;
-		EFC_29600_2946480783: string;
-		EFC_29600_3789132940: string;
-		EFC_29600_4126798990: string;
-		EXEPATH: string;
-		FPS_BROWSER_APP_PROFILE_STRING: string;
-		FPS_BROWSER_USER_PROFILE_STRING: string;
 		GOPATH: string;
 		HOME: string;
 		HOMEDRIVE: string;
 		HOMEPATH: string;
-		HOSTNAME: string;
-		INFOPATH: string;
 		INIT_CWD: string;
-		LC_CTYPE: string;
 		LOCALAPPDATA: string;
 		LOGONSERVER: string;
-		MANPATH: string;
-		MINGW_CHOST: string;
-		MINGW_PACKAGE_PREFIX: string;
-		MINGW_PREFIX: string;
-		MSYS: string;
-		MSYSTEM: string;
-		MSYSTEM_CARCH: string;
-		MSYSTEM_CHOST: string;
-		MSYSTEM_PREFIX: string;
 		NODE: string;
 		NODE_ENV: string;
 		npm_command: string;
@@ -304,46 +247,33 @@ declare module '$env/dynamic/private' {
 		NUMBER_OF_PROCESSORS: string;
 		OneDrive: string;
 		OPENSSL_CONF: string;
-		ORIGINAL_PATH: string;
-		ORIGINAL_TEMP: string;
-		ORIGINAL_TMP: string;
 		OS: string;
-		PATH: string;
+		Path: string;
 		PATHEXT: string;
-		PKG_CONFIG_PATH: string;
-		PKG_CONFIG_SYSTEM_INCLUDE_PATH: string;
-		PKG_CONFIG_SYSTEM_LIBRARY_PATH: string;
-		PLINK_PROTOCOL: string;
 		PROCESSOR_ARCHITECTURE: string;
 		PROCESSOR_IDENTIFIER: string;
 		PROCESSOR_LEVEL: string;
 		PROCESSOR_REVISION: string;
 		ProgramData: string;
-		PROGRAMFILES: string;
+		ProgramFiles: string;
 		ProgramW6432: string;
 		PROMPT: string;
 		PSModulePath: string;
 		PUBLIC: string;
-		PWD: string;
 		SESSIONNAME: string;
-		SHELL: string;
-		SHLVL: string;
-		SSH_ASKPASS: string;
-		SYSTEMDRIVE: string;
-		SYSTEMROOT: string;
+		SystemDrive: string;
+		SystemRoot: string;
 		TEMP: string;
-		TERM: string;
-		TERM_PROGRAM: string;
-		TERM_PROGRAM_VERSION: string;
 		TMP: string;
-		TMPDIR: string;
 		USERDOMAIN: string;
 		USERDOMAIN_ROAMINGPROFILE: string;
 		USERNAME: string;
 		USERPROFILE: string;
-		WINDIR: string;
+		windir: string;
+		WSLENV: string;
+		WT_PROFILE_ID: string;
+		WT_SESSION: string;
 		ZES_ENABLE_SYSMAN: string;
-		_: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
@@ -399,6 +329,9 @@ declare module '$env/dynamic/private' {
  */
 declare module '$env/dynamic/public' {
 	export const env: {
+		PUBLIC_SANITY_PROJECT_ID: string;
+		PUBLIC_SANITY_DATASET: string;
+		PUBLIC_SANITY_API_VERSION: string;
 		[key: `PUBLIC_${string}`]: string | undefined;
 	}
 }

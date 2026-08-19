@@ -1,1 +1,1 @@
-export { default as component } from "../../../../src/routes/(dashboard)/laporan/+page.svelte";
+export { default as component } from "../../../../src/routes/(dashboard)/job-board/+page.svelte";

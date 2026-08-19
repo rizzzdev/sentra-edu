@@ -7,7 +7,7 @@ export const GET: RequestHandler = async () => {
   try {
     const rows = await sql`SELECT * FROM subjects WHERE deleted_at IS NULL ORDER BY created_at DESC`;
     return json({ error: false, statusCode: 200, data: rows.map(mapSubjectRow) });
-  } catch (err: any) {
+  } catch (err_raw) { const err = err_raw as Error;
     return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
   }
 };
@@ -27,7 +27,7 @@ export const POST: RequestHandler = async ({ request }) => {
       const rows = await sql`SELECT * FROM subjects WHERE id = ${id}`;
       return json({ error: false, statusCode: 201, message: 'Mata pelajaran dibuat.', data: rows[0] ? mapSubjectRow(rows[0]) : null });
     }
-  } catch (err: any) {
+  } catch (err_raw) { const err = err_raw as Error;
     return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
   }
 };
@@ -39,7 +39,7 @@ export const DELETE: RequestHandler = async ({ url }) => {
     const now = new Date().toISOString();
     await sql`UPDATE subjects SET deleted_at = ${now}, updated_at = ${now} WHERE id = ${id}`;
     return json({ error: false, statusCode: 200, message: 'Mata pelajaran dihapus.', data: null });
-  } catch (err: any) {
+  } catch (err_raw) { const err = err_raw as Error;
     return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
   }
 };
