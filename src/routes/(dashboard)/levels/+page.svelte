@@ -1,0 +1,116 @@
+<script lang="ts">
+  import Icon from '$lib/components/atoms/icon.svelte';
+  import ClassModal from '$lib/features/master-data/components/class-modal.svelte';
+  import ConfirmationDialog from '$lib/components/organisms/confirmation-dialog.svelte';
+  import { dbStore } from '$lib/shared/stores/db-store';
+  import { toastStore } from '$lib/shared/stores/toast-store';
+  import type { EducationLevel } from '$lib/shared/types/common.types';
+
+  let searchQuery: string = '';
+  let currentPage: number = 1;
+  const itemsPerPage: number = 8;
+
+  let deleteDialogOpen: boolean = false;
+  let deletingLevelId: string | null = null;
+
+  $: allLevels = $dbStore.educationLevels.filter((l) => l.deletedAt === null);
+
+  $: filteredLevels = allLevels.filter(
+    (l) =>
+      !searchQuery ||
+      l.levelName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (l.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  $: paginatedLevels = filteredLevels.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  $: totalPages = Math.max(1, Math.ceil(filteredLevels.length / itemsPerPage));
+
+  function getClassCount(levelId: string): number {
+    return $dbStore.classes.filter((c) => c.deletedAt === null && c.educationLevelId === levelId).length;
+  }
+</script>
+
+<div class="page-head">
+  <div>
+    <h3><Icon name="school" size="lg" /> Jenjang</h3>
+    <div class="desc">Master jenjang pendidikan. Tarif honor diatur per kelas pada menu Paket Les.</div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-search">
+    <Icon name="search" size="sm" />
+    <input type="text" placeholder="Cari jenjang..." bind:value={searchQuery} />
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body flush">
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Jenjang</th>
+            <th class="num">Jumlah Kelas</th>
+            <th>Deskripsi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#if paginatedLevels.length === 0}
+            <tr>
+              <td colspan="3" class="empty">
+                {searchQuery ? 'Tidak ada jenjang yang cocok.' : 'Belum ada jenjang.'}
+              </td>
+            </tr>
+          {:else}
+            {#each paginatedLevels as l (l.id)}
+              <tr>
+                <td><strong>{l.levelName}</strong></td>
+                <td class="num">{getClassCount(l.id)} kelas</td>
+                <td>{l.description || '—'}</td>
+              </tr>
+            {/each}
+          {/if}
+        </tbody>
+      </table>
+    </div>
+
+    {#if filteredLevels.length > itemsPerPage}
+      <div class="page-nav">
+        <div class="page-info">
+          Menampilkan {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredLevels.length)} dari {filteredLevels.length} data
+        </div>
+        <div class="page-btns">
+          <button
+            type="button"
+            class="page-btn"
+            disabled={currentPage <= 1}
+            on:click={() => currentPage--}
+          >
+            &laquo;
+          </button>
+          {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+            <button
+              type="button"
+              class="page-btn {currentPage === p ? 'active' : ''}"
+              on:click={() => { currentPage = p; }}
+            >
+              {p}
+            </button>
+          {/each}
+          <button
+            type="button"
+            class="page-btn"
+            disabled={currentPage >= totalPages}
+            on:click={() => currentPage++}
+          >
+            &raquo;
+          </button>
+        </div>
+      </div>
+    {/if}
+  </div>
+</div>

@@ -1,0 +1,731 @@
+import type { DatabaseSchema } from '$lib/shared/types/common.types';
+
+const defaultTimestamp = '2026-08-17T08:00:00.000Z';
+
+export function createInitialDatabaseSeed(): DatabaseSchema {
+  return {
+    version: 13,
+    seededAt: '2026-08-17',
+    educationLevels: [
+      {
+        id: 'lv-tk',
+        levelName: 'TK',
+        description: 'Calistung & kecerdasan dasar',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'lv-sd',
+        levelName: 'SD',
+        description: 'Pendampingan belajar SD',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'lv-smp',
+        levelName: 'SMP',
+        description: 'Persiapan ujian & masuk SMA',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'lv-sma',
+        levelName: 'SMA',
+        description: 'Persiapan UTBK / PTN',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'lv-khs',
+        levelName: 'ALUMNI/KHUSUS',
+        description: 'Mahasiswa & kursus khusus',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    classes: [
+      {
+        id: 'cl-tk-a',
+        className: 'TK A',
+        educationLevelId: 'lv-tk',
+        baseRatePer90Min: 100000,
+        description: 'Kelompok A (usia 4-5 tahun)',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-tk-b',
+        className: 'TK B',
+        educationLevelId: 'lv-tk',
+        baseRatePer90Min: 100000,
+        description: 'Kelompok B (usia 5-6 tahun)',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sd-1',
+        className: 'Kelas 1 SD',
+        educationLevelId: 'lv-sd',
+        baseRatePer90Min: 110000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sd-2',
+        className: 'Kelas 2 SD',
+        educationLevelId: 'lv-sd',
+        baseRatePer90Min: 110000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sd-3',
+        className: 'Kelas 3 SD',
+        educationLevelId: 'lv-sd',
+        baseRatePer90Min: 110000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sd-4',
+        className: 'Kelas 4 SD',
+        educationLevelId: 'lv-sd',
+        baseRatePer90Min: 110000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sd-5',
+        className: 'Kelas 5 SD',
+        educationLevelId: 'lv-sd',
+        baseRatePer90Min: 110000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sd-6',
+        className: 'Kelas 6 SD',
+        educationLevelId: 'lv-sd',
+        baseRatePer90Min: 110000,
+        description: 'Persiapan ujian akhir SD',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-smp-7',
+        className: 'Kelas 7 SMP',
+        educationLevelId: 'lv-smp',
+        baseRatePer90Min: 125000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-smp-8',
+        className: 'Kelas 8 SMP',
+        educationLevelId: 'lv-smp',
+        baseRatePer90Min: 125000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-smp-9',
+        className: 'Kelas 9 SMP',
+        educationLevelId: 'lv-smp',
+        baseRatePer90Min: 125000,
+        description: 'Persiapan ujian & masuk SMA',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sma-10',
+        className: 'Kelas 10 SMA',
+        educationLevelId: 'lv-sma',
+        baseRatePer90Min: 140000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sma-11',
+        className: 'Kelas 11 SMA',
+        educationLevelId: 'lv-sma',
+        baseRatePer90Min: 145000,
+        description: '',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-sma-12',
+        className: 'Kelas 12 SMA',
+        educationLevelId: 'lv-sma',
+        baseRatePer90Min: 150000,
+        description: 'Persiapan UTBK / ujian akhir',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cl-umum',
+        className: 'Kelas Umum',
+        educationLevelId: 'lv-khs',
+        baseRatePer90Min: 175000,
+        description: 'Kursus khusus / alumni',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    subjects: [
+      {
+        id: 'sj-mtk',
+        name: 'Matematika',
+        description: 'Matematika dasar hingga lanjutan',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'sj-ing',
+        name: 'Bahasa Inggris',
+        description: 'Grammar, speaking & TOEFL',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'sj-fis',
+        name: 'Fisika',
+        description: 'Fisika SMP / SMA',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'sj-kim',
+        name: 'Kimia',
+        description: 'Kimia SMA',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'sj-bio',
+        name: 'Biologi',
+        description: 'Biologi SMA',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'sj-bindo',
+        name: 'Bahasa Indonesia',
+        description: 'Bahasa Indonesia & sastra',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    packages: [
+      {
+        id: 'pkg-bulanan-private',
+        name: 'Paket Bulanan Private',
+        mode: 'PRIVATE',
+        period: 'BULANAN',
+        price: 1600000,
+        sessionsPerPeriod: 8,
+        maxStudents: 1,
+        tentorFee: 150000,
+        description: 'Les privat 1 guru 1 siswa, 8 pertemuan per bulan (90 menit/sesi).',
+        active: true,
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'pkg-bulanan-kelompok',
+        name: 'Paket Bulanan Kelompok',
+        mode: 'KELOMPOK',
+        period: 'BULANAN',
+        price: 900000,
+        sessionsPerPeriod: 8,
+        maxStudents: 5,
+        tentorFee: 60000,
+        description: 'Les kelompok kecil (maks 5 siswa), 8 pertemuan per bulan (90 menit/sesi).',
+        active: true,
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'pkg-harian-private',
+        name: 'Paket Harian Private',
+        mode: 'PRIVATE',
+        period: 'HARIAN',
+        price: 175000,
+        sessionsPerPeriod: 1,
+        maxStudents: 1,
+        tentorFee: 125000,
+        description: 'Les privat sekali pertemuan (90 menit) — bayar per sesi.',
+        active: true,
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'pkg-harian-kelompok',
+        name: 'Paket Harian Kelompok',
+        mode: 'KELOMPOK',
+        period: 'HARIAN',
+        price: 100000,
+        sessionsPerPeriod: 1,
+        maxStudents: 5,
+        tentorFee: 60000,
+        description: 'Les kelompok sekali pertemuan (90 menit) — bayar per sesi per siswa.',
+        active: true,
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'pkg-intensif-bulanan',
+        name: 'Paket Intensif UTBK Private (Bulanan)',
+        mode: 'PRIVATE',
+        period: 'BULANAN',
+        price: 2400000,
+        sessionsPerPeriod: 12,
+        maxStudents: 1,
+        tentorFee: 180000,
+        description: 'Intensif persiapan UTBK, 12 pertemuan per bulan (90 menit/sesi).',
+        active: true,
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'pkg-intensif-harian',
+        name: 'Paket Intensif Harian Private (180 menit)',
+        mode: 'PRIVATE',
+        period: 'HARIAN',
+        price: 350000,
+        sessionsPerPeriod: 1,
+        maxStudents: 1,
+        tentorFee: 250000,
+        description: 'Sesi intensif 180 menit sekali pertemuan — bayar per sesi.',
+        active: true,
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    users: [
+      {
+        id: 'u-admin',
+        email: 'admin@sentraedu.id',
+        password: 'admin123',
+        fullName: 'Admin Pusat',
+        phone: '0812-0000-0001',
+        role: 'SUPER_ADMIN',
+        position: 'Manajer Operasional Pusat',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-tentor-andi',
+        email: 'tentor.andi@sentraedu.id',
+        password: 'tentor123',
+        fullName: 'Andi Pratama',
+        phone: '0812-0000-0004',
+        role: 'TENTOR',
+        education: 'S1 Fisika UI',
+        experienceYears: 3,
+        subjectIds: ['sj-fis', 'sj-mtk'],
+        levelIds: ['lv-sma', 'lv-smp'],
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-tentor-dewi',
+        email: 'tentor.dewi@sentraedu.id',
+        password: 'tentor123',
+        fullName: 'Dewi Lestari',
+        phone: '0812-0000-0005',
+        role: 'TENTOR',
+        education: 'S1 Biologi UGM',
+        experienceYears: 4,
+        subjectIds: ['sj-bio', 'sj-kim'],
+        levelIds: ['lv-sma'],
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-tentor-bagas',
+        email: 'tentor.bagas@sentraedu.id',
+        password: 'tentor123',
+        fullName: 'Bagas Saputra',
+        phone: '0812-0000-0012',
+        role: 'TENTOR',
+        education: 'S1 Matematika ITB',
+        experienceYears: 2,
+        subjectIds: ['sj-mtk'],
+        levelIds: ['lv-smp', 'lv-sd'],
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-student-raka',
+        email: 'raka@sentraedu.id',
+        password: 'siswa123',
+        fullName: 'Raka Pratama',
+        phone: '0812-0000-0006',
+        role: 'STUDENT',
+        school: 'SMA Negeri 1 Jakarta',
+        address: 'Jl. Merdeka No. 45, Jakarta Pusat',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-wali-raka',
+        email: 'wali.raka@sentraedu.id',
+        password: 'wali123',
+        fullName: 'Bambang Pratama (Wali Raka)',
+        phone: '0812-0000-0011',
+        role: 'WALI_MURID',
+        address: 'Jl. Merdeka No. 45, Jakarta Pusat',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-student-ayu',
+        email: 'ayu@sentraedu.id',
+        password: 'siswa123',
+        fullName: 'Ayu Lestari',
+        phone: '0812-0000-0007',
+        role: 'STUDENT',
+        school: 'SMP Negeri 3 Bandung',
+        address: 'Jl. Dago No. 12, Bandung',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-wali-ayu',
+        email: 'wali.ayu@sentraedu.id',
+        password: 'wali123',
+        fullName: 'Siti Lestari (Wali Ayu)',
+        phone: '0812-0000-0013',
+        role: 'WALI_MURID',
+        address: 'Jl. Dago No. 12, Bandung',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    enrollments: [
+      {
+        id: 'enr-001',
+        studentId: 'u-student-raka',
+        subjectId: 'sj-mtk',
+        classId: 'cl-sma-12',
+        packageId: 'pkg-bulanan-private',
+        tentorId: 'u-tentor-andi',
+        scheduleDay: 'Senin, Rabu',
+        scheduleTime: '16:00 - 17:30',
+        status: 'ACTIVE',
+        address: 'Jl. Merdeka No. 45, Jakarta Pusat',
+        latitude: -6.175392,
+        longitude: 106.827153,
+        waliUserId: 'u-wali-raka',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'enr-002',
+        studentId: 'u-student-ayu',
+        subjectId: 'sj-fis',
+        classId: 'cl-smp-9',
+        packageId: 'pkg-bulanan-private',
+        tentorId: 'u-tentor-andi',
+        scheduleDay: 'Selasa, Kamis',
+        scheduleTime: '15:30 - 17:00',
+        status: 'ACTIVE',
+        address: 'Jl. Dago No. 12, Bandung',
+        latitude: -6.917464,
+        longitude: 107.619123,
+        waliUserId: 'u-wali-ayu',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    jobs: [
+      {
+        id: 'job-101',
+        title: 'Les Privat Matematika SMA Kelas 12 (Persiapan UTBK)',
+        classId: 'cl-sma-12',
+        subjectId: 'sj-mtk',
+        jobType: 'REGULAR',
+        jobMode: 'OFFLINE',
+        tentorFee: 150000,
+        sessionDurationMinutes: 90,
+        scheduleDays: ['Senin', 'Rabu'],
+        scheduleTime: '16:00',
+        studentCount: 1,
+        location: 'Kebayoran Baru, Jakarta Selatan',
+        latitude: -6.2415,
+        longitude: 106.7995,
+        status: 'AVAILABLE',
+        assignedTentorId: null,
+        studentId: 'u-student-raka',
+        enrollmentId: 'enr-001',
+        notes: 'Siswa butuh pendalaman materi TPS Kuantitatif dan Matematika Lanjut.',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'job-102',
+        title: 'Guru Pengganti Fisika SMA Kelas 11 (2 Sesi)',
+        classId: 'cl-sma-11',
+        subjectId: 'sj-fis',
+        jobType: 'TEMPORARY_REPLACEMENT',
+        jobMode: 'OFFLINE',
+        tentorFee: 140000,
+        sessionDurationMinutes: 90,
+        scheduleDays: ['Jumat'],
+        scheduleTime: '15:00',
+        studentCount: 1,
+        location: 'Menteng, Jakarta Pusat',
+        latitude: -6.1956,
+        longitude: 106.8378,
+        status: 'AVAILABLE',
+        assignedTentorId: null,
+        studentId: null,
+        enrollmentId: null,
+        notes: 'Menggantikan tentor tetap yang sedang cuti.',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'job-103',
+        title: 'Les Kelompok Biologi SMA Kelas 10 (3 Siswa)',
+        classId: 'cl-sma-10',
+        subjectId: 'sj-bio',
+        jobType: 'REGULAR',
+        jobMode: 'ONLINE',
+        tentorFee: 180000,
+        sessionDurationMinutes: 90,
+        scheduleDays: ['Sabtu'],
+        scheduleTime: '09:00',
+        studentCount: 3,
+        location: 'Online via Google Meet',
+        latitude: null,
+        longitude: null,
+        status: 'ASSIGNED',
+        assignedTentorId: 'u-tentor-dewi',
+        studentId: null,
+        enrollmentId: null,
+        notes: 'Fokus materi Keanekaragaman Hayati dan Ekosistem.',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    applications: [
+      {
+        id: 'app-001',
+        jobId: 'job-101',
+        tentorId: 'u-tentor-bagas',
+        status: 'PENDING',
+        appliedAt: '2026-08-18T10:00:00.000Z',
+        notes: 'Saya sangat berpengalaman dalam membimbing UTBK Matematika selama 2 tahun terakhir.',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    attendances: [
+      {
+        id: 'att-001',
+        enrollmentId: 'enr-001',
+        tentorId: 'u-tentor-andi',
+        sessionDate: '2026-08-16',
+        startTime: '2026-08-16T16:00:00.000Z',
+        endTime: '2026-08-16T17:30:00.000Z',
+        topic: 'Diferensial dan Turunan Fungsi Aljabar',
+        studentNotes: 'Raka sudah memahami konsep dasar turunan dan mampu mengerjakan 8 soal latihan mandiri dengan benar.',
+        status: 'APPROVED',
+        latitudeCheckIn: -6.175401,
+        longitudeCheckIn: 106.82716,
+        isRadiusValid: true,
+        proofPhotoUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&q=80',
+        studentConfirmed: true,
+        studentRating: 5,
+        studentFeedback: 'Penjelasan kak Andi sangat jelas dan mudah dipahami!',
+        reviewNotes: 'Validasi GPS radius 12m, foto presensi lengkap.',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'att-002',
+        enrollmentId: 'enr-001',
+        tentorId: 'u-tentor-andi',
+        sessionDate: '2026-08-18',
+        startTime: '2026-08-18T16:00:00.000Z',
+        endTime: '2026-08-18T17:30:00.000Z',
+        topic: 'Aplikasi Turunan: Garis Singgung & Nilai Ekstrim',
+        studentNotes: 'Siswa mempelajari penentuan titik stasioner dan maksimum/minimum fungsi.',
+        status: 'SUBMITTED',
+        latitudeCheckIn: -6.17539,
+        longitudeCheckIn: 106.827155,
+        isRadiusValid: true,
+        proofPhotoUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=500&q=80',
+        studentConfirmed: true,
+        studentRating: 5,
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    invoices: [
+      {
+        id: 'inv-001',
+        enrollmentId: 'enr-001',
+        invoiceNumber: 'INV/2026/08/001',
+        amount: 1600000,
+        dueDate: '2026-08-25',
+        status: 'PAID',
+        paidAt: '2026-08-10T14:30:00.000Z',
+        paymentProofUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&q=80',
+        periodMonth: 8,
+        periodYear: 2026,
+        notes: 'Pembayaran SPP Paket Bulanan Private Agustus 2026',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'inv-002',
+        enrollmentId: 'enr-002',
+        invoiceNumber: 'INV/2026/08/002',
+        amount: 1600000,
+        dueDate: '2026-08-25',
+        status: 'UNPAID',
+        paidAt: null,
+        paymentProofUrl: null,
+        periodMonth: 8,
+        periodYear: 2026,
+        notes: 'Tagihan SPP Belajar Fisika SMP Bulan Agustus 2026',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    payrollClaims: [
+      {
+        id: 'pay-001',
+        tentorId: 'u-tentor-andi',
+        claimNumber: 'PAY/2026/08/001',
+        periodStart: '2026-08-01',
+        periodEnd: '2026-08-15',
+        totalAmount: 300000,
+        attendanceIds: ['att-001'],
+        status: 'PAID',
+        paidAt: '2026-08-17T11:00:00.000Z',
+        transferProofUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&q=80',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    candidates: [
+      {
+        id: 'cand-001',
+        fullName: 'Fajar Nugraha',
+        email: 'fajar.nugraha@gmail.com',
+        phone: '0813-9988-7766',
+        education: 'S1 Kimia UNPAD',
+        experienceYears: 2,
+        subjectIds: ['sj-kim', 'sj-fis'],
+        levelIds: ['lv-sma', 'lv-smp'],
+        cvUrl: 'https://sentraedu.id/cv/cand-001.pdf',
+        status: 'INTERVIEW',
+        notes: 'IPK 3.82, pengalaman mengajar olimpiade kimia tingkat kabupaten.',
+        interviewDate: '2026-08-22T10:00:00.000Z',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'cand-002',
+        fullName: 'Nadia Rahmawati',
+        email: 'nadia.rahma@gmail.com',
+        phone: '0812-4455-6677',
+        education: 'S1 Pendidikan Bahasa Inggris UPI',
+        experienceYears: 3,
+        subjectIds: ['sj-ing'],
+        levelIds: ['lv-sd', 'lv-smp', 'lv-sma'],
+        cvUrl: 'https://sentraedu.id/cv/cand-002.pdf',
+        status: 'MICROTEACHING',
+        notes: 'Skor TOEFL 610, interaktif dan menyenangkan dalam mengajar anak-anak.',
+        interviewDate: '2026-08-20T13:30:00.000Z',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      }
+    ],
+    notifications: [
+      {
+        id: 'notif-001',
+        userId: 'u-admin',
+        title: 'Presensi Baru Perlu Verifikasi',
+        message: 'Tentor Andi Pratama telah menyelesaikan sesi les Diferensial dan menunggu verifikasi.',
+        icon: 'fact_check',
+        read: false,
+        createdAt: '2026-08-18T17:35:00.000Z'
+      },
+      {
+        id: 'notif-002',
+        userId: 'u-tentor-andi',
+        title: 'Honor Sesi Disetujui',
+        message: 'Klaim honor sebesar Rp 300.000 telah ditransfer oleh admin.',
+        icon: 'payments',
+        read: true,
+        createdAt: '2026-08-17T11:05:00.000Z'
+      }
+    ]
+  };
+}

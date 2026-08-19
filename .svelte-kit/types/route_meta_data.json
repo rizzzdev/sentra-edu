@@ -1,0 +1,66 @@
+{
+	"/(dashboard)": [
+		"src/routes/+layout.ts"
+	],
+	"/": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/analitik": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/attendance": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/candidates": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/children": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/dashboard": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/invoices": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/jobboard": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/jobs": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/laporan": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/levels": [
+		"src/routes/+layout.ts"
+	],
+	"/(auth)/login": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/packages": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/payroll": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/profile": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/program": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/reports": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/students": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/subjects": [
+		"src/routes/+layout.ts"
+	],
+	"/(dashboard)/users": [
+		"src/routes/+layout.ts"
+	]
+}

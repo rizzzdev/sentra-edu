@@ -1,0 +1,114 @@
+<script lang="ts">
+  import Modal from '$lib/components/molecules/modal.svelte';
+  import Icon from '$lib/components/atoms/icon.svelte';
+  import { dbStore } from '$lib/shared/stores/db-store';
+  import { toastStore } from '$lib/shared/stores/toast-store';
+  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import type { JobPost } from '$lib/shared/types/common.types';
+
+  export let open: boolean = false;
+  export let job: JobPost | null = null;
+  export let onClose: () => void = () => {};
+
+  $: selectedJobClass = job ? $dbStore.classes.find((c) => c.id === job?.classId) : null;
+  $: selectedJobLevel = selectedJobClass ? selectedJobClass.educationLevelId : null;
+
+  $: matchingTentors = $dbStore.users.filter((u) => {
+    if (u.role !== 'TENTOR' || u.deletedAt !== null) return false;
+    if (!job) return false;
+    const subjectMatch = (u.subjectIds || []).includes(job.subjectId);
+    const levelMatch = !selectedJobLevel || (u.levelIds || []).includes(selectedJobLevel);
+    return subjectMatch && levelMatch;
+  });
+
+  $: otherTentors = $dbStore.users.filter((u) => {
+    if (u.role !== 'TENTOR' || u.deletedAt !== null) return false;
+    return !matchingTentors.some((m) => m.id === u.id);
+  });
+
+  function getInitials(name: string): string {
+    return name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+  }
+
+  function handleAssign(tentorId: string, tentorName: string) {
+    if (!job) return;
+    const response = dbStore.assignTentorToJob(job.id, tentorId);
+    if (!response.error) {
+      dbStore.pushNotification(
+        tentorId,
+        'Penugasan Lowongan Baru',
+        `Anda telah ditugaskan untuk mengajar lowongan "${job.title}".`,
+        'work'
+      );
+      toastStore.success(`Tentor ${tentorName} berhasil ditugaskan.`);
+      onClose();
+    } else {
+      toastStore.error(response.message);
+    }
+  }
+</script>
+
+<Modal {open} {onClose} title="Tugaskan Tentor ke Lowongan" icon="person_add" maxWidth="600px">
+  {#if job}
+    <div class="kv mb-3.5">
+      <dt>Judul</dt>
+      <dd>{job.title}</dd>
+      <dt>Jadwal</dt>
+      <dd>{job.schedulePreference || `${(job.scheduleDays || []).join(', ')} ${job.scheduleTime}`}</dd>
+      <dt>Estimasi Honor/Sesi</dt>
+      <dd class="text-primary font-bold">{formatCurrencyIDR(job.tentorFee)}</dd>
+    </div>
+
+    <div class="card-head py-2 px-0 mb-2.5 border-b border-muted">
+      <span class="text-success"><Icon name="verified" size="sm" /></span>
+      Tentor Rekomendasi — Mapel &amp; Jenjang Cocok ({matchingTentors.length})
+    </div>
+
+    {#if matchingTentors.length === 0}
+      <p class="text-[0.84rem] text-muted-fg mb-3.5">
+        Tidak ada tentor yang cocok langsung dengan mapel dan jenjang ini.
+      </p>
+    {:else}
+      {#each matchingTentors as t (t.id)}
+        <div class="flex items-center justify-between p-2.5 px-3.5 border border-border rounded-[10px] bg-surface mb-1.5">
+          <div class="flex items-center gap-2.5">
+            <div class="avatar w-8 h-8 text-[0.78rem]">{getInitials(t.fullName)}</div>
+            <div>
+              <div class="font-bold text-[0.88rem]">{t.fullName}</div>
+              <div class="text-muted-fg text-[0.76rem]">{t.education || '—'} · {t.experienceYears || 0} thn</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-primary" on:click={() => handleAssign(t.id, t.fullName)}>
+            <Icon name="how_to_reg" size="xs" /> Tugaskan
+          </button>
+        </div>
+      {/each}
+    {/if}
+
+    {#if otherTentors.length > 0}
+      <div class="card-head py-2 px-0 mt-3.5 mb-2.5 border-b border-muted">
+        Semua Tentor Lainnya ({otherTentors.length})
+      </div>
+      {#each otherTentors as t (t.id)}
+        <div class="flex items-center justify-between p-2.5 px-3.5 border border-border rounded-[10px] bg-surface mb-1.5">
+          <div class="flex items-center gap-2.5">
+            <div class="avatar w-8 h-8 text-[0.78rem]">{getInitials(t.fullName)}</div>
+            <div>
+              <div class="font-bold text-[0.88rem]">{t.fullName}</div>
+              <div class="text-muted-fg text-[0.76rem]">{t.education || '—'}</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" on:click={() => handleAssign(t.id, t.fullName)}>
+            <Icon name="how_to_reg" size="xs" /> Tugaskan
+          </button>
+        </div>
+      {/each}
+    {/if}
+  {/if}
+
+  <svelte:fragment slot="footer">
+    <button type="button" class="btn btn-outline" on:click={onClose}>
+      <Icon name="close" size="sm" /> Tutup
+    </button>
+  </svelte:fragment>
+</Modal>

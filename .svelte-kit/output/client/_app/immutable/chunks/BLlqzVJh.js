@@ -1,0 +1,1 @@
+function t(e){return"Rp "+Number(e||0).toLocaleString("id-ID")}function r(e){if(!e)return"-";const n=new Date(e.length===10?`${e}T00:00:00`:e);return isNaN(n.getTime())?"-":n.toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"})}export{r as a,t as f};

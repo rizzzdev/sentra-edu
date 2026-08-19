@@ -1,0 +1,90 @@
+<script lang="ts">
+  import Icon from '$lib/components/atoms/icon.svelte';
+  import { authStore } from '$lib/shared/stores/auth-store';
+  import { toastStore } from '$lib/shared/stores/toast-store';
+  import { goto } from '$app/navigation';
+
+  interface PersonaOption {
+    role: string;
+    icon: string;
+    label: string;
+    description: string;
+    email: string;
+    toneColor: string;
+  }
+
+  const personaList: PersonaOption[] = [
+    {
+      role: 'SUPER_ADMIN',
+      icon: 'admin_panel_settings',
+      label: 'Admin Pusat',
+      description: 'Data master, lowongan, verifikasi presensi',
+      email: 'admin@sentraedu.id',
+      toneColor: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800'
+    },
+    {
+      role: 'TENTOR',
+      icon: 'school',
+      label: 'Tentor',
+      description: 'Lamar lowongan, presensi GPS, klaim honor',
+      email: 'tentor.andi@sentraedu.id',
+      toneColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800'
+    },
+    {
+      role: 'STUDENT',
+      icon: 'school',
+      label: 'Siswa',
+      description: 'Jadwal les aktif, presensi & materi',
+      email: 'raka@sentraedu.id',
+      toneColor: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800'
+    },
+    {
+      role: 'WALI_MURID',
+      icon: 'family_restroom',
+      label: 'Wali Murid',
+      description: 'Pantau les anak & bayar tagihan SPP',
+      email: 'wali.raka@sentraedu.id',
+      toneColor: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800'
+    }
+  ];
+
+  function handlePersonaSelect(personaEmail: string) {
+    const result = authStore.loginAsPersona(personaEmail);
+    if (!result.error) {
+      toastStore.success(result.message);
+      goto('/dashboard');
+    } else {
+      toastStore.error(result.message);
+    }
+  }
+</script>
+
+<div class="space-y-2.5">
+  <div class="flex items-center gap-3 my-4 text-xs font-bold text-[var(--color-fg-muted)] select-none">
+    <span class="flex-1 h-px bg-[var(--color-border)]"></span>
+    <span>ATAU MASUK CEPAT SEBAGAI</span>
+    <span class="flex-1 h-px bg-[var(--color-border)]"></span>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+    {#each personaList as persona}
+      <button
+        type="button"
+        class="flex flex-col items-start p-3 text-left bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-sm)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]/30 transition-all duration-150 cursor-pointer group"
+        on:click={() => handlePersonaSelect(persona.email)}
+      >
+        <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center justify-center w-7 h-7 rounded-[var(--radius-xs)] border {persona.toneColor}">
+            <Icon name={persona.icon} size="xs" filled={true} />
+          </div>
+          <span class="font-bold text-xs text-[var(--color-fg)] group-hover:text-[var(--color-primary)] transition-colors">
+            {persona.label}
+          </span>
+        </div>
+        <span class="text-[11px] text-[var(--color-fg-muted)] leading-tight line-clamp-2">
+          {persona.description}
+        </span>
+      </button>
+    {/each}
+  </div>
+</div>
