@@ -6,6 +6,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import { JOB_STATUS_LABEL } from '$lib/shared/utils/status-map';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import type { JobPosting } from '$lib/shared/types/common.types';
 
   let searchQuery: string = '';
@@ -146,13 +148,15 @@
     <Icon name="search" size="sm" />
     <input type="text" placeholder="Cari judul / kelas / mapel / paket / siswa..." bind:value={searchQuery} />
   </div>
-  <select class="filter-select" bind:value={statusFilter}>
-    <option value="">Semua Status</option>
-    <option value="AVAILABLE">Tersedia</option>
-    <option value="NEGOTIATING">Sedang Negosiasi</option>
-    <option value="ASSIGNED">Ditugaskan</option>
-    <option value="CANCELLED">Dibatalkan</option>
-  </select>
+  <SelectSearch
+    bind:value={statusFilter}
+    placeholder="Semua Status"
+    options={[
+      { value: '', label: 'Semua Status' },
+      ...Object.entries(JOB_STATUS_LABEL).map(([v, l]) => ({ value: v, label: l }))
+    ]}
+    className="max-w-48"
+  />
 </div>
 
 <div class="card">

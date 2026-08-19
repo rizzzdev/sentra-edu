@@ -6,6 +6,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { User, UserRole } from '$lib/shared/types/common.types';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
 
   let searchQuery: string = '';
   let roleFilter: string = '';
@@ -89,13 +91,15 @@
     <Icon name="search" size="sm" />
     <input type="text" placeholder="Cari nama / email..." bind:value={searchQuery} />
   </div>
-  <select class="filter-select" bind:value={roleFilter}>
-    <option value="">Semua Peran</option>
-    <option value="SUPER_ADMIN">Super Admin</option>
-    <option value="TENTOR">Tentor</option>
-    <option value="STUDENT">Siswa</option>
-    <option value="WALI_MURID">Wali Murid</option>
-  </select>
+  <SelectSearch
+    bind:value={roleFilter}
+    placeholder="Semua Peran"
+    options={[
+      { value: '', label: 'Semua Peran' },
+      ...Object.entries(ROLE_LABEL).map(([v, l]) => ({ value: v, label: l }))
+    ]}
+    className="max-w-48"
+  />
 </div>
 
 <div class="card">

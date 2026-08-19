@@ -9,6 +9,7 @@
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
   import { CANDIDATE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   let searchQuery: string = '';
   let statusFilter: string = '';
@@ -238,12 +239,15 @@
     <Icon name="search" size="sm" />
     <Input type="text" placeholder="Cari nama / email / mapel..." bind:value={searchQuery} />
   </div>
-  <select class="filter-select" bind:value={statusFilter}>
-    <option value="">Semua Status</option>
-    {#each PIPELINE_STATUSES as [statusKey, statusLabel]}
-      <option value={statusKey}>{statusLabel}</option>
-    {/each}
-  </select>
+  <SelectSearch
+    bind:value={statusFilter}
+    placeholder="Semua Status"
+    options={[
+      { value: '', label: 'Semua Status' },
+      ...PIPELINE_STATUSES.map(([v, l]) => ({ value: v, label: l }))
+    ]}
+    className="max-w-48"
+  />
 </div>
 
 <div class="card">

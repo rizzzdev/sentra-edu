@@ -7,6 +7,7 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatDateIndonesian } from '$lib/shared/utils/formatting';
   import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import type { AttendanceRecord } from '$lib/shared/types/common.types';
 
   let searchQuery: string = '';
@@ -130,12 +131,15 @@
   </div>
 
   <div class="filter-bar">
-    <select class="filter-select" bind:value={statusFilter}>
-      <option value="">Semua Status</option>
-      <option value="SUBMITTED">Menunggu Verifikasi</option>
-      <option value="APPROVED">Disetujui</option>
-      <option value="REJECTED">Ditolak</option>
-    </select>
+    <SelectSearch
+      bind:value={statusFilter}
+      placeholder="Semua Status"
+      options={[
+        { value: '', label: 'Semua Status' },
+        ...Object.entries(ATTENDANCE_STATUS_LABEL).map(([v, l]) => ({ value: v, label: l }))
+      ]}
+      className="max-w-48"
+    />
   </div>
 
   <div class="card">

@@ -7,6 +7,7 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import { PAYROLL_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import type { PayrollClaim } from '$lib/shared/types/common.types';
 
   let statusFilter: string = '';
@@ -116,12 +117,17 @@
 {/if}
 
 <div class="filter-bar">
-  <select class="filter-select" bind:value={statusFilter}>
-    <option value="">Semua Status</option>
-    <option value="REQUESTED">Diajukan</option>
-    <option value="PAID">Dibayar</option>
-    <option value="REJECTED">Ditolak</option>
-  </select>
+  <SelectSearch
+    bind:value={statusFilter}
+    placeholder="Semua Status"
+    options={[
+      { value: '', label: 'Semua Status' },
+      ...Object.entries(PAYROLL_STATUS_LABEL)
+        .map(([v, l]) => ({ value: v, label: l }))
+        .filter(o => o.value !== 'DRAFT' && o.value !== '')
+    ]}
+    className="max-w-48"
+  />
 </div>
 
 <div class="card">

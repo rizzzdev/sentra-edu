@@ -4,6 +4,10 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { User, UserRole } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
 
   export let open: boolean = false;
   export let editingUser: User | null = null;
@@ -63,7 +67,7 @@
   <form id="form-user" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_fullName">Nama Lengkap <i class="req">*</i></label>
-      <input
+      <Input
         id="f_fullName"
         type="text"
         placeholder="Nama lengkap"
@@ -74,7 +78,7 @@
 
     <div class="field">
       <label for="f_email">Email (untuk login) <i class="req">*</i></label>
-      <input
+      <Input
         id="f_email"
         type="email"
         placeholder="email@domain.com"
@@ -85,7 +89,7 @@
 
     <div class="field">
       <label for="f_phone">Telepon</label>
-      <input
+      <Input
         id="f_phone"
         type="tel"
         placeholder="08xx-xxxx-xxxx"
@@ -95,12 +99,13 @@
 
     <div class="field">
       <label for="f_role">Peran <i class="req">*</i></label>
-      <select id="f_role" required bind:value={role}>
-        <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-        <option value="TENTOR">TENTOR</option>
-        <option value="STUDENT">STUDENT</option>
-        <option value="WALI_MURID">WALI_MURID</option>
-      </select>
+      <SelectSearch
+        id="f_role"
+        name="role"
+        bind:value={role}
+        options={Object.entries(ROLE_LABEL).map(([v, l]) => ({ value: v, label: l }))}
+        placeholder="— Pilih peran —"
+      />
     </div>
 
     <div class="field">
@@ -108,7 +113,7 @@
         {editingUser ? 'Password (kosongkan jika tidak diubah)' : 'Password'}
         {#if !editingUser}<i class="req">*</i>{/if}
       </label>
-      <input
+      <Input
         id="f_password"
         type="password"
         placeholder={editingUser ? 'Kosongkan jika tidak diubah' : 'default: password123'}
@@ -118,11 +123,11 @@
   </form>
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Batal
-    </button>
-    <button type="submit" form="form-user" class="btn btn-primary">
-      <Icon name="save" size="sm" /> {editingUser ? 'Simpan Perubahan' : 'Tambah Pengguna'}
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Batal
+    </Button>
+    <Button type="submit" variant="primary" form="form-user" icon="save">
+      {editingUser ? 'Simpan Perubahan' : 'Tambah Pengguna'}
+    </Button>
   </svelte:fragment>
 </Modal>

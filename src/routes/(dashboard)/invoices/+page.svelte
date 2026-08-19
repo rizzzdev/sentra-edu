@@ -8,6 +8,7 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import { INVOICE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import type { InvoiceRecord } from '$lib/shared/types/common.types';
 
   let searchQuery: string = '';
@@ -146,12 +147,15 @@
     <Icon name="search" size="sm" />
     <input type="text" placeholder="Cari no. invoice / siswa / paket..." bind:value={searchQuery} />
   </div>
-  <select class="filter-select" bind:value={statusFilter}>
-    <option value="">Semua Status</option>
-    <option value="UNPAID">Belum Lunas</option>
-    <option value="PAID">Lunas</option>
-    <option value="OVERDUE">Jatuh Tempo</option>
-  </select>
+  <SelectSearch
+    bind:value={statusFilter}
+    placeholder="Semua Status"
+    options={[
+      { value: '', label: 'Semua Status' },
+      ...Object.entries(INVOICE_STATUS_LABEL).map(([v, l]) => ({ value: v, label: l }))
+    ]}
+    className="max-w-48"
+  />
 </div>
 
 <div class="card">

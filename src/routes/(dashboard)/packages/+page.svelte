@@ -6,6 +6,8 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import { PACKAGE_MODE_LABEL } from '$lib/shared/utils/status-map';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import type { PackagePlan, ClassLevel } from '$lib/shared/types/common.types';
 
   let searchQuery: string = '';
@@ -94,11 +96,15 @@
     <Icon name="search" size="sm" />
     <input type="text" placeholder="Cari nama paket..." bind:value={searchQuery} />
   </div>
-  <select class="filter-select" bind:value={modeFilter}>
-    <option value="">Semua Mode</option>
-    <option value="PRIVATE">Private</option>
-    <option value="KELOMPOK">Kelompok</option>
-  </select>
+  <SelectSearch
+    bind:value={modeFilter}
+    placeholder="Semua Mode"
+    options={[
+      { value: '', label: 'Semua Mode' },
+      ...Object.entries(PACKAGE_MODE_LABEL).map(([v, l]) => ({ value: v, label: l }))
+    ]}
+    className="max-w-48"
+  />
 </div>
 
 <!-- Table 1: Master Paket Les -->
