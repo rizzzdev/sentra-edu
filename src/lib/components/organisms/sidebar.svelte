@@ -129,8 +129,9 @@
         <div class="u-mail">{currentUser.email}</div>
       </div>
     </div>
-    <Button variant="ghost" className="btn-logout" on:click={() => authStore.logout()} icon="logout">
+    <button type="button" class="btn-logout" on:click={() => authStore.logout()}>
+      <Icon name="logout" size="sm" />
       Keluar
-    </Button>
+    </button>
   </div>
 </aside>
