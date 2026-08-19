@@ -105,9 +105,7 @@
     <Button variant="outline" icon="location_on" on:click={() => goto('/tentor/attendance')}>
       Presensi Saya
     </Button>
-    <Button variant="outline" icon="payments" on:click={() => goto('/tentor/payroll')}>
-      Penggajian
-    </Button>
+
   </div>
 
   <!-- TWO COLUMN LAYOUT -->
