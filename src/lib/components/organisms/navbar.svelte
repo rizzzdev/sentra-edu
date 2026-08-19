@@ -3,18 +3,12 @@
   import { themeStore } from '$lib/shared/stores/theme-store';
   import { dbStore } from '$lib/shared/stores/db-store';
   import type { User } from '$lib/shared/types/common.types';
+  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
 
   export let currentUser: User;
   export let title: string = 'Dashboard';
   export let onToggleMobileMenu: () => void = () => {};
   export let onOpenNotifications: () => void = () => {};
-
-  const roleDisplayNames: Record<string, string> = {
-    SUPER_ADMIN: 'Super Admin',
-    TENTOR: 'Tentor',
-    STUDENT: 'Siswa',
-    WALI_MURID: 'Wali Murid'
-  };
 
   $: unreadCount = ($dbStore.notifications || []).filter(
     (item) => item.userId === currentUser.id && !item.read
@@ -23,7 +17,7 @@
 
 <header class="topbar">
   <div>
-    <div class="crumb">{roleDisplayNames[currentUser.role] || currentUser.role}</div>
+    <div class="crumb">{ROLE_LABEL[currentUser.role] || currentUser.role}</div>
     <h2>{title}</h2>
   </div>
   <div class="spacer"></div>

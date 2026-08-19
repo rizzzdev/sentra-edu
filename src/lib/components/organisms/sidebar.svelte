@@ -2,6 +2,8 @@
   import Icon from '$lib/components/atoms/icon.svelte';
   import { authStore } from '$lib/shared/stores/auth-store';
   import type { User, UserRole } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
 
   export let currentUser: User;
   export let currentPath: string = '/dashboard';
@@ -17,52 +19,62 @@
 
   const roleNavMap: Record<UserRole, NavItem[]> = {
     SUPER_ADMIN: [
-      { path: '/dashboard', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
-      { path: '/jobs', label: 'Lowongan Les', icon: 'work', group: 'Operasional' },
-      { path: '/students', label: 'Siswa', icon: 'group', group: 'Operasional' },
-      { path: '/attendance', label: 'Verifikasi Presensi', icon: 'fact_check', group: 'Operasional' },
-      { path: '/payroll', label: 'Klaim Gaji', icon: 'payments', group: 'Operasional' },
-      { path: '/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Operasional' },
-      { path: '/candidates', label: 'Rekrutmen Tentor', icon: 'badge', group: 'SDM' },
-      { path: '/subjects', label: 'Mata Pelajaran', icon: 'menu_book', group: 'Master Data' },
-      { path: '/levels', label: 'Jenjang', icon: 'school', group: 'Master Data' },
-      { path: '/packages', label: 'Paket Les', icon: 'sell', group: 'Master Data' },
-      { path: '/users', label: 'Akun Pengguna', icon: 'manage_accounts', group: 'Master Data' },
-      { path: '/analitik', label: 'Analitik', icon: 'monitoring', group: 'Insight' },
-      { path: '/laporan', label: 'Laporan', icon: 'summarize', group: 'Insight' },
-      { path: '/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
+      { path: '/admin', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
+      { path: '/admin/jobs', label: 'Lowongan Les', icon: 'work', group: 'Operasional' },
+      { path: '/admin/attendance', label: 'Verifikasi Presensi', icon: 'fact_check', group: 'Operasional' },
+      { path: '/admin/payroll', label: 'Klaim Gaji', icon: 'payments', group: 'Operasional' },
+      { path: '/admin/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Operasional' },
+      { path: '/admin/students', label: 'Data Murid', icon: 'school', group: 'Kelola Murid & Wali' },
+      { path: '/admin/students/wali', label: 'Data Wali Murid', icon: 'family_restroom', group: 'Kelola Murid & Wali' },
+      { path: '/admin/magic-links', label: 'Magic Link Pendaftaran', icon: 'link', group: 'Kelola Murid & Wali' },
+      { path: '/admin/tentors', label: 'Data Tentor', icon: 'badge', group: 'Kelola Tentor' },
+      { path: '/admin/tentors/magic-links', label: 'Magic Link Tentor', icon: 'link', group: 'Kelola Tentor' },
+      { path: '/admin/candidates', label: 'Rekrutmen & Pelamar', icon: 'person_search', group: 'Kelola Tentor' },
+      { path: '/admin/subjects', label: 'Mata Pelajaran', icon: 'menu_book', group: 'Master Data' },
+      { path: '/admin/levels', label: 'Jenjang', icon: 'stairs', group: 'Master Data' },
+      { path: '/admin/packages', label: 'Paket Les', icon: 'sell', group: 'Master Data' },
+      { path: '/admin/users', label: 'Akun Pengguna', icon: 'manage_accounts', group: 'Master Data' },
+      { path: '/admin/analitik', label: 'Analitik', icon: 'monitoring', group: 'Insight' },
+      { path: '/admin/laporan', label: 'Laporan', icon: 'summarize', group: 'Insight' },
+      { path: '/admin/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ],
     TENTOR: [
-      { path: '/dashboard', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
-      { path: '/jobboard', label: 'Cari Lowongan', icon: 'search', group: 'Pekerjaan' },
-      { path: '/attendance', label: 'Presensi Saya', icon: 'location_on', group: 'Pekerjaan' },
-      { path: '/payroll', label: 'Klaim Gaji', icon: 'payments', group: 'Pekerjaan' },
-      { path: '/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
+      { path: '/tentor', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
+      { path: '/tentor/jobboard', label: 'Cari Lowongan', icon: 'search', group: 'Pekerjaan' },
+      { path: '/tentor/attendance', label: 'Presensi Saya', icon: 'location_on', group: 'Pekerjaan' },
+      { path: '/tentor/payroll', label: 'Klaim Gaji', icon: 'payments', group: 'Pekerjaan' },
+      { path: '/tentor/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ],
     STUDENT: [
-      { path: '/dashboard', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
-      { path: '/program', label: 'Program Les Aktif', icon: 'school', group: 'Belajar' },
-      { path: '/attendance', label: 'Daftar Presensi', icon: 'fact_check', group: 'Belajar' },
-      { path: '/reports', label: 'Laporan Hasil Belajar', icon: 'summarize', group: 'Belajar' },
-      { path: '/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
+      { path: '/student', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
+      { path: '/student/program', label: 'Program Les Aktif', icon: 'school', group: 'Belajar' },
+      { path: '/student/attendance', label: 'Daftar Presensi', icon: 'fact_check', group: 'Belajar' },
+      { path: '/student/reports', label: 'Laporan Hasil Belajar', icon: 'summarize', group: 'Belajar' },
+      { path: '/student/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ],
     WALI_MURID: [
-      { path: '/dashboard', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
-      { path: '/children', label: 'Program Les Anak', icon: 'school', group: 'Monitoring Anak' },
-      { path: '/attendance', label: 'Presensi Anak', icon: 'fact_check', group: 'Monitoring Anak' },
-      { path: '/reports', label: 'Laporan Hasil Belajar', icon: 'summarize', group: 'Monitoring Anak' },
-      { path: '/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Keuangan' },
-      { path: '/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
+      { path: '/wali', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
+      { path: '/wali/children', label: 'Program Les Anak', icon: 'school', group: 'Monitoring Anak' },
+      { path: '/wali/attendance', label: 'Presensi Anak', icon: 'fact_check', group: 'Monitoring Anak' },
+      { path: '/wali/reports', label: 'Laporan Hasil Belajar', icon: 'summarize', group: 'Monitoring Anak' },
+      { path: '/wali/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Keuangan' },
+      { path: '/wali/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ]
   };
 
   $: navList = roleNavMap[currentUser.role] || roleNavMap.STUDENT;
 
-  const roleBadgeMap: Record<UserRole, { label: string; badgeClass: string; icon: string }> = {
-    SUPER_ADMIN: { label: 'Super Admin', badgeClass: 'b-admin', icon: 'admin_panel_settings' },
-    TENTOR: { label: 'Tentor', badgeClass: 'b-tentor', icon: 'school' },
-    STUDENT: { label: 'Siswa', badgeClass: 'b-student', icon: 'school' },
-    WALI_MURID: { label: 'Wali Murid', badgeClass: 'b-neutral', icon: 'family_restroom' }
+  const roleBadgeClassMap: Record<string, string> = {
+    SUPER_ADMIN: 'b-admin',
+    TENTOR: 'b-tentor',
+    STUDENT: 'b-student',
+    WALI_MURID: 'b-neutral'
+  };
+  const roleIconMap: Record<string, string> = {
+    SUPER_ADMIN: 'admin_panel_settings',
+    TENTOR: 'school',
+    STUDENT: 'school',
+    WALI_MURID: 'family_restroom'
   };
 
   $: initials = currentUser.fullName
@@ -86,15 +98,14 @@
       </span>
     </div>
     <div class="side-role">
-      <span class="badge {roleBadgeMap[currentUser.role].badgeClass}">
-        <Icon name={roleBadgeMap[currentUser.role].icon} size="xs" />
-        {roleBadgeMap[currentUser.role].label}
+      <span class="badge {roleBadgeClassMap[currentUser.role] || 'b-neutral'}">
+        <Icon name={roleIconMap[currentUser.role] || 'person'} size="xs" />
+        {ROLE_LABEL[currentUser.role] || currentUser.role}
       </span>
     </div>
   </div>
 
   <nav class="side-nav">
-    <div class="nav-label">Menu</div>
     {#each navList as item, index}
       {#if item.group && (index === 0 || navList[index - 1].group !== item.group)}
         <div class="nav-group-label">{item.group}</div>
@@ -104,7 +115,7 @@
         class="nav-item {currentPath === item.path ? 'active' : ''}"
         on:click={onCloseMobile}
       >
-        <Icon name={item.icon} size="md" />
+        <Icon name={item.icon} size="sm" />
         <span>{item.label}</span>
       </a>
     {/each}
@@ -118,9 +129,8 @@
         <div class="u-mail">{currentUser.email}</div>
       </div>
     </div>
-    <button type="button" class="btn-logout" on:click={() => authStore.logout()}>
-      <Icon name="logout" size="sm" />
-      <span>Keluar</span>
-    </button>
+    <Button variant="ghost" className="btn-logout" on:click={() => authStore.logout()} icon="logout">
+      Keluar
+    </Button>
   </div>
 </aside>

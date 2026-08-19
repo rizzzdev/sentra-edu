@@ -5,6 +5,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import type { UserRole } from '$lib/shared/types/common.types';
+  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
 
   let editModalOpen: boolean = false;
 
@@ -18,13 +19,6 @@
         .map((w) => w[0].toUpperCase())
         .join('')
     : 'U';
-
-  const roleLabelMap: Record<UserRole, string> = {
-    SUPER_ADMIN: 'Super Admin',
-    TENTOR: 'Tentor',
-    STUDENT: 'Siswa',
-    WALI_MURID: 'Wali Murid'
-  };
 
   const roleBadgeMap: Record<UserRole, string> = {
     SUPER_ADMIN: 'b-admin',
@@ -99,7 +93,7 @@
           </div>
           <div style="margin-top:8px">
             <span class="badge {roleBadgeMap[currentUser.role]}">
-              {roleLabelMap[currentUser.role]}
+              {ROLE_LABEL[currentUser.role] || currentUser.role}
             </span>
           </div>
         </div>
@@ -116,7 +110,7 @@
           <dt>Telepon</dt>
           <dd>{currentUser.phone || '—'}</dd>
           <dt>Peran</dt>
-          <dd>{roleLabelMap[currentUser.role]}</dd>
+          <dd>{ROLE_LABEL[currentUser.role] || currentUser.role}</dd>
         </div>
       </div>
     </div>

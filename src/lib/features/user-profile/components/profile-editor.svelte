@@ -3,6 +3,9 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { User } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
+  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
 
   export let currentUser: User;
 
@@ -78,7 +81,7 @@
       <div class="font-bold text-base">{currentUser.fullName}</div>
       <div class="text-muted-fg text-[0.82rem]">{currentUser.email}</div>
       <div class="mt-1">
-        <span class="badge b-admin">{currentUser.role}</span>
+        <span class="badge b-admin">{ROLE_LABEL[currentUser.role] || currentUser.role}</span>
       </div>
     </div>
   </div>
@@ -90,41 +93,41 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_fullName">Nama Lengkap <i class="req">*</i></label>
-        <input id="f_fullName" type="text" required bind:value={fullName} />
+        <Input id="f_fullName" type="text" required bind:value={fullName} />
       </div>
 
       <div class="field">
         <label for="f_email">Email <i class="req">*</i></label>
-        <input id="f_email" type="email" required bind:value={email} />
+        <Input id="f_email" type="email" required bind:value={email} />
       </div>
     </div>
 
     <div class="form-grid">
       <div class="field">
         <label for="f_phone">Telepon / WA</label>
-        <input id="f_phone" type="tel" bind:value={phone} />
+        <Input id="f_phone" type="tel" bind:value={phone} />
       </div>
 
       <div class="field">
         <label for="f_password">Kata Sandi</label>
-        <input id="f_password" type="password" placeholder="••••••••" bind:value={password} />
+        <Input id="f_password" type="password" placeholder="••••••••" bind:value={password} />
       </div>
     </div>
 
     {#if currentUser.role === 'SUPER_ADMIN'}
       <div class="field">
         <label for="f_position">Jabatan Operasional</label>
-        <input id="f_position" type="text" bind:value={position} />
+        <Input id="f_position" type="text" bind:value={position} />
       </div>
     {:else if currentUser.role === 'TENTOR'}
       <div class="form-grid">
         <div class="field">
           <label for="f_education">Kualifikasi Pendidikan</label>
-          <input id="f_education" type="text" bind:value={education} />
+          <Input id="f_education" type="text" bind:value={education} />
         </div>
         <div class="field">
           <label for="f_experienceYears">Pengalaman Mengajar (Tahun)</label>
-          <input id="f_experienceYears" type="number" min="0" bind:value={experienceYears} />
+          <Input id="f_experienceYears" type="number" min="0" bind:value={experienceYears} />
         </div>
       </div>
 
@@ -154,19 +157,19 @@
     {:else if currentUser.role === 'STUDENT'}
       <div class="field">
         <label for="f_school">Asal Sekolah</label>
-        <input id="f_school" type="text" bind:value={school} />
+        <Input id="f_school" type="text" bind:value={school} />
       </div>
     {/if}
 
     <div class="field">
       <label for="f_address">Alamat Domisili</label>
-      <input id="f_address" type="text" bind:value={address} />
+      <Input id="f_address" type="text" bind:value={address} />
     </div>
 
     <div class="flex justify-end pt-2 border-t border-border">
-      <button type="button" class="btn btn-primary" on:click={handleSave}>
-        <Icon name="save" size="sm" /> Simpan Profil
-      </button>
+      <Button variant="primary" on:click={handleSave} icon="save">
+        Simpan Profil
+      </Button>
     </div>
   </div>
 </div>

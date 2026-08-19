@@ -9,6 +9,13 @@
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import { ROLE_LABEL } from '$lib/shared/utils/status-map';
 
+  const ROLE_BADGE: Record<string, string> = {
+    SUPER_ADMIN: 'b-admin',
+    TENTOR: 'b-tentor',
+    STUDENT: 'b-student',
+    WALI_MURID: 'b-neutral'
+  };
+
   let searchQuery: string = '';
   let roleFilter: string = '';
   let currentPage: number = 1;
@@ -38,20 +45,6 @@
   );
   $: totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
 
-  function getBadgeClass(role: UserRole): string {
-    switch (role) {
-      case 'SUPER_ADMIN':
-        return 'b-admin';
-      case 'TENTOR':
-        return 'b-tentor';
-      case 'STUDENT':
-        return 'b-student';
-      case 'WALI_MURID':
-        return 'b-neutral';
-      default:
-        return 'b-neutral';
-    }
-  }
 
   function handleOpenCreate() {
     editingUser = null;
@@ -128,7 +121,7 @@
                 </td>
                 <td>{u.phone || '—'}</td>
                 <td>
-                  <span class="badge {getBadgeClass(u.role)}">{u.role}</span>
+                  <span class="badge {ROLE_BADGE[u.role] || 'b-neutral'}">{ROLE_LABEL[u.role] || u.role}</span>
                 </td>
                 <td>
                   <div class="actions">
