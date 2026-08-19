@@ -70,12 +70,12 @@
   }
 </script>
 
-<Modal {open} {onClose} title={editingEnrollment ? 'Ubah Data Siswa' : 'Daftarkan Siswa'} icon="person_add" maxWidth="600px">
+<Modal {open} {onClose} title={editingEnrollment ? 'Ubah Data Murid' : 'Daftarkan Murid'} icon="person_add" maxWidth="600px">
   <form id="form-enrollment" on:submit|preventDefault={handleSubmit}>
     <div class="field">
-      <label for="f_studentId">Akun Siswa <i class="req">*</i></label>
+      <label for="f_studentId">Akun Murid <i class="req">*</i></label>
       <select id="f_studentId" required bind:value={studentId}>
-        <option value="">— Pilih akun siswa —</option>
+        <option value="">— Pilih akun murid —</option>
         {#each students as u}
           <option value={u.id}>{u.fullName} ({u.email})</option>
         {/each}
@@ -141,7 +141,7 @@
       <Input
         id="f_fullAddress"
         type="text"
-        placeholder="Alamat lengkap rumah siswa"
+        placeholder="Alamat lengkap rumah murid"
         required
         bind:value={fullAddress}
       />
@@ -177,7 +177,7 @@
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-enrollment" icon="save">
-      {editingEnrollment ? 'Simpan Perubahan' : 'Daftarkan Siswa'}
+      {editingEnrollment ? 'Simpan Perubahan' : 'Daftarkan Murid'}
     </Button>
   </svelte:fragment>
 </Modal>

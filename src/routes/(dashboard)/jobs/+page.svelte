@@ -146,7 +146,7 @@
 <div class="filter-bar">
   <div class="filter-search">
     <Icon name="search" size="sm" />
-    <input type="text" placeholder="Cari judul / kelas / mapel / paket / siswa..." bind:value={searchQuery} />
+    <input type="text" placeholder="Cari judul / kelas / mapel / paket / murid..." bind:value={searchQuery} />
   </div>
   <SelectSearch
     bind:value={statusFilter}

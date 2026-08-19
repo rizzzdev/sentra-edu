@@ -67,12 +67,21 @@
       toastStore.error(res.message);
     }
   }
+
+  function handleActivateUser(userId: string) {
+    const res = dbStore.activateUser(userId);
+    if (!res.error) {
+      toastStore.success(res.message);
+    } else {
+      toastStore.error(res.message);
+    }
+  }
 </script>
 
 <div class="page-head">
   <div>
     <h3><Icon name="manage_accounts" size="lg" /> Akun Pengguna</h3>
-    <div class="desc">Kelola akun Super Admin, Admin, Tentor, dan Siswa/Wali.</div>
+    <div class="desc">Kelola akun Super Admin, Admin, Tentor, dan Murid/Wali.</div>
   </div>
   <button type="button" class="btn btn-primary" on:click={handleOpenCreate}>
     <Icon name="person_add" size="sm" /> Tambah Pengguna
@@ -122,9 +131,22 @@
                 <td>{u.phone || '—'}</td>
                 <td>
                   <span class="badge {ROLE_BADGE[u.role] || 'b-neutral'}">{ROLE_LABEL[u.role] || u.role}</span>
+                  {#if u.isActive === false}
+                    <span class="badge b-neutral" style="margin-left:4px">Belum Aktif</span>
+                  {/if}
                 </td>
                 <td>
                   <div class="actions">
+                    {#if u.id !== currentUser?.id && u.isActive === false}
+                      <button
+                        type="button"
+                        class="btn-icon btn-icon-success"
+                        data-tip="Aktifkan Akun"
+                        on:click={() => handleActivateUser(u.id)}
+                      >
+                        <Icon name="check_circle" size="sm" />
+                      </button>
+                    {/if}
                     <button
                       type="button"
                       class="btn-icon"

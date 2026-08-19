@@ -15,7 +15,7 @@
   export let onClose: () => void = () => {};
 
   let targetRole: 'STUDENT' | 'TENTOR' = 'STUDENT';
-  let title: string = 'Pendaftaran Siswa Baru';
+  let title: string = 'Pendaftaran Murid Baru';
   let daysValid: number = 7;
   let selectedClassId: string = '';
   let selectedPackageId: string = '';
@@ -28,7 +28,7 @@
     if (defaultRole === 'TENTOR') {
       title = 'Pendaftaran Tentor / Mentor Baru';
     } else {
-      title = 'Pendaftaran Siswa Baru';
+      title = 'Pendaftaran Murid Baru';
     }
   }
 
@@ -77,7 +77,7 @@
   function handleReset() {
     generatedLink = null;
     copied = false;
-    title = targetRole === 'TENTOR' ? 'Pendaftaran Tentor / Mentor Baru' : 'Pendaftaran Siswa Baru';
+    title = targetRole === 'TENTOR' ? 'Pendaftaran Tentor / Mentor Baru' : 'Pendaftaran Murid Baru';
     daysValid = 7;
     selectedClassId = '';
     selectedPackageId = '';
@@ -89,7 +89,7 @@
   }
 </script>
 
-<Modal {open} title={targetRole === 'TENTOR' ? 'Buat Magic Link Tentor / Mentor' : 'Buat Magic Link Pendaftaran Siswa'} onClose={handleCloseModal}>
+<Modal {open} title={targetRole === 'TENTOR' ? 'Buat Magic Link Tentor / Mentor' : 'Buat Magic Link Pendaftaran Murid'} onClose={handleCloseModal}>
   {#if generatedLink}
     <!-- SUCCESS GENERATED STATE -->
     <div class="flex flex-col items-center gap-4 text-center py-3">
@@ -97,9 +97,9 @@
         <Icon name="check_circle" size="xl" />
       </div>
       <div>
-        <h4 class="font-bold text-[1.1rem]">Magic Link {targetRole === 'TENTOR' ? 'Tentor' : 'Siswa'} Berhasil Dibuat!</h4>
+        <h4 class="font-bold text-[1.1rem]">Magic Link {targetRole === 'TENTOR' ? 'Tentor' : 'Murid'} Berhasil Dibuat!</h4>
         <p class="text-muted-fg text-[0.88rem] mt-1">
-          Bagikan link berikut ke calon {targetRole === 'TENTOR' ? 'tentor/mentor' : 'siswa/wali murid'}. Link berlaku selama <strong>{generatedLink.daysValid} hari</strong> (kadaluarsa: {new Date(generatedLink.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}).
+          Bagikan link berikut ke calon {targetRole === 'TENTOR' ? 'tentor/mentor' : 'murid/wali murid'}. Link berlaku selama <strong>{generatedLink.daysValid} hari</strong> (kadaluarsa: {new Date(generatedLink.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}).
         </p>
       </div>
 
@@ -141,7 +141,7 @@
         <Input
           type="text"
           id="ml-title"
-          placeholder={targetRole === 'TENTOR' ? 'contoh: Pendaftaran Tentor Matematika - Batch 1' : 'contoh: Pendaftaran Siswa Baru - Batch Agustus'}
+          placeholder={targetRole === 'TENTOR' ? 'contoh: Pendaftaran Tentor Matematika - Batch 1' : 'contoh: Pendaftaran Murid Baru - Batch Agustus'}
           bind:value={title}
           required
         />

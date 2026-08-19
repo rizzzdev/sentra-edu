@@ -169,7 +169,7 @@
             <div class="s-icon tone-emerald"><Icon name="group" size="lg" /></div>
             <div>
               <div class="s-val">{$dbStore.enrollments.length}</div>
-              <div class="s-lbl">Siswa Terdaftar</div>
+              <div class="s-lbl">Murid Terdaftar</div>
             </div>
           </div>
           <div class="stat">

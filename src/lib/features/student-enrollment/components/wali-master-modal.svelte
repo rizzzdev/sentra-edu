@@ -69,12 +69,12 @@
 
 <Modal
   {open}
-  title={editingWali ? 'Ubah Data Master Wali Murid' : 'Tambah Data Master Wali Murid'}
+  title={editingWali ? 'Ubah Data Wali Murid' : 'Tambah Data Wali Murid'}
   {onClose}
 >
   <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-5 py-2">
-    <div class="flex flex-col gap-2">
-      <label for="wm-name" class="text-xs font-bold text-fg tracking-wide uppercase">Nama Lengkap Wali Murid <span class="text-danger">*</span></label>
+    <div class="field">
+      <label for="wm-name">Nama Lengkap Wali Murid <i class="req">*</i></label>
       <Input
         type="text"
         id="wm-name"
@@ -84,9 +84,9 @@
       />
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label for="wm-email" class="text-xs font-bold text-fg tracking-wide uppercase">Email Wali Murid <span class="text-danger">*</span></label>
+    <div class="form-grid">
+      <div class="field">
+        <label for="wm-email">Email Wali Murid <i class="req">*</i></label>
         <Input
           type="email"
           id="wm-email"
@@ -96,8 +96,8 @@
         />
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label for="wm-phone" class="text-xs font-bold text-fg tracking-wide uppercase">Nomor Telepon / WhatsApp</label>
+      <div class="field">
+        <label for="wm-phone">Nomor Telepon / WhatsApp</label>
         <Input
           type="text"
           id="wm-phone"
@@ -107,8 +107,8 @@
       </div>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label for="wm-occ" class="text-xs font-bold text-fg tracking-wide uppercase">Pekerjaan / Jabatan</label>
+    <div class="field">
+      <label for="wm-occ">Pekerjaan / Jabatan</label>
       <Input
         type="text"
         id="wm-occ"
@@ -117,23 +117,22 @@
       />
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label for="wm-address" class="text-xs font-bold text-fg tracking-wide uppercase">Alamat Rumah</label>
-      <textarea
+    <div class="field">
+      <label for="wm-address">Alamat Rumah</label>
+      <Input
+        type="text"
         id="wm-address"
-        rows="2"
         placeholder="Alamat tempat tinggal wali murid..."
         bind:value={address}
-        class="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium text-fg focus:border-primary focus:ring-2 focus:ring-primary/20 transition outline-none resize-none"
-      ></textarea>
+      />
     </div>
 
-    <div class="flex justify-end gap-3 mt-4">
-      <Button variant="outline" className="py-2.5 px-5 rounded-xl font-bold cursor-pointer" on:click={onClose}>
+    <div class="modal-foot" style="padding: 14px 0 0; border-top: none;">
+      <Button variant="outline" on:click={onClose}>
         Batal
       </Button>
-      <Button type="submit" variant="primary" className="py-2.5 px-5 rounded-xl font-bold flex items-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer" icon="save">
-        {editingWali ? 'Simpan Perubahan' : 'Tambah Wali Master'}
+      <Button type="submit" variant="primary" icon="save">
+        {editingWali ? 'Simpan Perubahan' : 'Tambah Wali Murid'}
       </Button>
     </div>
   </form>

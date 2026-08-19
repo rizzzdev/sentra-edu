@@ -53,7 +53,7 @@
 <div class="page-head">
   <div>
     <h3><Icon name="link" size="lg" /> Magic Link Pendaftaran</h3>
-    <div class="desc">Buat dan kelola link pendaftaran mandiri calon siswa dengan pengaturan batas waktu kadaluarsa (expired days).</div>
+    <div class="desc">Buat dan kelola link pendaftaran mandiri calon murid dengan pengaturan batas waktu kadaluarsa (expired days).</div>
   </div>
   <div>
     <button
@@ -150,7 +150,7 @@
                   {/if}
                 </td>
                 <td class="num">
-                  <strong>{ml.usedCount}</strong> Siswa
+                  <strong>{ml.usedCount}</strong> Murid
                 </td>
                 <td>
                   <div class="actions">

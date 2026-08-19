@@ -6,6 +6,7 @@
   import type { User } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import { TentorMasterSchema } from '$lib/features/master-data/schemas/master-data.schema';
   import { ZodError } from 'zod';
 
@@ -35,14 +36,6 @@
       education = '';
       address = '';
       selectedSubjectIds = [];
-    }
-  }
-
-  function toggleSubject(id: string) {
-    if (selectedSubjectIds.includes(id)) {
-      selectedSubjectIds = selectedSubjectIds.filter((s) => s !== id);
-    } else {
-      selectedSubjectIds = [...selectedSubjectIds, id];
     }
   }
 
@@ -81,12 +74,12 @@
 
 <Modal
   {open}
-  title={editingTentor ? 'Ubah Data Master Tentor' : 'Tambah Data Master Tentor'}
+  title={editingTentor ? 'Ubah Data Tentor' : 'Tambah Data Tentor'}
   {onClose}
 >
   <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-5 py-2">
-    <div class="flex flex-col gap-2">
-      <label for="tm-name" class="text-xs font-bold text-fg tracking-wide uppercase">Nama Lengkap Tentor / Mentor <span class="text-danger">*</span></label>
+    <div class="field">
+      <label for="tm-name">Nama Lengkap Tentor / Mentor <i class="req">*</i></label>
       <Input
         type="text"
         id="tm-name"
@@ -96,9 +89,9 @@
       />
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label for="tm-email" class="text-xs font-bold text-fg tracking-wide uppercase">Email Akun Tentor <span class="text-danger">*</span></label>
+    <div class="form-grid">
+      <div class="field">
+        <label for="tm-email">Email Akun Tentor <i class="req">*</i></label>
         <Input
           type="email"
           id="tm-email"
@@ -108,8 +101,8 @@
         />
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label for="tm-phone" class="text-xs font-bold text-fg tracking-wide uppercase">Nomor HP / WhatsApp</label>
+      <div class="field">
+        <label for="tm-phone">Nomor HP / WhatsApp</label>
         <Input
           type="text"
           id="tm-phone"
@@ -119,49 +112,43 @@
       </div>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label for="tm-edu" class="text-xs font-bold text-fg tracking-wide uppercase">Pendidikan / Gelar Terakhir</label>
+    <div class="field">
+      <label for="tm-edu">Pendidikan / Gelar Terakhir</label>
       <Input
         type="text"
         id="tm-edu"
-        placeholder="misal: S1 Pendidikan Matematika - Universitas Indonesia"
+        placeholder="misal: S1 Pendidikan Matematika - UI"
         bind:value={education}
       />
     </div>
 
-    <div class="flex flex-col gap-2">
-      <span class="text-xs font-bold text-fg tracking-wide uppercase mb-1">Keahlian Mata Pelajaran</span>
-      <div class="flex flex-wrap gap-2 p-3 bg-muted/50 border border-border rounded-xl max-h-40 overflow-y-auto">
-        {#each $dbStore.subjects as s}
-          {@const isChecked = selectedSubjectIds.includes(s.id)}
-          <Button
-            variant={isChecked ? 'primary' : 'outline'}
-            className="rounded-xl px-3 py-1.5 text-xs h-auto shadow-2xs"
-            on:click={() => toggleSubject(s.id)}
-          >
-            {s.name}
-          </Button>
-        {/each}
-      </div>
+    <div class="field">
+      <label for="tm-subjects">Keahlian Mata Pelajaran</label>
+      <SelectSearch
+        id="tm-subjects"
+        multiple
+        bind:value={selectedSubjectIds}
+        placeholder="Pilih mata pelajaran..."
+        options={$dbStore.subjects.map((s) => ({ value: s.id, label: s.name }))}
+      />
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label for="tm-address" class="text-xs font-bold text-fg tracking-wide uppercase">Alamat Rumah / Domisili</label>
-      <textarea
+    <div class="field">
+      <label for="tm-address">Alamat Rumah / Domisili</label>
+      <Input
+        type="text"
         id="tm-address"
-        rows="2"
         placeholder="Alamat tempat tinggal tentor..."
         bind:value={address}
-        class="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium text-fg focus:border-primary focus:ring-2 focus:ring-primary/20 transition outline-none resize-none"
-      ></textarea>
+      />
     </div>
 
-    <div class="flex justify-end gap-3 mt-4">
-      <Button variant="outline" className="py-2.5 px-5 rounded-xl font-bold cursor-pointer" on:click={onClose}>
+    <div class="modal-foot" style="padding: 14px 0 0; border-top: none;">
+      <Button variant="outline" on:click={onClose}>
         Batal
       </Button>
-      <Button type="submit" variant="primary" className="py-2.5 px-5 rounded-xl font-bold flex items-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer" icon="save">
-        {editingTentor ? 'Simpan Perubahan' : 'Tambah Tentor Master'}
+      <Button type="submit" variant="primary" icon="save">
+        {editingTentor ? 'Simpan Perubahan' : 'Tambah Tentor'}
       </Button>
     </div>
   </form>

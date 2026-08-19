@@ -34,13 +34,13 @@
 
   function handleSubmit() {
     if (!selectedStudentId) {
-      toastStore.error('Pilih siswa terlebih dahulu.');
+      toastStore.error('Pilih murid terlebih dahulu.');
       return;
     }
 
     const enr = enrollments.find((e) => e.studentId === selectedStudentId);
     if (!enr) {
-      toastStore.error('Data pendaftaran siswa tidak ditemukan.');
+      toastStore.error('Data pendaftaran murid tidak ditemukan.');
       return;
     }
 
@@ -69,12 +69,12 @@
 <Modal {open} {onClose} title="Generate Tagihan SPP" icon="receipt_long" maxWidth="540px">
   <div class="alert alert-info" style="margin-top:-4px">
     <Icon name="auto_awesome" size="sm" />
-    <span>Total dihitung otomatis dari sesi APPROVED siswa pada periode terpilih.</span>
+    <span>Total dihitung otomatis dari sesi APPROVED murid pada periode terpilih.</span>
   </div>
 
   <form id="form-gen-invoice" on:submit|preventDefault={handleSubmit}>
     <div class="field">
-      <label for="f_studentId">Siswa <i class="req">*</i></label>
+      <label for="f_studentId">Murid <i class="req">*</i></label>
       <select id="f_studentId" required bind:value={selectedStudentId}>
         {#each enrollments as e}
           <option value={e.studentId}>{getStudentEnrollmentLabel(e)}</option>

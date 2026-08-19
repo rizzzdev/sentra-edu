@@ -6,6 +6,8 @@
   import type { User } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import Select from '$lib/components/atoms/select.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import { StudentMasterSchema } from '$lib/features/student-enrollment/schemas/student-enrollment.schema';
   import { ZodError } from 'zod';
 
@@ -75,12 +77,12 @@
 
 <Modal
   {open}
-  title={editingStudent ? 'Ubah Data Master Siswa' : 'Tambah Data Master Siswa'}
+  title={editingStudent ? 'Ubah Data Murid' : 'Tambah Data Murid'}
   {onClose}
 >
   <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-5 py-2">
-    <div class="flex flex-col gap-2">
-      <label for="sm-name" class="text-xs font-bold text-fg tracking-wide uppercase">Nama Lengkap Siswa <span class="text-danger">*</span></label>
+    <div class="field">
+      <label for="sm-name">Nama Lengkap Murid <i class="req">*</i></label>
       <Input
         type="text"
         id="sm-name"
@@ -90,20 +92,20 @@
       />
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label for="sm-email" class="text-xs font-bold text-fg tracking-wide uppercase">Email Akun Siswa <span class="text-danger">*</span></label>
+    <div class="form-grid">
+      <div class="field">
+        <label for="sm-email">Email Akun Murid <i class="req">*</i></label>
         <Input
           type="email"
           id="sm-email"
-          placeholder="siswa@sentraedu.id"
+          placeholder="murid@sentraedu.id"
           bind:value={email}
           required
         />
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label for="sm-phone" class="text-xs font-bold text-fg tracking-wide uppercase">Nomor HP / WhatsApp</label>
+      <div class="field">
+        <label for="sm-phone">Nomor HP / WhatsApp</label>
         <Input
           type="text"
           id="sm-phone"
@@ -113,9 +115,9 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label for="sm-school" class="text-xs font-bold text-fg tracking-wide uppercase">Sekolah / Asal Instansi</label>
+    <div class="form-grid">
+      <div class="field">
+        <label for="sm-school">Sekolah / Asal Instansi</label>
         <Input
           type="text"
           id="sm-school"
@@ -124,38 +126,33 @@
         />
       </div>
 
-      <div class="flex flex-col gap-2">
-        <label for="sm-wali" class="text-xs font-bold text-fg tracking-wide uppercase">Wali Murid (Master)</label>
-        <select 
-          id="sm-wali" 
+      <div class="field">
+        <label for="sm-wali">Wali Murid (Master)</label>
+        <SelectSearch
+          id="sm-wali"
           bind:value={waliUserId}
-          class="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium text-fg focus:border-primary focus:ring-2 focus:ring-primary/20 transition outline-none"
-        >
-          <option value="">-- Tanpa Wali / Belum Ditautkan --</option>
-          {#each waliList as w}
-            <option value={w.id}>{w.fullName} ({w.phone || w.email})</option>
-          {/each}
-        </select>
+          placeholder="-- Tanpa Wali / Belum Ditautkan --"
+          options={waliList.map((w) => ({ value: w.id, label: `${w.fullName} (${w.phone || w.email})` }))}
+        />
       </div>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <label for="sm-address" class="text-xs font-bold text-fg tracking-wide uppercase">Alamat Domisili Siswa</label>
-      <textarea
+    <div class="field">
+      <label for="sm-address">Alamat Domisili Murid</label>
+      <Input
+        type="text"
         id="sm-address"
-        rows="2"
-        placeholder="Alamat lengkap rumah siswa..."
+        placeholder="Alamat lengkap rumah murid..."
         bind:value={address}
-        class="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium text-fg focus:border-primary focus:ring-2 focus:ring-primary/20 transition outline-none resize-none"
-      ></textarea>
+      />
     </div>
 
-    <div class="flex justify-end gap-3 mt-4">
-      <Button variant="outline" className="py-2.5 px-5 rounded-xl font-bold cursor-pointer" on:click={onClose}>
+    <div class="modal-foot" style="padding: 14px 0 0; border-top: none;">
+      <Button variant="outline" on:click={onClose}>
         Batal
       </Button>
-      <Button type="submit" variant="primary" className="py-2.5 px-5 rounded-xl font-bold flex items-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer" icon="save">
-        {editingStudent ? 'Simpan Perubahan' : 'Tambah Siswa Master'}
+      <Button type="submit" variant="primary" icon="save">
+        {editingStudent ? 'Simpan Perubahan' : 'Tambah Murid'}
       </Button>
     </div>
   </form>

@@ -144,7 +144,7 @@
                 </td>
                 <td>{p.period === 'BULANAN' ? 'Bulanan' : 'Harian'}</td>
                 <td class="num">{p.sessionsPerPeriod} sesi</td>
-                <td class="num">{p.mode === 'KELOMPOK' ? 'maks ' + p.maxStudents + ' siswa' : '1 siswa'}</td>
+                <td class="num">{p.mode === 'KELOMPOK' ? 'maks ' + p.maxStudents + ' murid' : '1 murid'}</td>
                 <td class="num"><strong>{formatCurrencyIDR(p.price)}</strong></td>
                 <td class="num">{p.tentorFee > 0 ? formatCurrencyIDR(p.tentorFee) + '/sesi' : '—'}</td>
                 <td>

@@ -451,6 +451,26 @@ function createDatabaseStore() {
       return { error: false, statusCode: 200, message: 'Akun pengguna berhasil dinonaktifkan.', data: null };
     },
 
+    activateUser: (userId: string): ApiResponse<User> => {
+      const currentDb = get(store);
+      const nowTimestamp = new Date().toISOString();
+      let activatedUserName = 'pengguna';
+      const updatedUsers = currentDb.users.map((usr) => {
+        if (usr.id === userId) {
+          activatedUserName = usr.fullName;
+          return { ...usr, isActive: true, updatedAt: nowTimestamp };
+        }
+        return usr;
+      });
+      persistDatabase({ ...currentDb, users: updatedUsers });
+      return {
+        error: false,
+        statusCode: 200,
+        message: `Akun ${activatedUserName} berhasil diaktifkan.`,
+        data: null
+      };
+    },
+
     // ----------------------------------------------------
     // JOB MANAGEMENT
     // ----------------------------------------------------

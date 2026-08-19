@@ -96,7 +96,7 @@
     <h3><Icon name="receipt_long" size="lg" /> Tagihan SPP</h3>
     <div class="desc">
       {#if currentUser?.role === 'SUPER_ADMIN'}
-        Invoice tagihan les siswa. Paket BULANAN ditagih flat, paket HARIAN per sesi.
+        Invoice tagihan les murid. Paket BULANAN ditagih flat, paket HARIAN per sesi.
       {:else}
         Daftar tagihan bimbingan belajar dan konfirmasi pelunasan SPP.
       {/if}
@@ -145,7 +145,7 @@
 <div class="filter-bar">
   <div class="filter-search">
     <Icon name="search" size="sm" />
-    <input type="text" placeholder="Cari no. invoice / siswa / paket..." bind:value={searchQuery} />
+    <input type="text" placeholder="Cari no. invoice / murid / paket..." bind:value={searchQuery} />
   </div>
   <SelectSearch
     bind:value={statusFilter}

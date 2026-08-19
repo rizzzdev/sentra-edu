@@ -79,7 +79,7 @@
 
   function handleSubmit() {
     if (!selectedEnrollmentId || !topicTaught.trim()) {
-      toastStore.error('Pilih siswa dan isi topik materi.');
+      toastStore.error('Pilih murid dan isi topik materi.');
       return;
     }
 
@@ -127,13 +127,13 @@
 
   <form id="form-checkin" on:submit|preventDefault={handleSubmit}>
     <div class="field">
-      <label for="f_enr">Pilih Siswa / Program <i class="req">*</i></label>
+      <label for="f_enr">Pilih Murid / Program <i class="req">*</i></label>
       <select id="f_enr" required bind:value={selectedEnrollmentId}>
         {#each myEnrollments as e}
           {@const student = $dbStore.users.find((u) => u.id === e.studentId)}
           {@const subject = $dbStore.subjects.find((s) => s.id === e.subjectId)}
           {@const cls = $dbStore.classes.find((c) => c.id === e.classId)}
-          <option value={e.id}>{student?.fullName || 'Siswa'} — {cls?.className} {subject?.name}</option>
+          <option value={e.id}>{student?.fullName || 'Murid'} — {cls?.className} {subject?.name}</option>
         {/each}
       </select>
     </div>

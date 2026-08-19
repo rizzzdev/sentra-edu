@@ -70,9 +70,9 @@
     if (enr && enr.latitude && enr.longitude) {
       latitude = enr.latitude;
       longitude = enr.longitude;
-      toastStore.success('Lokasi GPS diambil dari data siswa.');
+      toastStore.success('Lokasi GPS diambil dari data murid.');
     } else {
-      toastStore.error('Pilih siswa terlebih dahulu.');
+      toastStore.error('Pilih murid terlebih dahulu.');
     }
   }
 
@@ -105,7 +105,7 @@
       packageId,
       studentId: selectedEnr?.studentId || null,
       enrollmentId: studentEnrollmentId,
-      studentName: studentUser?.fullName || 'Siswa',
+      studentName: studentUser?.fullName || 'Murid',
       scheduleDays: preferredDays,
       scheduleTime: preferredTime,
       schedulePreference: `${preferredDays.join(' & ')} ${preferredTime} WIB`,
@@ -134,7 +134,7 @@
     <div id="job-gps-box" style="margin-bottom:14px">
       <div class="quick-actions" style="margin-bottom:8px">
         <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" on:click={handleTakeFromStudent} icon="home_pin">
-          Ambil Lokasi dari Siswa
+          Ambil Lokasi dari Murid
         </Button>
       </div>
       <div id="job-gps-status">
@@ -182,14 +182,14 @@
     </div>
 
     <div class="field">
-      <label for="f_studentEnrollmentId">Siswa <i class="req">*</i></label>
+      <label for="f_studentEnrollmentId">Murid <i class="req">*</i></label>
       <select id="f_studentEnrollmentId" required bind:value={studentEnrollmentId}>
-        <option value="">— Pilih siswa SentraEdu —</option>
+        <option value="">— Pilih murid SentraEdu —</option>
         {#each enrollments as e}
           <option value={e.id}>{getEnrollmentLabel(e)}</option>
         {/each}
       </select>
-      <div class="help">Private — satu siswa per lowongan.</div>
+      <div class="help">Private — satu murid per lowongan.</div>
     </div>
 
     <div class="form-grid">
