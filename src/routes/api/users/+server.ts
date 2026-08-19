@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { sql } from '$lib/server/db';
+import { getCached, setCache, invalidateCache } from '$lib/server/cache';
 import { mapUserRow, generateEntityId } from '$lib/server/api-helpers';
 import bcrypt from 'bcryptjs';
 import { isValidEmail, isValidId, sanitizeInput, requireAdmin } from '$lib/server/security';
@@ -10,10 +11,14 @@ export const GET: RequestHandler = async ({ cookies }) => {
   try {
     const auth = requireAdmin(cookies);
     if (!auth.allowed) return auth.error;
+    const cached = getCached('users');
+    if (cached) return json({ error: false, statusCode: 200, data: cached });
+
 
     const rows = await sql`SELECT * FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC`;
     // Strip passwords from response
     const users = rows.map(mapUserRow).map((u: any) => ({ ...u, password: undefined }));
+    setCache('users', users);
     return json({ error: false, statusCode: 200, data: users });
   } catch (err_raw) { const err = err_raw as Error;
     return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
@@ -75,6 +80,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       const rows = await sql`SELECT * FROM users WHERE id = ${body.id}`;
       const user = rows[0] ? mapUserRow(rows[0]) : null;
       if (user) (user as any).password = undefined;
+      invalidateCache();
       return json({ error: false, statusCode: 200, message: 'User diperbarui.', data: user });
     } else {
       // Create
@@ -106,6 +112,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       const rows = await sql`SELECT * FROM users WHERE id = ${id}`;
       const user = rows[0] ? mapUserRow(rows[0]) : null;
       if (user) (user as any).password = undefined;
+      invalidateCache();
       return json({ error: false, statusCode: 201, message: 'User dibuat.', data: user });
     }
   } catch (err_raw) { const err = err_raw as Error;
@@ -126,7 +133,8 @@ export const DELETE: RequestHandler = async ({ url, cookies }) => {
 
     const now = new Date().toISOString();
     await sql`UPDATE users SET deleted_at = ${now}, updated_at = ${now} WHERE id = ${id}`;
-    return json({ error: false, statusCode: 200, message: 'User dihapus.', data: null });
+    invalidateCache();
+      return json({ error: false, statusCode: 200, message: 'User dihapus.', data: null });
   } catch (err_raw) { const err = err_raw as Error;
     return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
   }
