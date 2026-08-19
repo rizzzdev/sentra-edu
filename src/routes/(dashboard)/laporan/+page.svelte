@@ -2,6 +2,7 @@
   import Icon from '$lib/components/atoms/icon.svelte';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import { INVOICE_STATUS_LABEL, PAYROLL_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
 
   $: paidInvs = $dbStore.invoices.filter((i) => i.deletedAt === null && i.status === 'PAID');
   $: unpaidInvs = $dbStore.invoices.filter((i) => i.deletedAt === null && i.status === 'UNPAID');
@@ -197,8 +198,8 @@
               {#each Object.keys(invStatus) as s}
                 <tr>
                   <td>
-                    <span class="badge {s === 'PAID' ? 'b-paid' : s === 'OVERDUE' ? 'b-rejected' : 'b-unpaid'}">
-                      {s}
+                    <span class="badge {getStatusBadgeClass(s)}">
+                      {getStatusLabel(s, INVOICE_STATUS_LABEL)}
                     </span>
                   </td>
                   <td class="num">{invStatus[s].count}</td>
@@ -236,8 +237,8 @@
               {#each Object.keys(claimStatus) as s}
                 <tr>
                   <td>
-                    <span class="badge {s === 'PAID' ? 'b-paid' : s === 'REJECTED' ? 'b-rejected' : 'b-requested'}">
-                      {s}
+                    <span class="badge {getStatusBadgeClass(s)}">
+                      {getStatusLabel(s, PAYROLL_STATUS_LABEL)}
                     </span>
                   </td>
                   <td class="num">{claimStatus[s].count}</td>

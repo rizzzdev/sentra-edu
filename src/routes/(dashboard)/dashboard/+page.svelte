@@ -3,12 +3,14 @@
   import { authStore } from '$lib/shared/stores/auth-store';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { formatCurrencyIDR, formatDateIndonesian } from '$lib/shared/utils/formatting';
+  import { JOB_STATUS_LABEL, INVOICE_STATUS_LABEL, ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { AttendanceRecord, JobPosting, InvoiceRecord } from '$lib/shared/types/common.types';
   import AttendanceVerifyModal from '$lib/features/attendance-tracking/components/attendance-verify-modal.svelte';
+  import Skeleton from '$lib/components/atoms/skeleton.svelte';
+  import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
 
   $: currentUser = $authStore;
 
-  // Selected item for modal
   let verifyModalOpen: boolean = false;
   let selectedAttendance: AttendanceRecord | null = null;
 
@@ -18,40 +20,48 @@
   let waliPage: number = 1;
   const itemsPerPage: number = 5;
 
+  let isLoading: boolean = true;
+  let errorMessage: string | null = null;
+
+  import { onMount } from 'svelte';
+  onMount(() => {
+    setTimeout(() => { isLoading = false; }, 600);
+  });
+
   // Super Admin stats & list
-  $: activeJobs = $dbStore.jobs.filter((j) => j.deletedAt === null && (j.status === 'AVAILABLE' || j.status === 'NEGOTIATING')).length;
-  $: tentorCount = $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'TENTOR').length;
-  $: enrolledStudentCount = $dbStore.enrollments.filter((e) => e.deletedAt === null).length;
-  $: pendingAttList = $dbStore.attendances.filter((a) => a.deletedAt === null && a.status === 'SUBMITTED');
-  $: pendingClaimsCount = $dbStore.payrollClaims.filter((c) => c.deletedAt === null && c.status === 'REQUESTED').length;
-  $: candidatesCount = $dbStore.candidates.filter((c) => c.deletedAt === null).length;
+  $: activeJobs = $dbStore.jobs.filter((job) => job.deletedAt === null && (job.status === 'AVAILABLE' || job.status === 'NEGOTIATING')).length;
+  $: tentorCount = $dbStore.users.filter((user) => user.deletedAt === null && user.role === 'TENTOR').length;
+  $: enrolledStudentCount = $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null).length;
+  $: pendingAttList = $dbStore.attendances.filter((att) => att.deletedAt === null && att.status === 'SUBMITTED');
+  $: pendingClaimsCount = $dbStore.payrollClaims.filter((claim) => claim.deletedAt === null && claim.status === 'REQUESTED').length;
+  $: candidatesCount = $dbStore.candidates.filter((cand) => cand.deletedAt === null).length;
 
   $: adminPaginatedAtt = pendingAttList.slice((adminPage - 1) * itemsPerPage, adminPage * itemsPerPage);
 
   // Tentor stats & list
-  $: tentorOpenJobs = $dbStore.jobs.filter((j) => j.deletedAt === null && (j.status === 'AVAILABLE' || j.status === 'NEGOTIATING'));
-  $: tentorMyAtt = currentUser ? $dbStore.attendances.filter((a) => a.deletedAt === null && a.tentorId === currentUser?.id) : [];
-  $: tentorApprovedAtt = tentorMyAtt.filter((a) => a.status === 'APPROVED');
-  $: tentorClaims = currentUser ? $dbStore.payrollClaims.filter((c) => c.deletedAt === null && c.tentorId === currentUser?.id) : [];
-  $: tentorMyJobs = currentUser ? $dbStore.jobs.filter((j) => j.deletedAt === null && j.assignedTentorId === currentUser?.id) : [];
+  $: tentorOpenJobs = $dbStore.jobs.filter((job) => job.deletedAt === null && (job.status === 'AVAILABLE' || job.status === 'NEGOTIATING'));
+  $: tentorMyAtt = currentUser ? $dbStore.attendances.filter((att) => att.deletedAt === null && att.tentorId === currentUser?.id) : [];
+  $: tentorApprovedAtt = tentorMyAtt.filter((att) => att.status === 'APPROVED');
+  $: tentorClaims = currentUser ? $dbStore.payrollClaims.filter((claim) => claim.deletedAt === null && claim.tentorId === currentUser?.id) : [];
+  $: tentorMyJobs = currentUser ? $dbStore.jobs.filter((job) => job.deletedAt === null && job.assignedTentorId === currentUser?.id) : [];
 
   $: tentorPaginatedJobs = tentorMyJobs.slice((tentorPage - 1) * itemsPerPage, tentorPage * itemsPerPage);
 
   // Student stats & list
-  $: studentMyEnr = currentUser ? $dbStore.enrollments.filter((e) => e.deletedAt === null && e.studentId === currentUser?.id) : [];
-  $: studentEnrIds = studentMyEnr.map((e) => e.id);
-  $: studentMyAtt = $dbStore.attendances.filter((a) => a.deletedAt === null && studentEnrIds.includes(a.enrollmentId));
-  $: studentApprovedAtt = studentMyAtt.filter((a) => a.status === 'APPROVED');
+  $: studentMyEnr = currentUser ? $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && enroll.studentId === currentUser?.id) : [];
+  $: studentEnrIds = studentMyEnr.map((enroll) => enroll.id);
+  $: studentMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && studentEnrIds.includes(att.enrollmentId));
+  $: studentApprovedAtt = studentMyAtt.filter((att) => att.status === 'APPROVED');
 
   // Wali stats & list
-  $: waliMyStudents = currentUser ? $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.waliUserId === currentUser?.id) : [];
-  $: waliStudentIds = waliMyStudents.map((s) => s.id);
-  $: waliMyEnr = $dbStore.enrollments.filter((e) => e.deletedAt === null && (e.waliUserId === currentUser?.id || waliStudentIds.includes(e.studentId)));
-  $: waliEnrIds = waliMyEnr.map((e) => e.id);
-  $: waliMyAtt = $dbStore.attendances.filter((a) => a.deletedAt === null && waliEnrIds.includes(a.enrollmentId));
-  $: waliApprovedAtt = waliMyAtt.filter((a) => a.status === 'APPROVED');
-  $: waliInvoices = $dbStore.invoices.filter((i) => i.deletedAt === null && waliEnrIds.includes(i.enrollmentId));
-  $: waliUnpaidInvoices = waliInvoices.filter((i) => i.status === 'UNPAID');
+  $: waliMyStudents = currentUser ? $dbStore.users.filter((user) => user.deletedAt === null && user.role === 'STUDENT' && user.waliUserId === currentUser?.id) : [];
+  $: waliStudentIds = waliMyStudents.map((student) => student.id);
+  $: waliMyEnr = $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && (enroll.waliUserId === currentUser?.id || waliStudentIds.includes(enroll.studentId)));
+  $: waliEnrIds = waliMyEnr.map((enroll) => enroll.id);
+  $: waliMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && waliEnrIds.includes(att.enrollmentId));
+  $: waliApprovedAtt = waliMyAtt.filter((att) => att.status === 'APPROVED');
+  $: waliInvoices = $dbStore.invoices.filter((inv) => inv.deletedAt === null && waliEnrIds.includes(inv.enrollmentId));
+  $: waliUnpaidInvoices = waliInvoices.filter((inv) => inv.status === 'UNPAID');
   $: waliUnpaidTotal = waliUnpaidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
 
   $: waliPaginatedInvoices = waliInvoices.slice((waliPage - 1) * itemsPerPage, waliPage * itemsPerPage);
@@ -162,9 +172,28 @@
             </tr>
           </thead>
           <tbody>
-            {#if adminPaginatedAtt.length === 0}
+            {#if isLoading}
+              {#each Array(3) as _}
+                <tr>
+                  <td><Skeleton width="w-24" height="h-4" /></td>
+                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-40" height="h-4" /></td>
+                  <td><Skeleton width="w-10" height="h-8" className="ml-auto" /></td>
+                </tr>
+              {/each}
+            {:else if errorMessage}
               <tr>
-                <td colspan="5" class="empty">Tidak ada presensi menunggu verifikasi. 👍</td>
+                <td colspan="5" class="!p-4">
+                  <AlertBanner variant="destructive" message={errorMessage} onRetry={() => { errorMessage = null; isLoading = true; setTimeout(() => isLoading = false, 600); }} />
+                </td>
+              </tr>
+            {:else if adminPaginatedAtt.length === 0}
+              <tr>
+                <td colspan="5" class="empty py-8 text-center text-muted-fg">
+                  <Icon name="check_circle" size="lg" className="opacity-50 mb-2 block mx-auto text-4xl text-[var(--color-success)]" />
+                  <div class="font-medium">Tidak ada presensi menunggu verifikasi. 👍</div>
+                </td>
               </tr>
             {:else}
               {#each adminPaginatedAtt as att (att.id)}
@@ -222,13 +251,13 @@
   </div>
 
   <div class="quick-actions">
-    <a href="/jobs" class="btn btn-primary">
+    <a href="/admin/jobs" class="btn btn-primary">
       <Icon name="add" size="sm" /> Buat Lowongan
     </a>
-    <a href="/attendance" class="btn btn-outline">
+    <a href="/admin/attendance" class="btn btn-outline">
       <Icon name="fact_check" size="sm" /> Verifikasi Presensi
     </a>
-    <a href="/candidates" class="btn btn-outline">
+    <a href="/admin/candidates" class="btn btn-outline">
       <Icon name="badge" size="sm" /> Rekrutmen Tentor
     </a>
   </div>
@@ -288,26 +317,43 @@
             </tr>
           </thead>
           <tbody>
-            {#if tentorPaginatedJobs.length === 0}
+            {#if isLoading}
+              {#each Array(3) as _}
+                <tr>
+                  <td><Skeleton width="w-40" height="h-5" /><Skeleton width="w-24" height="h-3" className="mt-2" /></td>
+                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-24" height="h-6" className="rounded-full" /></td>
+                </tr>
+              {/each}
+            {:else if errorMessage}
               <tr>
-                <td colspan="3" class="empty">Belum ada penugasan. Cari lowongan di menu "Cari Lowongan".</td>
+                <td colspan="3" class="!p-4">
+                  <AlertBanner variant="destructive" message={errorMessage} onRetry={() => { errorMessage = null; isLoading = true; setTimeout(() => isLoading = false, 600); }} />
+                </td>
+              </tr>
+            {:else if tentorPaginatedJobs.length === 0}
+              <tr>
+                <td colspan="3" class="empty py-8 text-center text-muted-fg">
+                  <Icon name="assignment_late" size="lg" className="opacity-50 mb-2 block mx-auto text-4xl" />
+                  <div class="font-medium">Belum ada penugasan. Cari lowongan di menu "Cari Lowongan".</div>
+                </td>
               </tr>
             {:else}
-              {#each tentorPaginatedJobs as j (j.id)}
+              {#each tentorPaginatedJobs as job (job.id)}
                 <tr>
                   <td>
-                    <strong>{j.title}</strong>
+                    <strong>{job.title}</strong>
                     <div class="sub">
-                      <span class="badge {j.mode === 'ONLINE' ? 'b-neutral' : 'b-available'}">{j.mode}</span>
-                      {getPackageName(j.packageId)} · {j.schedulePreference}
+                      <span class="badge {job.mode === 'ONLINE' ? 'b-neutral' : 'b-available'}">{job.mode}</span>
+                      {getPackageName(job.packageId)} · {job.schedulePreference}
                     </div>
                   </td>
                   <td>
-                    {getClassName(j.classId)} · {getSubjectName(j.subjectId)}
+                    {getClassName(job.classId)} · {getSubjectName(job.subjectId)}
                   </td>
                   <td>
-                    <span class="badge {j.status === 'ASSIGNED' ? 'b-assigned' : j.status === 'AVAILABLE' ? 'b-available' : 'b-negotiating'}">
-                      {j.status}
+                    <span class="badge {getStatusBadgeClass(job.status)}">
+                      {getStatusLabel(job.status, JOB_STATUS_LABEL)}
                     </span>
                   </td>
                 </tr>
@@ -347,13 +393,13 @@
   </div>
 
   <div class="quick-actions">
-    <a href="/jobboard" class="btn btn-primary">
+    <a href="/tentor/jobboard" class="btn btn-primary">
       <Icon name="search" size="sm" /> Cari Lowongan
     </a>
-    <a href="/attendance" class="btn btn-outline">
+    <a href="/tentor/attendance" class="btn btn-outline">
       <Icon name="location_on" size="sm" /> Presensi Hari Ini
     </a>
-    <a href="/payroll" class="btn btn-outline">
+    <a href="/tentor/payroll" class="btn btn-outline">
       <Icon name="payments" size="sm" /> Riwayat Penggajian
     </a>
   </div>
@@ -392,10 +438,10 @@
   </div>
 
   <div class="quick-actions">
-    <a href="/program" class="btn btn-primary">
+    <a href="/student/program" class="btn btn-primary">
       <Icon name="school" size="sm" /> Lihat Program Les
     </a>
-    <a href="/attendance" class="btn btn-outline">
+    <a href="/student/attendance" class="btn btn-outline">
       <Icon name="fact_check" size="sm" /> Lihat Presensi
     </a>
   </div>
@@ -457,9 +503,28 @@
             </tr>
           </thead>
           <tbody>
-            {#if waliPaginatedInvoices.length === 0}
+            {#if isLoading}
+              {#each Array(3) as _}
+                <tr>
+                  <td><Skeleton width="w-20" height="h-4" /></td>
+                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-24" height="h-4" /></td>
+                  <td><Skeleton width="w-32" height="h-5" className="ml-auto" /></td>
+                  <td><Skeleton width="w-24" height="h-6" className="rounded-full" /></td>
+                </tr>
+              {/each}
+            {:else if errorMessage}
               <tr>
-                <td colspan="5" class="empty">Belum ada tagihan.</td>
+                <td colspan="5" class="!p-4">
+                  <AlertBanner variant="destructive" message={errorMessage} onRetry={() => { errorMessage = null; isLoading = true; setTimeout(() => isLoading = false, 600); }} />
+                </td>
+              </tr>
+            {:else if waliPaginatedInvoices.length === 0}
+              <tr>
+                <td colspan="5" class="empty py-8 text-center text-muted-fg">
+                  <Icon name="receipt_long" size="lg" className="opacity-50 mb-2 block mx-auto text-4xl" />
+                  <div class="font-medium">Belum ada tagihan.</div>
+                </td>
               </tr>
             {:else}
               {#each waliPaginatedInvoices as inv (inv.id)}
@@ -469,8 +534,8 @@
                   <td>Bulan {inv.periodMonth}/{inv.periodYear}</td>
                   <td class="num"><strong>{formatCurrencyIDR(inv.amount)}</strong></td>
                   <td>
-                    <span class="badge {inv.status === 'PAID' ? 'b-paid' : inv.status === 'OVERDUE' ? 'b-rejected' : 'b-unpaid'}">
-                      {inv.status}
+                    <span class="badge {getStatusBadgeClass(inv.status)}">
+                      {getStatusLabel(inv.status, INVOICE_STATUS_LABEL)}
                     </span>
                   </td>
                 </tr>
@@ -510,10 +575,10 @@
   </div>
 
   <div class="quick-actions">
-    <a href="/children" class="btn btn-primary">
+    <a href="/wali/children" class="btn btn-primary">
       <Icon name="school" size="sm" /> Program Les Anak
     </a>
-    <a href="/invoices" class="btn btn-outline">
+    <a href="/wali/invoices" class="btn btn-outline">
       <Icon name="receipt_long" size="sm" /> Tagihan SPP
     </a>
   </div>

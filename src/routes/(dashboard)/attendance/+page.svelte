@@ -6,6 +6,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatDateIndonesian } from '$lib/shared/utils/formatting';
+  import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { AttendanceRecord } from '$lib/shared/types/common.types';
 
   let searchQuery: string = '';
@@ -168,9 +169,8 @@
                       <div class="sub" style="color:var(--warn)">⚠ di luar radius</div>
                     {/if}
                   </td>
-                  <td>
-                    <span class="badge {a.status === 'APPROVED' ? 'b-approved' : a.status === 'REJECTED' ? 'b-rejected' : 'b-submitted'}">
-                      {a.status}
+                  <td>                     <span class="badge {getStatusBadgeClass(a.status)}">
+                       {getStatusLabel(a.status, ATTENDANCE_STATUS_LABEL)}
                     </span>
                   </td>
                   <td>
@@ -284,9 +284,8 @@
                   <td>{getStudentOf(a.enrollmentId)}</td>
                   <td>{a.topic}</td>
                   <td>{a.studentNotes || '—'}</td>
-                  <td>
-                    <span class="badge {a.status === 'APPROVED' ? 'b-approved' : a.status === 'REJECTED' ? 'b-rejected' : 'b-submitted'}">
-                      {a.status}
+                  <td>                     <span class="badge {getStatusBadgeClass(a.status)}">
+                       {getStatusLabel(a.status, ATTENDANCE_STATUS_LABEL)}
                     </span>
                   </td>
                   <td>
@@ -388,9 +387,8 @@
                   <td>{getSubjectName(a.enrollmentId)}</td>
                   <td>{a.topic}</td>
                   <td>{a.studentNotes || '—'}</td>
-                  <td>
-                    <span class="badge {a.status === 'APPROVED' ? 'b-approved' : a.status === 'REJECTED' ? 'b-rejected' : 'b-submitted'}">
-                      {a.status}
+                  <td>                     <span class="badge {getStatusBadgeClass(a.status)}">
+                       {getStatusLabel(a.status, ATTENDANCE_STATUS_LABEL)}
                     </span>
                   </td>
                 </tr>

@@ -6,6 +6,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import { PAYROLL_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { PayrollClaim } from '$lib/shared/types/common.types';
 
   let statusFilter: string = '';
@@ -158,8 +159,8 @@
                 <td class="num">{c.attendanceIds.length}</td>
                 <td class="num"><strong>{formatCurrencyIDR(c.totalAmount)}</strong></td>
                 <td>
-                  <span class="badge {c.status === 'PAID' ? 'b-paid' : c.status === 'REJECTED' ? 'b-rejected' : 'b-requested'}">
-                    {c.status}
+                  <span class="badge {getStatusBadgeClass(c.status)}">
+                    {getStatusLabel(c.status, PAYROLL_STATUS_LABEL)}
                   </span>
                 </td>
                 <td>

@@ -4,7 +4,9 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { AttendanceRecord } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
 
   export let open: boolean = false;
   export let attendance: AttendanceRecord | null = null;
@@ -87,8 +89,8 @@
         </dd>
         <dt>Status</dt>
         <dd>
-          <span class="badge {attendance.status === 'APPROVED' ? 'b-approved' : attendance.status === 'REJECTED' ? 'b-rejected' : 'b-submitted'}">
-            {attendance.status}
+          <span class="badge {getStatusBadgeClass(attendance.status)}">
+            {getStatusLabel(attendance.status, ATTENDANCE_STATUS_LABEL)}
           </span>
         </dd>
       </div>
@@ -96,16 +98,16 @@
 
     <svelte:fragment slot="footer">
       {#if attendance?.status === 'SUBMITTED'}
-        <button type="button" class="btn btn-danger" on:click={() => { rejectionModalOpen = true; }}>
-          <Icon name="close" size="sm" /> Tolak
-        </button>
-        <button type="button" class="btn btn-primary" on:click={handleApprove}>
-          <Icon name="check" size="sm" /> Setujui
-        </button>
+        <Button variant="danger" on:click={() => { rejectionModalOpen = true; }} icon="close">
+          Tolak
+        </Button>
+        <Button variant="primary" on:click={handleApprove} icon="check">
+          Setujui
+        </Button>
       {:else}
-        <button type="button" class="btn btn-outline" on:click={onClose}>
-          <Icon name="close" size="sm" /> Tutup
-        </button>
+        <Button variant="outline" on:click={onClose} icon="close">
+          Tutup
+        </Button>
       {/if}
     </svelte:fragment>
   </Modal>
@@ -123,12 +125,12 @@
     </div>
 
     <svelte:fragment slot="footer">
-      <button type="button" class="btn btn-outline" on:click={() => { rejectionModalOpen = false; }}>
-        <Icon name="close" size="sm" /> Batal
-      </button>
-      <button type="button" class="btn btn-danger" on:click={handleRejectSubmit}>
-        <Icon name="close" size="sm" /> Tolak Presensi
-      </button>
+      <Button variant="outline" on:click={() => { rejectionModalOpen = false; }} icon="close">
+        Batal
+      </Button>
+      <Button variant="danger" on:click={handleRejectSubmit} icon="close">
+        Tolak Presensi
+      </Button>
     </svelte:fragment>
   </Modal>
 {/if}

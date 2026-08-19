@@ -6,6 +6,9 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { RecruitmentCandidate } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
+  import { CANDIDATE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
 
   let searchQuery: string = '';
   let statusFilter: string = '';
@@ -51,20 +54,6 @@
     ['REJECTED', 'Ditolak']
   ];
 
-  function getBadgeClass(status: string): string {
-    switch (status) {
-      case 'ACCEPTED':
-        return 'b-accepted';
-      case 'REJECTED':
-        return 'b-rejected';
-      case 'TESTED':
-        return 'b-tested';
-      case 'INTERVIEWED':
-        return 'b-interviewed';
-      default:
-        return 'b-pending';
-    }
-  }
 
   function getSubjectNames(subjectIds?: string[]): string {
     if (!subjectIds || subjectIds.length === 0) return '—';
@@ -222,9 +211,9 @@
     <h3><Icon name="badge" size="lg" /> Rekrutmen Tentor</h3>
     <div class="desc">Pipeline rekrutmen: daftar &rarr; tes &rarr; wawancara &rarr; keputusan.</div>
   </div>
-  <button type="button" class="btn btn-primary" on:click={() => { editingCandidate = null; candidateModalOpen = true; }}>
-    <Icon name="person_add" size="sm" /> Daftarkan Kandidat
-  </button>
+  <Button variant="primary" on:click={() => { editingCandidate = null; candidateModalOpen = true; }} icon="person_add">
+    Daftarkan Kandidat
+  </Button>
 </div>
 
 <div class="card">
@@ -236,7 +225,7 @@
       {#each PIPELINE_STATUSES as [statusKey, statusLabel]}
         {@const count = allCandidates.filter((c) => c.status === statusKey).length}
         <span style="display:inline-flex;align-items:center;gap:6px;margin:4px 8px 4px 0">
-          <span class="badge {getBadgeClass(statusKey)}">{statusKey}</span>
+          <span class="badge {getStatusBadgeClass(statusKey)}">{statusLabel}</span>
           <span style="font-weight:700;font-size:1.05rem">{count}</span>
         </span>
       {/each}
@@ -247,7 +236,7 @@
 <div class="filter-bar">
   <div class="filter-search">
     <Icon name="search" size="sm" />
-    <input type="text" placeholder="Cari nama / email / mapel..." bind:value={searchQuery} />
+    <Input type="text" placeholder="Cari nama / email / mapel..." bind:value={searchQuery} />
   </div>
   <select class="filter-select" bind:value={statusFilter}>
     <option value="">Semua Status</option>
@@ -285,115 +274,115 @@
                 <td>{getSubjectNames(c.subjectIds)}</td>
                 <td>{(c as any).source || '—'}</td>
                 <td>
-                  <span class="badge {getBadgeClass(c.status)}">{c.status}</span>
+                  <span class="badge {getStatusBadgeClass(c.status)}">{getStatusLabel(c.status, CANDIDATE_STATUS_LABEL)}</span>
                 </td>
                 <td>
                   <div class="actions">
-                    <button
-                      type="button"
-                      class="btn-icon"
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="btn-icon"
                       data-tip="Detail"
                       on:click={() => { detailCandidate = c; }}
-                    >
-                      <Icon name="visibility" size="sm" />
-                    </button>
+                      icon="visibility"
+                    />
 
                     {#if c.status === 'REGISTERED'}
-                      <button
-                        type="button"
-                        class="btn-icon"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="btn-icon"
                         data-tip="Jadwalkan Tes"
                         on:click={() => {
                           scheduleTestCand = c;
                           testDateTime = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
                         }}
-                      >
-                        <Icon name="assignment" size="sm" />
-                      </button>
+                        icon="assignment"
+                      />
                     {:else if c.status === 'TEST_SCHEDULED'}
-                      <button
-                        type="button"
-                        class="btn-icon"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="btn-icon"
                         data-tip="Catat Tes"
                         on:click={() => {
                           recordTestCand = c;
                           testScore = 85;
                           testNotes = '';
                         }}
-                      >
-                        <Icon name="fact_check" size="sm" />
-                      </button>
+                        icon="fact_check"
+                      />
                     {:else if c.status === 'TESTED'}
-                      <button
-                        type="button"
-                        class="btn-icon"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="btn-icon"
                         data-tip="Jadwalkan Wawancara"
                         on:click={() => {
                           scheduleInterviewCand = c;
                           interviewDateTime = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
                         }}
-                      >
-                        <Icon name="record_voice_over" size="sm" />
-                      </button>
+                        icon="record_voice_over"
+                      />
                     {:else if c.status === 'INTERVIEW_SCHEDULED'}
-                      <button
-                        type="button"
-                        class="btn-icon"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="btn-icon"
                         data-tip="Catat Wawancara"
                         on:click={() => {
                           recordInterviewCand = c;
                           interviewNotes = '';
                         }}
-                      >
-                        <Icon name="record_voice_over" size="sm" />
-                      </button>
+                        icon="record_voice_over"
+                      />
                     {:else if c.status === 'INTERVIEWED'}
-                      <button
-                        type="button"
-                        class="btn-icon"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="btn-icon"
                         data-tip="Terima"
                         on:click={() => {
                           acceptCand = c;
                           initialPassword = 'tentor123';
                         }}
-                      >
-                        <Icon name="how_to_reg" size="sm" />
-                      </button>
-                      <button
-                        type="button"
-                        class="btn-icon btn-icon-danger"
+                        icon="how_to_reg"
+                      />
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        className="btn-icon"
                         data-tip="Tolak"
                         on:click={() => {
                           rejectCand = c;
                           rejectionReason = '';
                         }}
-                      >
-                        <Icon name="close" size="sm" />
-                      </button>
+                        icon="close"
+                      />
                     {/if}
 
-                    <button
-                      type="button"
-                      class="btn-icon"
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="btn-icon"
                       data-tip="Ubah"
                       on:click={() => {
                         editingCandidate = c;
                         candidateModalOpen = true;
                       }}
-                    >
-                      <Icon name="edit" size="sm" />
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-icon btn-icon-danger"
+                      icon="edit"
+                    />
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="btn-icon"
                       data-tip="Hapus"
                       on:click={() => {
                         deletingCandidateId = c.id;
                         deleteDialogOpen = true;
                       }}
-                    >
-                      <Icon name="delete" size="sm" />
-                    </button>
+                      icon="delete"
+                    />
                   </div>
                 </td>
               </tr>
@@ -409,31 +398,31 @@
           Menampilkan {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredCandidates.length)} dari {filteredCandidates.length} data
         </div>
         <div class="page-btns">
-          <button
-            type="button"
-            class="page-btn"
+          <Button
+            variant="outline"
+            className="page-btn"
             disabled={currentPage <= 1}
             on:click={() => currentPage--}
           >
             &laquo;
-          </button>
+          </Button>
           {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
-            <button
-              type="button"
-              class="page-btn {currentPage === p ? 'active' : ''}"
+            <Button
+              variant={currentPage === p ? 'primary' : 'outline'}
+              className="page-btn"
               on:click={() => { currentPage = p; }}
             >
               {p}
-            </button>
+            </Button>
           {/each}
-          <button
-            type="button"
-            class="page-btn"
+          <Button
+            variant="outline"
+            className="page-btn"
             disabled={currentPage >= totalPages}
             on:click={() => currentPage++}
           >
             &raquo;
-          </button>
+          </Button>
         </div>
       </div>
     {/if}
@@ -460,15 +449,15 @@
       <dd>{(detailCandidate as any).source || '—'}</dd>
       <dt>Tahap</dt>
       <dd>
-        <span class="badge {getBadgeClass(detailCandidate.status)}">{detailCandidate.status}</span>
+        <span class="badge {getStatusBadgeClass(detailCandidate.status)}">{CANDIDATE_STATUS_LABEL[detailCandidate.status] || detailCandidate.status}</span>
       </dd>
       <dt>Catatan</dt>
       <dd>{detailCandidate.notes || '—'}</dd>
     </div>
     <svelte:fragment slot="footer">
-      <button type="button" class="btn btn-outline" on:click={() => { detailCandidate = null; }}>
-        <Icon name="close" size="sm" /> Tutup
-      </button>
+      <Button variant="outline" on:click={() => { detailCandidate = null; }} icon="close">
+        Tutup
+      </Button>
     </svelte:fragment>
   </Modal>
 {/if}
@@ -482,15 +471,15 @@
     </div>
     <div class="field">
       <label for="f_testScheduledAt">Jadwal Tes <i class="req">*</i></label>
-      <input id="f_testScheduledAt" type="datetime-local" required bind:value={testDateTime} />
+      <Input id="f_testScheduledAt" type="datetime-local" required bind:value={testDateTime} />
     </div>
     <svelte:fragment slot="footer">
-      <button type="button" class="btn btn-outline" on:click={() => { scheduleTestCand = null; }}>
-        <Icon name="close" size="sm" /> Batal
-      </button>
-      <button type="button" class="btn btn-primary" on:click={handleScheduleTestSubmit}>
-        <Icon name="save" size="sm" /> Jadwalkan
-      </button>
+      <Button variant="outline" on:click={() => { scheduleTestCand = null; }} icon="close">
+        Batal
+      </Button>
+      <Button variant="primary" on:click={handleScheduleTestSubmit} icon="save">
+        Jadwalkan
+      </Button>
     </svelte:fragment>
   </Modal>
 {/if}
@@ -500,19 +489,19 @@
   <Modal open={true} onClose={() => { recordTestCand = null; }} title="Catat Hasil Tes" icon="fact_check" maxWidth="480px">
     <div class="field">
       <label for="f_testScore">Skor Tes (0–100) <i class="req">*</i></label>
-      <input id="f_testScore" type="number" min="0" max="100" required bind:value={testScore} />
+      <Input id="f_testScore" type="number" min="0" max="100" required bind:value={testScore} />
     </div>
     <div class="field">
       <label for="f_testNotes">Catatan Hasil Tes</label>
       <textarea id="f_testNotes" rows="3" placeholder="cth: Penguasaan materi baik, perlu latihan pedagogi" bind:value={testNotes}></textarea>
     </div>
     <svelte:fragment slot="footer">
-      <button type="button" class="btn btn-outline" on:click={() => { recordTestCand = null; }}>
-        <Icon name="close" size="sm" /> Batal
-      </button>
-      <button type="button" class="btn btn-primary" on:click={handleRecordTestSubmit}>
-        <Icon name="save" size="sm" /> Simpan Hasil
-      </button>
+      <Button variant="outline" on:click={() => { recordTestCand = null; }} icon="close">
+        Batal
+      </Button>
+      <Button variant="primary" on:click={handleRecordTestSubmit} icon="save">
+        Simpan Hasil
+      </Button>
     </svelte:fragment>
   </Modal>
 {/if}
@@ -522,15 +511,15 @@
   <Modal open={true} onClose={() => { scheduleInterviewCand = null; }} title="Jadwalkan Wawancara" icon="record_voice_over" maxWidth="480px">
     <div class="field">
       <label for="f_interviewScheduledAt">Jadwal Wawancara <i class="req">*</i></label>
-      <input id="f_interviewScheduledAt" type="datetime-local" required bind:value={interviewDateTime} />
+      <Input id="f_interviewScheduledAt" type="datetime-local" required bind:value={interviewDateTime} />
     </div>
     <svelte:fragment slot="footer">
-      <button type="button" class="btn btn-outline" on:click={() => { scheduleInterviewCand = null; }}>
-        <Icon name="close" size="sm" /> Batal
-      </button>
-      <button type="button" class="btn btn-primary" on:click={handleScheduleInterviewSubmit}>
-        <Icon name="save" size="sm" /> Jadwalkan
-      </button>
+      <Button variant="outline" on:click={() => { scheduleInterviewCand = null; }} icon="close">
+        Batal
+      </Button>
+      <Button variant="primary" on:click={handleScheduleInterviewSubmit} icon="save">
+        Jadwalkan
+      </Button>
     </svelte:fragment>
   </Modal>
 {/if}
@@ -543,12 +532,12 @@
       <textarea id="f_interviewNotes" rows="3" placeholder="cth: Komunikasi baik, siap ditempatkan" required bind:value={interviewNotes}></textarea>
     </div>
     <svelte:fragment slot="footer">
-      <button type="button" class="btn btn-outline" on:click={() => { recordInterviewCand = null; }}>
-        <Icon name="close" size="sm" /> Batal
-      </button>
-      <button type="button" class="btn btn-primary" on:click={handleRecordInterviewSubmit}>
-        <Icon name="save" size="sm" /> Simpan Hasil
-      </button>
+      <Button variant="outline" on:click={() => { recordInterviewCand = null; }} icon="close">
+        Batal
+      </Button>
+      <Button variant="primary" on:click={handleRecordInterviewSubmit} icon="save">
+        Simpan Hasil
+      </Button>
     </svelte:fragment>
   </Modal>
 {/if}
@@ -562,15 +551,15 @@
     </div>
     <div class="field">
       <label for="f_initialPassword">Password Awal (kosongkan untuk default)</label>
-      <input id="f_initialPassword" type="password" placeholder="default: tentor123" bind:value={initialPassword} />
+      <Input id="f_initialPassword" type="password" placeholder="default: tentor123" bind:value={initialPassword} />
     </div>
     <svelte:fragment slot="footer">
-      <button type="button" class="btn btn-outline" on:click={() => { acceptCand = null; }}>
-        <Icon name="close" size="sm" /> Batal
-      </button>
-      <button type="button" class="btn btn-primary" on:click={handleAcceptSubmit}>
-        <Icon name="how_to_reg" size="sm" /> Terima & Buat Akun
-      </button>
+      <Button variant="outline" on:click={() => { acceptCand = null; }} icon="close">
+        Batal
+      </Button>
+      <Button variant="primary" on:click={handleAcceptSubmit} icon="how_to_reg">
+        Terima & Buat Akun
+      </Button>
     </svelte:fragment>
   </Modal>
 {/if}
@@ -583,12 +572,12 @@
       <textarea id="f_rejectionReason" rows="3" placeholder="cth: Skor tes di bawah standar" required bind:value={rejectionReason}></textarea>
     </div>
     <svelte:fragment slot="footer">
-      <button type="button" class="btn btn-outline" on:click={() => { rejectCand = null; }}>
-        <Icon name="close" size="sm" /> Batal
-      </button>
-      <button type="button" class="btn btn-danger" on:click={handleRejectSubmit}>
-        <Icon name="block" size="sm" /> Tolak Kandidat
-      </button>
+      <Button variant="outline" on:click={() => { rejectCand = null; }} icon="close">
+        Batal
+      </Button>
+      <Button variant="danger" on:click={handleRejectSubmit} icon="block">
+        Tolak Kandidat
+      </Button>
     </svelte:fragment>
   </Modal>
 {/if}

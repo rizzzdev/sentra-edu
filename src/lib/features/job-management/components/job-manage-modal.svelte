@@ -5,7 +5,9 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import { JOB_STATUS_LABEL, APPLICATION_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { JobPost } from '$lib/shared/types/common.types';
+  import Button from '$lib/components/atoms/button.svelte';
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
@@ -107,8 +109,8 @@
       </dd>
       <dt>Status</dt>
       <dd>
-        <span class="badge {job.status === 'AVAILABLE' ? 'b-available' : job.status === 'NEGOTIATING' ? 'b-negotiating' : job.status === 'ASSIGNED' ? 'b-assigned' : 'b-cancelled'}">
-          {job.status}
+        <span class="badge {getStatusBadgeClass(job.status)}">
+          {getStatusLabel(job.status, JOB_STATUS_LABEL)}
         </span>
       </dd>
     </div>
@@ -141,27 +143,29 @@
                       <div class="sub">{a.notes || '—'}</div>
                     </td>
                     <td>
-                      <span class="badge {a.status === 'ACCEPTED' ? 'b-approved' : a.status === 'REJECTED' ? 'b-rejected' : 'b-submitted'}">
-                        {a.status}
+                      <span class="badge {getStatusBadgeClass(a.status)}">
+                        {getStatusLabel(a.status, APPLICATION_STATUS_LABEL)}
                       </span>
                     </td>
                     <td>
                       <div class="actions">
                         {#if a.status === 'PENDING' && job.status !== 'ASSIGNED'}
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-primary"
+                          <Button
+                            variant="primary"
+                            size="sm"
                             on:click={() => handleAppApprove(a.id)}
+                            icon="check"
                           >
-                            <Icon name="check" size="xs" /> Setujui
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-danger"
+                            Setujui
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
                             on:click={() => { confirmRejectAppId = a.id; }}
+                            icon="close"
                           >
-                            <Icon name="close" size="xs" /> Tolak
-                          </button>
+                            Tolak
+                          </Button>
                         {/if}
                       </div>
                     </td>
@@ -189,37 +193,40 @@
             Sedang dinegosiasikan. Setujui salah satu pelamar, atau kembalikan ke status Tersedia.
           </p>
           <div class="quick-actions">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline"
+            <Button
+              variant="outline"
+              size="sm"
               on:click={() => handleSetStatus('AVAILABLE')}
+              icon="undo"
             >
-              <Icon name="undo" size="xs" /> Kembalikan ke Tersedia
-            </button>
+              Kembalikan ke Tersedia
+            </Button>
           </div>
         {:else if job.status === 'ASSIGNED'}
           <p style="font-size:.85rem;color:var(--muted-fg);margin-bottom:10px">
             Ditugaskan ke <strong>{getUserName(job.assignedTentorId)}</strong>. Job terkunci — tidak bisa dilamar tentor lain.
           </p>
-          <button
-            type="button"
-            class="btn btn-sm btn-danger"
+          <Button
+            variant="danger"
+            size="sm"
             on:click={() => { confirmCancelOpen = true; }}
+            icon="block"
           >
-            <Icon name="block" size="xs" /> Batalkan Lowongan
-          </button>
+            Batalkan Lowongan
+          </Button>
         {:else}
           <p style="font-size:.85rem;color:var(--muted-fg);margin-bottom:10px">
             Lowongan dibatalkan. Buka kembali lowongan ini agar tentor bisa melamar lagi.
           </p>
           <div class="quick-actions">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline"
+            <Button
+              variant="outline"
+              size="sm"
               on:click={() => handleSetStatus('AVAILABLE')}
+              icon="undo"
             >
-              <Icon name="undo" size="xs" /> Kembalikan ke Tersedia
-            </button>
+              Kembalikan ke Tersedia
+            </Button>
           </div>
         {/if}
       </div>
@@ -227,9 +234,9 @@
   {/if}
 
   <svelte:fragment slot="footer">
-    <button type="button" class="btn btn-outline" on:click={onClose}>
-      <Icon name="close" size="sm" /> Tutup
-    </button>
+    <Button variant="outline" on:click={onClose} icon="close">
+      Tutup
+    </Button>
   </svelte:fragment>
 </Modal>
 

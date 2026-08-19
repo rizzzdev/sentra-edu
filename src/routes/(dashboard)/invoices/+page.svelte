@@ -7,6 +7,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import { INVOICE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { InvoiceRecord } from '$lib/shared/types/common.types';
 
   let searchQuery: string = '';
@@ -182,8 +183,8 @@
                 <td>{getPackageName(inv.enrollmentId)}</td>
                 <td class="num"><strong>{formatCurrencyIDR(inv.amount)}</strong></td>
                 <td>
-                  <span class="badge {inv.status === 'PAID' ? 'b-paid' : inv.status === 'OVERDUE' ? 'b-rejected' : 'b-unpaid'}">
-                    {inv.status}
+                  <span class="badge {getStatusBadgeClass(inv.status)}">
+                    {getStatusLabel(inv.status, INVOICE_STATUS_LABEL)}
                   </span>
                 </td>
                 <td>
