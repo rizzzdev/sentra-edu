@@ -59,7 +59,7 @@
     </div>
 
     <p style="color:var(--muted-fg);font-size:.9rem;margin:6px 0 18px">
-      Masuk menggunakan akun Anda, atau gunakan tombol login cepat sesuai peran.
+Masuk ke dashboard SentraEdu menggunakan akun Anda.
     </p>
 
     <!-- Login Form -->
