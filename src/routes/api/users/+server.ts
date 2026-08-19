@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { sql } from '$lib/server/db';
 import { mapUserRow, generateEntityId } from '$lib/server/api-helpers';
+import bcrypt from 'bcryptjs';
 
 /** GET /api/users */
 export const GET: RequestHandler = async ({ url }) => {
@@ -45,8 +46,9 @@ export const POST: RequestHandler = async ({ request }) => {
     } else {
       // Create
       const id = generateEntityId('u');
+      const hashedPassword = body.password ? await bcrypt.hash(body.password, 10) : await bcrypt.hash('password123', 10);
       await sql`INSERT INTO users (id, email, password, full_name, phone, role, position, education, experience_years, subject_ids, level_ids, school, address, occupation, wali_user_id, is_active, candidate_status, created_at, updated_at)
-        VALUES (${id}, ${body.email}, ${body.password ?? 'password123'}, ${body.fullName}, ${body.phone ?? ''}, ${body.role ?? 'STUDENT'}, ${body.position}, ${body.education}, ${body.experienceYears ?? 0}, ${body.subjectIds ?? []}, ${body.levelIds ?? []}, ${body.school}, ${body.address}, ${body.occupation}, ${body.waliUserId}, ${body.isActive ?? false}, ${body.candidateStatus}, ${now}, ${now})`;
+        VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.fullName}, ${body.phone ?? ''}, ${body.role ?? 'STUDENT'}, ${body.position}, ${body.education}, ${body.experienceYears ?? 0}, ${body.subjectIds ?? []}, ${body.levelIds ?? []}, ${body.school}, ${body.address}, ${body.occupation}, ${body.waliUserId}, ${body.isActive ?? false}, ${body.candidateStatus}, ${now}, ${now})`;
       const rows = await sql`SELECT * FROM users WHERE id = ${id}`;
       return json({ error: false, statusCode: 201, message: 'User dibuat.', data: rows[0] ? mapUserRow(rows[0]) : null });
     }

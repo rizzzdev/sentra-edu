@@ -11,20 +11,29 @@
   let errorMessage: string | null = null;
 
 
-  function handleSubmit() {
+  let isSubmitting: boolean = false;
+
+  async function handleSubmit() {
     errorMessage = null;
+    isSubmitting = true;
     if (!emailInput.trim() || !passwordInput) {
       errorMessage = 'Email dan password wajib diisi.';
+      isSubmitting = false;
       return;
     }
 
-    const response = authStore.login(emailInput, passwordInput);
-    if (response.error || !response.data) {
-      errorMessage = 'Email atau password salah.';
-      return;
+    try {
+      const response = await authStore.login(emailInput, passwordInput);
+      if (response.error || !response.data) {
+        errorMessage = response.message || 'Email atau password salah.';
+        isSubmitting = false;
+        return;
+      }
+      goto(getRoleDefaultPath(response.data.role));
+    } catch (err: any) {
+      errorMessage = err.message || 'Gagal login.';
+      isSubmitting = false;
     }
-
-    goto(getRoleDefaultPath(response.data.role));
   }
 </script>
 

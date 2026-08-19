@@ -49,13 +49,15 @@
   ];
 
   function handlePersonaSelect(personaEmail: string) {
-    const result = authStore.loginAsPersona(personaEmail);
-    if (!result.error) {
-      toastStore.success(result.message);
-      goto('/dashboard');
-    } else {
-      toastStore.error(result.message);
-    }
+    // Quick login via API (default password)
+    authStore.login(personaEmail, 'password123').then((result) => {
+      if (!result.error) {
+        toastStore.success(result.message || 'Login berhasil!');
+        goto('/dashboard');
+      } else {
+        toastStore.error(result.message || 'Gagal login.');
+      }
+    });
   }
 </script>
 

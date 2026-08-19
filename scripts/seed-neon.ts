@@ -8,6 +8,7 @@
 import { neon } from '@neondatabase/serverless';
 import * as dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
+import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -109,8 +110,10 @@ async function seed() {
   console.log('\n👤 Akun Admin:');
   const countUsers = await tableCount('users');
   if (countUsers === 0) {
-    await sql`INSERT INTO users (id, email, password, full_name, phone, role, position, is_active, created_at, updated_at) VALUES ('u-admin', ${process.env.ADMIN_EMAIL || 'super@admin.com'}, ${process.env.ADMIN_PASSWORD || 'superadmin123'}, 'Admin Pusat', '0812-0000-0001', 'SUPER_ADMIN', 'Manajer Operasional Pusat', true, ${defaultTs}, ${defaultTs})`;
-    console.log(`  ✅ Admin Pusat (${process.env.ADMIN_EMAIL || 'super@admin.com'})`);
+    const adminPassword = process.env.ADMIN_PASSWORD || 'superadmin123';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    await sql`INSERT INTO users (id, email, password, full_name, phone, role, position, is_active, created_at, updated_at) VALUES ('u-admin', ${process.env.ADMIN_EMAIL || 'super@admin.com'}, ${hashedPassword}, 'Admin Pusat', '0812-0000-0001', 'SUPER_ADMIN', 'Manajer Operasional Pusat', true, ${defaultTs}, ${defaultTs})`;
+    console.log(`  ✅ Admin Pusat (${process.env.ADMIN_EMAIL || 'super@admin.com'}) — password hashed with bcrypt`);
   } else {
     console.log(`  ⏭  ${countUsers} user sudah ada.`);
   }

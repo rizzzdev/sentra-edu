@@ -13,9 +13,12 @@
   let formErrorMessage: string | null = null;
   let validationErrors: Record<string, string> = {};
 
-  function handleSubmit() {
+  let isSubmitting: boolean = false;
+
+  async function handleSubmit() {
     formErrorMessage = null;
     validationErrors = {};
+    isSubmitting = true;
 
     const validationResult = LoginSchema.safeParse({
       email: emailInput,
@@ -26,17 +29,23 @@
       const fieldErrors = validationResult.error.flatten().fieldErrors;
       if (fieldErrors.email) validationErrors.email = fieldErrors.email[0];
       if (fieldErrors.password) validationErrors.password = fieldErrors.password[0];
+      isSubmitting = false;
       return;
     }
 
-    const loginResponse = authStore.login(emailInput, passwordInput);
-    if (loginResponse.error) {
-      formErrorMessage = loginResponse.message;
-      return;
+    try {
+      const loginResponse = await authStore.login(emailInput, passwordInput);
+      if (loginResponse.error) {
+        formErrorMessage = loginResponse.message || 'Email atau password salah.';
+        isSubmitting = false;
+        return;
+      }
+      toastStore.success(loginResponse.message || 'Login berhasil!');
+      goto('/dashboard');
+    } catch (err: any) {
+      formErrorMessage = err.message || 'Gagal login.';
+      isSubmitting = false;
     }
-
-    toastStore.success(loginResponse.message);
-    goto('/dashboard');
   }
 </script>
 

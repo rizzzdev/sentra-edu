@@ -1,144 +1,104 @@
 import { writable, derived } from 'svelte/store';
-import type { User, UserRole, ApiResponse } from '$lib/shared/types/common.types';
+import type { User, UserRole } from '$lib/shared/types/common.types';
 import { dbStore } from '$lib/shared/stores/db-store';
 import { goto } from '$app/navigation';
 
 export function getRoleDefaultPath(role?: UserRole | null): string {
   switch (role) {
-    case 'SUPER_ADMIN':
-      return '/admin';
-    case 'TENTOR':
-      return '/tentor';
-    case 'STUDENT':
-      return '/student';
-    case 'WALI_MURID':
-      return '/wali';
-    default:
-      return '/admin';
+    case 'SUPER_ADMIN': return '/admin';
+    case 'TENTOR': return '/tentor';
+    case 'STUDENT': return '/student';
+    case 'WALI_MURID': return '/wali';
+    default: return '/admin';
   }
 }
 
-const SESSION_STORAGE_KEY = 'bms_session_v9';
+// ── Session cookie reader ────────────────────────────────
 
-interface SessionState {
-  userId: string | null;
-  loginAt: string | null;
-}
-
-function loadInitialSession(): SessionState {
-  if (typeof window === 'undefined') return { userId: null, loginAt: null };
+function readSessionCookie(): { userId: string; email: string; fullName: string; role: UserRole } | null {
+  if (typeof window === 'undefined') return null;
+  const match = document.cookie.split('; ').find((c) => c.startsWith('session_user='));
+  if (!match) return null;
   try {
-    const rawSession = localStorage.getItem(SESSION_STORAGE_KEY);
-    if (!rawSession) return { userId: null, loginAt: null };
-    return JSON.parse(rawSession);
+    return JSON.parse(decodeURIComponent(match.split('=').slice(1).join('=')));
   } catch {
-    return { userId: null, loginAt: null };
+    return null;
   }
 }
 
 function createAuthStore() {
-  const sessionWritable = writable<SessionState>(loadInitialSession());
+  const currentUser = writable<User | null>(null);
 
-  const currentUser = derived([sessionWritable, dbStore], ([$session, $db]) => {
-    if (!$session.userId || !$db.users) return null;
-    const userFound = $db.users.find(
-      (userItem) => userItem.id === $session.userId && userItem.deletedAt === null
-    );
-    return userFound || null;
+  // On init: read session cookie → load user from db-store
+  if (typeof window !== 'undefined') {
+    const session = readSessionCookie();
+    if (session?.userId) {
+      const db = dbStore.getSnapshot();
+      const user = db.users.find((u) => u.id === session.userId && u.deletedAt === null);
+      if (user) currentUser.set(user);
+    }
+  }
+
+  // Re-derive user from db-store when it updates
+  dbStore.subscribe((db) => {
+    const session = readSessionCookie();
+    if (session?.userId) {
+      const user = db.users.find((u) => u.id === session.userId && u.deletedAt === null);
+      currentUser.set(user || null);
+    }
   });
 
   return {
     subscribe: currentUser.subscribe,
-    session: sessionWritable,
-    login: (emailInput: string, passwordInput: string): ApiResponse<User> => {
-      const database = dbStore.getSnapshot();
-      const matchedUser = database.users.find(
-        (userItem) =>
-          userItem.deletedAt === null &&
-          userItem.email.toLowerCase() === emailInput.trim().toLowerCase() &&
-          userItem.password === passwordInput
-      );
 
-      if (!matchedUser) {
+    login: async (emailInput: string, passwordInput: string) => {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailInput.trim(), password: passwordInput })
+        });
+        const json = await res.json();
+
+        if (json.error) {
+          return { error: true, statusCode: json.statusCode, message: json.message, data: null };
+        }
+
+        // Set current user
+        currentUser.set(json.data);
+
         return {
-          error: true,
-          statusCode: 401,
-          message: 'Email atau kata sandi tidak valid.',
-          data: null
+          error: false,
+          statusCode: 200,
+          message: `Selamat datang kembali, ${json.data.fullName}!`,
+          data: json.data
         };
+      } catch (err: any) {
+        return { error: true, statusCode: 500, message: err.message, data: null };
       }
-
-      if (matchedUser.isActive === false) {
-        return {
-          error: true,
-          statusCode: 403,
-          message: 'Akun Anda belum aktif. Silakan tunggu verifikasi dari admin.',
-          data: null
-        };
-      }
-
-      const sessionData: SessionState = {
-        userId: matchedUser.id,
-        loginAt: new Date().toISOString()
-      };
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
-      }
-      sessionWritable.set(sessionData);
-
-      return {
-        error: false,
-        statusCode: 200,
-        message: `Selamat datang kembali, ${matchedUser.fullName}!`,
-        data: matchedUser
-      };
     },
-    loginAsPersona: (personaEmail: string): ApiResponse<User> => {
-      const database = dbStore.getSnapshot();
-      const matchedUser = database.users.find(
-        (userItem) =>
-          userItem.deletedAt === null &&
-          userItem.email.toLowerCase() === personaEmail.trim().toLowerCase()
-      );
 
-      if (!matchedUser) {
-        return {
-          error: true,
-          statusCode: 404,
-          message: 'Akun persona tidak ditemukan dalam basis data.',
-          data: null
-        };
-      }
-
-      const sessionData: SessionState = {
-        userId: matchedUser.id,
-        loginAt: new Date().toISOString()
-      };
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
-      }
-      sessionWritable.set(sessionData);
-
-      return {
-        error: false,
-        statusCode: 200,
-        message: `Masuk sebagai ${matchedUser.fullName} (${matchedUser.role}).`,
-        data: matchedUser
-      };
-    },
-    logout: (): void => {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(SESSION_STORAGE_KEY);
-      }
-      sessionWritable.set({ userId: null, loginAt: null });
+    logout: async () => {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch { /* ignore */ }
+      currentUser.set(null);
       if (typeof window !== 'undefined') {
         goto('/login');
+      }
+    },
+
+    refreshFromCookie: () => {
+      const session = readSessionCookie();
+      if (session?.userId) {
+        const db = dbStore.getSnapshot();
+        const user = db.users.find((u) => u.id === session.userId && u.deletedAt === null);
+        currentUser.set(user || null);
+      } else {
+        currentUser.set(null);
       }
     }
   };
 }
 
 export const authStore = createAuthStore();
-
