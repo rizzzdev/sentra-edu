@@ -33,6 +33,9 @@ function createAuthStore() {
   if (typeof window !== 'undefined') {
     const session = readSessionCookie();
     if (session?.id) {
+      // Use partial session data first to prevent premature login redirects
+      currentUser.set(session as User);
+      
       const db = dbStore.getSnapshot();
       const user = db.users.find((u) => u.id === session.id && u.deletedAt === null);
       if (user) currentUser.set(user);
@@ -43,9 +46,8 @@ function createAuthStore() {
   dbStore.subscribe((db) => {
     const session = readSessionCookie();
     if (session?.id) {
-      const db = dbStore.getSnapshot();
       const user = db.users.find((u) => u.id === session.id && u.deletedAt === null);
-      currentUser.set(user || null);
+      currentUser.set(user || (session as User));
     }
   });
 
@@ -94,7 +96,7 @@ function createAuthStore() {
       if (session?.id) {
         const db = dbStore.getSnapshot();
         const user = db.users.find((u) => u.id === session.id && u.deletedAt === null);
-        currentUser.set(user || null);
+        currentUser.set(user || (session as User));
       } else {
         currentUser.set(null);
       }

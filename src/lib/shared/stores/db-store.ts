@@ -17,10 +17,28 @@ import type {
   NotificationItem,
   MagicLinkRegistration
 } from '$lib/shared/types/common.types';
-import { createInitialDatabaseSeed } from '$lib/shared/db/seed-data';
 import { generateEntityId } from '$lib/shared/utils/id-generator';
 
-const DATABASE_STORAGE_KEY = 'bms_db_v13';
+function getEmptyDatabase(): DatabaseSchema {
+  return {
+    version: 1,
+    seededAt: new Date().toISOString(),
+    users: [],
+    jobs: [],
+    applications: [],
+    attendances: [],
+    invoices: [],
+    payrollClaims: [],
+    candidates: [],
+    subjects: [],
+    educationLevels: [],
+    classes: [],
+    packages: [],
+    enrollments: [],
+    notifications: [],
+    magicLinks: []
+  };
+}
 
 // ── API helpers ──────────────────────────────────────────
 
@@ -48,13 +66,14 @@ async function apiDelete(path: string, id: string): Promise<{ error: boolean; da
 
 async function loadDatabaseFromApi(): Promise<DatabaseSchema> {
   if (typeof window === 'undefined') {
-    return createInitialDatabaseSeed();
+    return getEmptyDatabase();
   }
 
   // Try Neon via BFF
   try {
     console.log('[SentraEdu] Loading data from Neon...');
-    const res = await apiFetch<{ data: DatabaseSchema }>('/api/db');      if (!res.error && res.data) {
+    const res = await apiFetch<{ data: DatabaseSchema }>('/api/db');
+    if (!res.error && res.data) {
       console.log('[SentraEdu] Neon data loaded successfully.');
       return (res.data as any).data || res.data;
     }
@@ -62,23 +81,11 @@ async function loadDatabaseFromApi(): Promise<DatabaseSchema> {
     console.warn('[SentraEdu] Neon load failed:', err);
   }
 
-  // Fallback: localStorage (only if API unavailable)
-  try {
-    const rawData = localStorage.getItem(DATABASE_STORAGE_KEY);
-    if (rawData) {
-      const parsedData = JSON.parse(rawData) as DatabaseSchema;
-      if (parsedData.users && parsedData.jobs) {
-        console.log('[SentraEdu] Falling back to localStorage cache.');
-        return parsedData;
-      }
-    }
-  } catch { /* ignore */ }
-
-  return createInitialDatabaseSeed();
+  return getEmptyDatabase();
 }
 
 function createDatabaseStore() {
-  const store = writable<DatabaseSchema>(createInitialDatabaseSeed());
+  const store = writable<DatabaseSchema>(getEmptyDatabase());
 
   // Async init: load from Neon
   if (typeof window !== 'undefined') {
@@ -88,9 +95,6 @@ function createDatabaseStore() {
   }
 
   function persistDatabase(updatedDatabase: DatabaseSchema): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(DATABASE_STORAGE_KEY, JSON.stringify(updatedDatabase));
-    }
     store.set(updatedDatabase);
   }
 
@@ -99,9 +103,9 @@ function createDatabaseStore() {
     getSnapshot: (): DatabaseSchema => get(store),
 
     resetToFactoryDefaults: (): ApiResponse<DatabaseSchema> => {
-      const freshSeed = createInitialDatabaseSeed();
-      persistDatabase(freshSeed);
-      return { error: false, statusCode: 200, message: 'Basis data berhasil direset.', data: freshSeed };
+      const empty = getEmptyDatabase();
+      persistDatabase(empty);
+      return { error: false, statusCode: 200, message: 'Basis data berhasil direset.', data: empty };
     },
 
     importDatabaseJson: (jsonString: string): ApiResponse<DatabaseSchema> => {
