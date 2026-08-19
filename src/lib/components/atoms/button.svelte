@@ -34,7 +34,7 @@
   {type}
   {disabled}
   aria-label={ariaLabel}
-  class="{sizeClassMap[size]} {variantClassMap[variant]} {className}"
+  class="{sizeClassMap[size]} {variantClassMap[variant]} {className} disabled:cursor-not-allowed disabled:opacity-60"
   {...$$restProps}
   style={fullWidth ? 'width:100%' : undefined}
   on:click

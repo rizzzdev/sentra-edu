@@ -6,7 +6,7 @@
   import type { MagicLinkRegistration } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
-  import Select from '$lib/components/atoms/select.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import { MagicLinkSchema } from '$lib/features/student-enrollment/schemas/student-enrollment.schema';
   import { ZodError } from 'zod';
 
@@ -178,22 +178,26 @@
         <div class="form-grid">
           <div class="field">
             <label for="ml-class">Preset Jenjang/Kelas</label>
-            <Select id="ml-class" bind:value={selectedClassId}>
-              <option value="">-- Semua Kelas (Terbuka) --</option>
-              {#each $dbStore.classes as c}
-                <option value={c.id}>{c.className}</option>
-              {/each}
-            </Select>
+            <SelectSearch 
+              id="ml-class" 
+              bind:value={selectedClassId}
+              options={[
+                { value: '', label: '-- Semua Kelas (Terbuka) --' },
+                ...$dbStore.classes.map(c => ({ value: c.id, label: c.className }))
+              ]}
+            />
           </div>
 
           <div class="field">
             <label for="ml-package">Preset Paket Les</label>
-            <Select id="ml-package" bind:value={selectedPackageId}>
-              <option value="">-- Tanpa Preset Paket --</option>
-              {#each $dbStore.packages as p}
-                <option value={p.id}>{p.name} ({p.mode})</option>
-              {/each}
-            </Select>
+            <SelectSearch 
+              id="ml-package" 
+              bind:value={selectedPackageId}
+              options={[
+                { value: '', label: '-- Tanpa Preset Paket --' },
+                ...$dbStore.packages.map(p => ({ value: p.id, label: `${p.name} (${p.mode})` }))
+              ]}
+            />
           </div>
         </div>
       {/if}

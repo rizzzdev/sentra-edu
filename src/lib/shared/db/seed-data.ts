@@ -228,16 +228,49 @@ export function createInitialDatabaseSeed(): DatabaseSchema {
       }
     ],
 
-    // ── Hanya 1 Akun Admin ──────────────────────────────────
+    // ── Akun Default ──────────────────────────────────
     users: [
       {
         id: 'u-admin',
         email: 'admin@sentraedu.id',
-        password: 'admin123',
+        password: '$2a$10$wN9Q/yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6', // admin123
         fullName: 'Admin Pusat',
         phone: '0812-0000-0001',
         role: 'SUPER_ADMIN',
         position: 'Manajer Operasional Pusat',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-tutor',
+        email: 'tutor@sentraedu.id',
+        password: '$2a$10$wN9Q/yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6', // admin123
+        fullName: 'Tutor Test',
+        phone: '0812-0000-0002',
+        role: 'TENTOR',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-student',
+        email: 'student@sentraedu.id',
+        password: '$2a$10$wN9Q/yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6', // admin123
+        fullName: 'Student Test',
+        phone: '0812-0000-0003',
+        role: 'STUDENT',
+        createdAt: defaultTimestamp,
+        updatedAt: defaultTimestamp,
+        deletedAt: null
+      },
+      {
+        id: 'u-parent',
+        email: 'parent@sentraedu.id',
+        password: '$2a$10$wN9Q/yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6w0bE2yWc6', // admin123
+        fullName: 'Parent Test',
+        phone: '0812-0000-0004',
+        role: 'WALI_MURID',
         createdAt: defaultTimestamp,
         updatedAt: defaultTimestamp,
         deletedAt: null

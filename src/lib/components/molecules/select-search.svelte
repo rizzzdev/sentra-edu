@@ -30,6 +30,7 @@
   export let searchable: boolean | undefined = undefined;
   export let emptyText: string = 'Tidak ada data';
   export let className: string = '';
+  export let required: boolean = false;
 
   let isOpen: boolean = false;
   let searchQuery: string = '';
@@ -129,10 +130,10 @@
   {#if name}
     {#if multiple}
       {#each (Array.isArray(value) ? value : []) as val}
-        <input type="hidden" {name} value={val} />
+        <input type="hidden" {name} value={val} {required} />
       {/each}
     {:else}
-      <input type="hidden" {name} value={value || ''} />
+      <input type="hidden" {name} value={value || ''} {required} />
     {/if}
   {/if}
 

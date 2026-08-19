@@ -6,6 +6,7 @@
   import type { User } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
   export let tentor: User;
@@ -128,14 +129,17 @@
   <form id="form-checkin" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_enr">Pilih Murid / Program <i class="req">*</i></label>
-      <select id="f_enr" required bind:value={selectedEnrollmentId}>
-        {#each myEnrollments as e}
-          {@const student = $dbStore.users.find((u) => u.id === e.studentId)}
-          {@const subject = $dbStore.subjects.find((s) => s.id === e.subjectId)}
-          {@const cls = $dbStore.classes.find((c) => c.id === e.classId)}
-          <option value={e.id}>{student?.fullName || 'Murid'} — {cls?.className} {subject?.name}</option>
-        {/each}
-      </select>
+      <SelectSearch
+        id="f_enr"
+        required
+        bind:value={selectedEnrollmentId}
+        options={myEnrollments.map(e => {
+          const student = $dbStore.users.find((u) => u.id === e.studentId);
+          const subject = $dbStore.subjects.find((s) => s.id === e.subjectId);
+          const cls = $dbStore.classes.find((c) => c.id === e.classId);
+          return { value: e.id, label: `${student?.fullName || 'Murid'} — ${cls?.className} ${subject?.name}` };
+        })}
+      />
     </div>
 
     <div class="field">

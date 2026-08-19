@@ -5,13 +5,14 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
   export let onClose: () => void = () => {};
 
   const now = new Date();
   let selectedStudentId: string = '';
-  let selectedMonth: number = now.getMonth() + 1;
+  let selectedMonth: string = String(now.getMonth() + 1);
   let selectedYear: number = now.getFullYear();
 
   $: enrollments = $dbStore.enrollments.filter((e) => e.deletedAt === null);
@@ -50,10 +51,10 @@
     const payload = {
       enrollmentId: enr.id,
       amount,
-      dueDate: `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-25`,
+      dueDate: `${selectedYear}-${selectedMonth.padStart(2, '0')}-25`,
       periodMonth: Number(selectedMonth),
       periodYear: Number(selectedYear),
-      notes: `Tagihan SPP Periode ${monthNames[selectedMonth - 1]} ${selectedYear}`
+      notes: `Tagihan SPP Periode ${monthNames[Number(selectedMonth) - 1]} ${selectedYear}`
     };
 
     const response = dbStore.createInvoice(payload);
@@ -75,21 +76,23 @@
   <form id="form-gen-invoice" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_studentId">Murid <i class="req">*</i></label>
-      <select id="f_studentId" required bind:value={selectedStudentId}>
-        {#each enrollments as e}
-          <option value={e.studentId}>{getStudentEnrollmentLabel(e)}</option>
-        {/each}
-      </select>
+      <SelectSearch 
+        id="f_studentId" 
+        required 
+        bind:value={selectedStudentId}
+        options={enrollments.map(e => ({ value: e.studentId, label: getStudentEnrollmentLabel(e) }))}
+      />
     </div>
 
     <div class="form-grid">
       <div class="field">
         <label for="f_month">Bulan <i class="req">*</i></label>
-        <select id="f_month" required bind:value={selectedMonth}>
-          {#each monthNames as mName, i}
-            <option value={i + 1}>{mName} {selectedYear}</option>
-          {/each}
-        </select>
+        <SelectSearch 
+          id="f_month" 
+          required 
+          bind:value={selectedMonth}
+          options={monthNames.map((mName, i) => ({ value: String(i + 1), label: `${mName} ${selectedYear}` }))}
+        />
       </div>
 
       <div class="field">

@@ -6,7 +6,6 @@
   import type { User } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
-  import Select from '$lib/components/atoms/select.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import { StudentMasterSchema } from '$lib/features/student-enrollment/schemas/student-enrollment.schema';
   import { ZodError } from 'zod';

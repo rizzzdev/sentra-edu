@@ -5,12 +5,13 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { RecruitmentCandidate, CandidateStatus } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
   export let candidate: RecruitmentCandidate | null = null;
   export let onClose: () => void = () => {};
 
-  let status: CandidateStatus = 'INTERVIEW';
+  let status: string = 'INTERVIEW';
   let notes: string = '';
 
   $: if (candidate) {
@@ -22,7 +23,7 @@
     if (!candidate) return;
     const response = dbStore.saveCandidate({
       ...candidate,
-      status,
+      status: status as CandidateStatus,
       notes: notes.trim()
     });
     if (!response.error) {
@@ -58,15 +59,19 @@
 
     <div class="field">
       <label for="f_status">Tahapan Seleksi Saat Ini</label>
-      <select id="f_status" bind:value={status}>
-        <option value="REGISTERED">1. Registrasi Berkas</option>
-        <option value="TEST_SCHEDULED">2. Tes Dijadwalkan</option>
-        <option value="TESTED">3. Tes Selesai</option>
-        <option value="INTERVIEW_SCHEDULED">4. Wawancara Dijadwalkan</option>
-        <option value="INTERVIEWED">5. Wawancara Selesai</option>
-        <option value="ACCEPTED">6. Diterima</option>
-        <option value="REJECTED">7. Ditolak</option>
-      </select>
+      <SelectSearch
+        id="f_status"
+        bind:value={status}
+        options={[
+          { value: 'REGISTERED', label: '1. Registrasi Berkas' },
+          { value: 'TEST_SCHEDULED', label: '2. Tes Dijadwalkan' },
+          { value: 'TESTED', label: '3. Tes Selesai' },
+          { value: 'INTERVIEW_SCHEDULED', label: '4. Wawancara Dijadwalkan' },
+          { value: 'INTERVIEWED', label: '5. Wawancara Selesai' },
+          { value: 'ACCEPTED', label: '6. Diterima' },
+          { value: 'REJECTED', label: '7. Ditolak' }
+        ]}
+      />
     </div>
 
     <div class="field">

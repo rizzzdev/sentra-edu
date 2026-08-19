@@ -1,6 +1,8 @@
 import type { Handle } from '@sveltejs/kit';
-import { initDatabase } from '$lib/server/db';
+import { initDatabase, sql } from '$lib/server/db';
 import { checkRateLimit } from '$lib/server/security';
+import bcrypt from 'bcryptjs';
+import { ADMIN_EMAIL, ADMIN_PASSWORD } from '$env/static/private';
 
 let dbInitialized = false;
 
@@ -17,6 +19,18 @@ export const handle: Handle = async ({ event, resolve }) => {
       await initDatabase();
       dbInitialized = true;
       console.log('[SentraEdu] Neon database initialized.');
+
+      // Seed admin user
+      if (ADMIN_EMAIL && ADMIN_PASSWORD) {
+        const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
+        await sql`
+          INSERT INTO users (id, email, password, full_name, role, is_active)
+          VALUES ('u-admin', ${ADMIN_EMAIL}, ${hashedPassword}, 'Super Admin', 'SUPER_ADMIN', true)
+          ON CONFLICT (email) DO UPDATE 
+          SET password = ${hashedPassword}, role = 'SUPER_ADMIN', is_active = true
+        `;
+        console.log('[SentraEdu] Admin user seeded.');
+      }
     } catch (err_raw) { const err = err_raw as Error;
       console.error('[SentraEdu] DB init failed:', err.message);
     }

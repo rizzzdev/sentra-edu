@@ -6,6 +6,7 @@
   import type { Enrollment } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
   export let editingEnrollment: Enrollment | null = null;
@@ -73,45 +74,56 @@
 <Modal {open} {onClose} title={editingEnrollment ? 'Ubah Data Murid' : 'Daftarkan Murid'} icon="person_add" maxWidth="600px">
   <form id="form-enrollment" on:submit|preventDefault={handleSubmit}>
     <div class="field">
-      <label for="f_studentId">Akun Murid <i class="req">*</i></label>
-      <select id="f_studentId" required bind:value={studentId}>
-        <option value="">— Pilih akun murid —</option>
-        {#each students as u}
-          <option value={u.id}>{u.fullName} ({u.email})</option>
-        {/each}
-      </select>
+      <SelectSearch
+        id="f_studentId"
+        required
+        bind:value={studentId}
+        options={[
+          { value: '', label: '— Pilih akun murid —' },
+          ...students.map(u => ({ value: u.id, label: `${u.fullName} (${u.email})` }))
+        ]}
+      />
     </div>
 
     <div class="form-grid">
       <div class="field">
         <label for="f_classId">Kelas <i class="req">*</i></label>
-        <select id="f_classId" required bind:value={classId}>
-          <option value="">— Pilih kelas —</option>
-          {#each $dbStore.classes.filter((c) => c.deletedAt === null) as c}
-            <option value={c.id}>{c.className}</option>
-          {/each}
-        </select>
+        <SelectSearch
+          id="f_classId"
+          required
+          bind:value={classId}
+          options={[
+            { value: '', label: '— Pilih kelas —' },
+            ...$dbStore.classes.filter((c) => c.deletedAt === null).map(c => ({ value: c.id, label: c.className }))
+          ]}
+        />
       </div>
 
       <div class="field">
         <label for="f_subjectId">Mata Pelajaran <i class="req">*</i></label>
-        <select id="f_subjectId" required bind:value={subjectId}>
-          <option value="">— Pilih mapel —</option>
-          {#each $dbStore.subjects.filter((s) => s.deletedAt === null) as s}
-            <option value={s.id}>{s.name}</option>
-          {/each}
-        </select>
+        <SelectSearch
+          id="f_subjectId"
+          required
+          bind:value={subjectId}
+          options={[
+            { value: '', label: '— Pilih mapel —' },
+            ...$dbStore.subjects.filter((s) => s.deletedAt === null).map(s => ({ value: s.id, label: s.name }))
+          ]}
+        />
       </div>
     </div>
 
     <div class="field">
       <label for="f_packageId">Paket Les <i class="req">*</i></label>
-      <select id="f_packageId" required bind:value={packageId}>
-        <option value="">— Pilih paket les —</option>
-        {#each $dbStore.packages.filter((p) => p.deletedAt === null && p.active) as p}
-          <option value={p.id}>{p.name} ({p.mode} · Rp {p.price.toLocaleString('id-ID')})</option>
-        {/each}
-      </select>
+      <SelectSearch
+        id="f_packageId"
+        required
+        bind:value={packageId}
+        options={[
+          { value: '', label: '— Pilih paket les —' },
+          ...$dbStore.packages.filter((p) => p.deletedAt === null && p.active).map(p => ({ value: p.id, label: `${p.name} (${p.mode} · Rp ${p.price.toLocaleString('id-ID')})` }))
+        ]}
+      />
     </div>
 
     <div class="form-grid">

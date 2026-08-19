@@ -13,7 +13,7 @@ interface RateLimitConfig {
 }
 
 const RATE_LIMITS: Record<string, RateLimitConfig> = {
-  login: { windowMs: 15 * 60 * 1000, maxRequests: 5 },      // 5 attempts per 15 min
+  login: { windowMs: 15 * 60 * 1000, maxRequests: 10 },      // 5 attempts per 15 min
   register: { windowMs: 60 * 60 * 1000, maxRequests: 10 },   // 10 per hour
   default: { windowMs: 60 * 1000, maxRequests: 60 }          // 60 per minute
 };

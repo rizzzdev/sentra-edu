@@ -6,17 +6,18 @@
   import type { JobPost, JobType, JobMode } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
   export let editingJob: JobPost | null = null;
   export let onClose: () => void = () => {};
 
   let title: string = '';
-  let jobType: JobType = 'REGULAR';
+  let jobType: string = 'REGULAR';
   let studentEnrollmentId: string = '';
   let classId: string = '';
   let subjectId: string = '';
-  let mode: JobMode = 'OFFLINE';
+  let mode: string = 'OFFLINE';
   let packageId: string = '';
   let preferredDays: string[] = ['Senin', 'Rabu'];
   let preferredTime: string = '16:00';
@@ -97,9 +98,9 @@
     const payload: Partial<JobPost> = {
       id: editingJob ? editingJob.id : undefined,
       title: title.trim(),
-      jobType,
-      jobMode: mode,
-      mode,
+      jobType: jobType as JobType,
+      jobMode: mode as JobMode,
+      mode: mode as JobMode,
       classId,
       subjectId,
       packageId,
@@ -166,62 +167,84 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_jobType">Tipe Lowongan <i class="req">*</i></label>
-        <select id="f_jobType" required bind:value={jobType}>
-          <option value="REGULAR">Reguler</option>
-          <option value="TEMPORARY_REPLACEMENT">Pengganti Sementara</option>
-        </select>
+        <SelectSearch
+          id="f_jobType"
+          required
+          bind:value={jobType}
+          options={[
+            { value: 'REGULAR', label: 'Reguler' },
+            { value: 'TEMPORARY_REPLACEMENT', label: 'Pengganti Sementara' }
+          ]}
+        />
       </div>
 
       <div class="field">
         <label for="f_mode">Mode Les <i class="req">*</i></label>
-        <select id="f_mode" required bind:value={mode}>
-          <option value="OFFLINE">Offline (tatap muka langsung)</option>
-          <option value="ONLINE">Online (daring / video call)</option>
-        </select>
+        <SelectSearch
+          id="f_mode"
+          required
+          bind:value={mode}
+          options={[
+            { value: 'OFFLINE', label: 'Offline (tatap muka langsung)' },
+            { value: 'ONLINE', label: 'Online (daring / video call)' }
+          ]}
+        />
       </div>
     </div>
 
     <div class="field">
       <label for="f_studentEnrollmentId">Murid <i class="req">*</i></label>
-      <select id="f_studentEnrollmentId" required bind:value={studentEnrollmentId}>
-        <option value="">— Pilih murid SentraEdu —</option>
-        {#each enrollments as e}
-          <option value={e.id}>{getEnrollmentLabel(e)}</option>
-        {/each}
-      </select>
+      <SelectSearch
+        id="f_studentEnrollmentId"
+        required
+        bind:value={studentEnrollmentId}
+        options={[
+          { value: '', label: '— Pilih murid SentraEdu —' },
+          ...enrollments.map(e => ({ value: e.id, label: getEnrollmentLabel(e) }))
+        ]}
+      />
       <div class="help">Private — satu murid per lowongan.</div>
     </div>
 
     <div class="form-grid">
       <div class="field">
         <label for="f_classId">Kelas <i class="req">*</i></label>
-        <select id="f_classId" required bind:value={classId}>
-          <option value="">— Pilih kelas —</option>
-          {#each $dbStore.classes.filter((c) => c.deletedAt === null) as c}
-            <option value={c.id}>{c.className}</option>
-          {/each}
-        </select>
+        <SelectSearch
+          id="f_classId"
+          required
+          bind:value={classId}
+          options={[
+            { value: '', label: '— Pilih kelas —' },
+            ...$dbStore.classes.filter((c) => c.deletedAt === null).map(c => ({ value: c.id, label: c.className }))
+          ]}
+        />
       </div>
 
       <div class="field">
         <label for="f_subjectId">Mata Pelajaran <i class="req">*</i></label>
-        <select id="f_subjectId" required bind:value={subjectId}>
-          <option value="">— Pilih mapel —</option>
-          {#each $dbStore.subjects.filter((s) => s.deletedAt === null) as s}
-            <option value={s.id}>{s.name}</option>
-          {/each}
-        </select>
+        <SelectSearch
+          id="f_subjectId"
+          required
+          bind:value={subjectId}
+          options={[
+            { value: '', label: '— Pilih mapel —' },
+            ...$dbStore.subjects.filter((s) => s.deletedAt === null).map(s => ({ value: s.id, label: s.name }))
+          ]}
+        />
       </div>
     </div>
 
     <div class="field">
       <label for="f_packageId">Paket Les (mode & harga SPP) <i class="req">*</i></label>
-      <select id="f_packageId" required bind:value={packageId}>
-        <option value="">— Pilih paket les —</option>
-        {#each $dbStore.packages.filter((p) => p.deletedAt === null && p.active) as p}
-          <option value={p.id}>{p.name} ({p.mode} · Rp {p.price.toLocaleString('id-ID')})</option>
-        {/each}
-      </select>
+      <SelectSearch
+        id="f_packageId"
+        required
+        bind:value={packageId}
+        options={[
+          { value: '', label: '— Pilih paket les —' },
+          ...$dbStore.packages.filter((p) => p.deletedAt === null && p.active).map(p => ({ value: p.id, label: `${p.name} (${p.mode} · Rp ${p.price.toLocaleString('id-ID')})` }))
+        ]}
+      />
     </div>
 
     <div class="field">

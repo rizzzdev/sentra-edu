@@ -2,6 +2,7 @@
   import Icon from '$lib/components/atoms/icon.svelte';
   import { authStore, getRoleDefaultPath } from '$lib/shared/stores/auth-store';
   import { themeStore } from '$lib/shared/stores/theme-store';
+  import { toastStore } from '$lib/shared/stores/toast-store';
   import { goto } from '$app/navigation';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
@@ -26,12 +27,15 @@
       const response = await authStore.login(emailInput, passwordInput);
       if (response.error || !response.data) {
         errorMessage = response.message || 'Email atau password salah.';
+        toastStore.error(errorMessage || 'Terjadi kesalahan.');
         isSubmitting = false;
         return;
       }
+      toastStore.success(response.message || 'Berhasil login.');
       goto(getRoleDefaultPath(response.data.role));
     } catch (err_raw) { const err = err_raw as Error;
       errorMessage = err.message || 'Gagal login.';
+      toastStore.error(errorMessage || 'Gagal login.');
       isSubmitting = false;
     }
   }
@@ -105,8 +109,8 @@ Masuk ke dashboard SentraEdu menggunakan akun Anda.
         </div>
       {/if}
 
-      <Button type="submit" variant="primary" fullWidth icon="login">
-        Masuk
+      <Button type="submit" variant="primary" fullWidth icon="login" disabled={isSubmitting}>
+        {isSubmitting ? 'Memproses...' : 'Masuk'}
       </Button>
     </form>
 

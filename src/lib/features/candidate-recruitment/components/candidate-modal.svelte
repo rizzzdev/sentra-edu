@@ -6,6 +6,7 @@
   import type { RecruitmentCandidate } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
   export let editingCandidate: RecruitmentCandidate | null = null;
@@ -191,14 +192,18 @@
 
     <div class="field">
       <label for="f_source">Sumber Pendaftaran</label>
-      <select id="f_source" bind:value={source}>
-        <option value="Media Sosial">Media Sosial</option>
-        <option value="Referensi">Referensi</option>
-        <option value="Website">Website</option>
-        <option value="Walk-in">Walk-in</option>
-        <option value="Kampus">Kampus</option>
-        <option value="Lainnya">Lainnya</option>
-      </select>
+      <SelectSearch
+        id="f_source"
+        bind:value={source}
+        options={[
+          { value: 'Media Sosial', label: 'Media Sosial' },
+          { value: 'Referensi', label: 'Referensi' },
+          { value: 'Website', label: 'Website' },
+          { value: 'Walk-in', label: 'Walk-in' },
+          { value: 'Kampus', label: 'Kampus' },
+          { value: 'Lainnya', label: 'Lainnya' }
+        ]}
+      />
     </div>
   </form>
 

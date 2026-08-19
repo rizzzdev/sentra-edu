@@ -6,6 +6,7 @@
   import type { ClassLevel } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
   export let editingClass: ClassLevel | null = null;
@@ -67,12 +68,15 @@
 
     <div class="field">
       <label for="f_educationLevelId">Jenjang <i class="req">*</i></label>
-      <select id="f_educationLevelId" required bind:value={educationLevelId}>
-        <option value="">— Pilih jenjang —</option>
-        {#each $dbStore.educationLevels.filter((l) => l.deletedAt === null) as lvl}
-          <option value={lvl.id}>{lvl.levelName}</option>
-        {/each}
-      </select>
+      <SelectSearch
+        id="f_educationLevelId"
+        required
+        bind:value={educationLevelId}
+        options={[
+          { value: '', label: '— Pilih jenjang —' },
+          ...$dbStore.educationLevels.filter((l) => l.deletedAt === null).map(lvl => ({ value: lvl.id, label: lvl.levelName }))
+        ]}
+      />
     </div>
 
     <div class="field">

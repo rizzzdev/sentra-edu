@@ -6,19 +6,20 @@
   import type { PackagePlan } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
   export let editingPackage: PackagePlan | null = null;
   export let onClose: () => void = () => {};
 
   let name: string = '';
-  let mode: 'PRIVATE' | 'KELOMPOK' = 'PRIVATE';
-  let period: 'BULANAN' | 'HARIAN' = 'BULANAN';
+  let mode: string = 'PRIVATE';
+  let period: string = 'BULANAN';
   let price: number = 1000000;
   let tentorFee: number = 100000;
   let sessionsPerPeriod: number = 8;
   let maxStudents: number = 5;
-  let active: boolean = true;
+  let activeStr: string = 'true';
   let description: string = '';
 
   $: if (editingPackage) {
@@ -29,7 +30,7 @@
     tentorFee = editingPackage.tentorFee;
     sessionsPerPeriod = editingPackage.sessionsPerPeriod;
     maxStudents = editingPackage.maxStudents;
-    active = editingPackage.active;
+    activeStr = String(editingPackage.active);
     description = editingPackage.description || '';
   } else {
     name = '';
@@ -39,7 +40,7 @@
     tentorFee = 100000;
     sessionsPerPeriod = 8;
     maxStudents = 5;
-    active = true;
+    activeStr = 'true';
     description = '';
   }
 
@@ -52,13 +53,13 @@
     const payload = {
       id: editingPackage ? editingPackage.id : undefined,
       name: name.trim(),
-      mode,
-      period,
+      mode: mode as 'PRIVATE' | 'KELOMPOK',
+      period: period as 'BULANAN' | 'HARIAN',
       price: Number(price),
       tentorFee: Number(tentorFee),
       sessionsPerPeriod: Number(sessionsPerPeriod),
       maxStudents: Number(maxStudents),
-      active,
+      active: activeStr === 'true',
       description: description.trim()
     };
 
@@ -88,18 +89,28 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_mode">Mode <i class="req">*</i></label>
-        <select id="f_mode" required bind:value={mode}>
-          <option value="PRIVATE">Private (1 guru : 1 siswa)</option>
-          <option value="KELOMPOK">Kelompok (1 guru : beberapa siswa)</option>
-        </select>
+        <SelectSearch
+          id="f_mode"
+          required
+          bind:value={mode}
+          options={[
+            { value: 'PRIVATE', label: 'Private (1 guru : 1 siswa)' },
+            { value: 'KELOMPOK', label: 'Kelompok (1 guru : beberapa siswa)' }
+          ]}
+        />
       </div>
 
       <div class="field">
         <label for="f_period">Periode Tagihan <i class="req">*</i></label>
-        <select id="f_period" required bind:value={period}>
-          <option value="BULANAN">Bulanan (tagihan flat per bulan)</option>
-          <option value="HARIAN">Harian (tagihan per sesi)</option>
-        </select>
+        <SelectSearch
+          id="f_period"
+          required
+          bind:value={period}
+          options={[
+            { value: 'BULANAN', label: 'Bulanan (tagihan flat per bulan)' },
+            { value: 'HARIAN', label: 'Harian (tagihan per sesi)' }
+          ]}
+        />
       </div>
     </div>
 
@@ -160,10 +171,14 @@
 
     <div class="field">
       <label for="f_active">Status Aktif</label>
-      <select id="f_active" bind:value={active}>
-        <option value={true}>Aktif</option>
-        <option value={false}>Nonaktif</option>
-      </select>
+      <SelectSearch
+        id="f_active"
+        bind:value={activeStr}
+        options={[
+          { value: 'true', label: 'Aktif' },
+          { value: 'false', label: 'Nonaktif' }
+        ]}
+      />
     </div>
 
     <div class="field">
