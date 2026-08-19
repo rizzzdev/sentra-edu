@@ -23,6 +23,7 @@ function getEmptyDatabase(): DatabaseSchema {
   return {
     version: 1,
     seededAt: new Date().toISOString(),
+    isLoaded: false,
     users: [],
     jobs: [],
     applications: [],
@@ -75,13 +76,14 @@ async function loadDatabaseFromApi(): Promise<DatabaseSchema> {
     const res = await apiFetch<{ data: DatabaseSchema }>('/api/db');
     if (!res.error && res.data) {
       console.log('[SentraEdu] Neon data loaded successfully.');
-      return (res.data as any).data || res.data;
+      const data = (res.data as any).data || res.data;
+      return { ...data, isLoaded: true };
     }
   } catch (err) {
     console.warn('[SentraEdu] Neon load failed:', err);
   }
 
-  return getEmptyDatabase();
+  return { ...getEmptyDatabase(), isLoaded: true };
 }
 
 function createDatabaseStore() {

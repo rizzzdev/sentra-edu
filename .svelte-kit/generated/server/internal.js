@@ -26,7 +26,7 @@ export const options = {
 		app: ({ head, body, assets, nonce, env }) => "<!doctype html>\r\n<html lang=\"id\" data-theme=\"light\">\r\n\t<head>\r\n\t\t<meta charset=\"utf-8\" />\r\n\t\t<link rel=\"icon\" type=\"image/jpeg\" href=\"" + assets + "/logo-sentraedu.jpg\" />\r\n\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n\t\t<title>SentraEdu — Sistem Manajemen Bimbel Privat</title>\r\n\t\t<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\" />\r\n\t\t<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin />\r\n\t\t<link\r\n\t\t\thref=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200\"\r\n\t\t\trel=\"stylesheet\"\r\n\t\t/>\r\n\t\t" + head + "\r\n\t</head>\r\n\t<body data-sveltekit-preload-data=\"hover\">\r\n\t\t<div style=\"display: contents\">" + body + "</div>\r\n\t</body>\r\n</html>\r\n",
 		error
 	},
-	version_hash: "in3vfh"
+	version_hash: "1dbt0zg"
 };
 
 export async function get_hooks() {

@@ -236,6 +236,7 @@ export interface MagicLinkRegistration extends BaseEntity {
 export interface DatabaseSchema {
   version: number;
   seededAt: string;
+  isLoaded?: boolean;
   educationLevels: EducationLevel[];
   classes: ClassLevel[];
   subjects: Subject[];
