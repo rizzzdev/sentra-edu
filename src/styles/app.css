@@ -238,11 +238,11 @@ strong, b { font-weight: 700; }
 .side-user .u-mail { color: var(--muted-fg); font-size: .72rem; word-break: break-all; }
 .btn-logout {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 9px; border: 1px solid var(--border); background: var(--surface);
-  border-radius: 10px; color: var(--fg); font-size: .85rem; font-weight: 500;
-  cursor: pointer;
+  padding: 9px; border: 1px solid var(--danger-soft); background: var(--danger-soft);
+  border-radius: 10px; color: var(--danger); font-size: .85rem; font-weight: 500;
+  cursor: pointer; transition: all .15s;
 }
-.btn-logout:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+.btn-logout:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .topbar {
