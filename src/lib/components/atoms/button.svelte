@@ -12,21 +12,21 @@
   export let className: string = '';
   export let ariaLabel: string | undefined = undefined;
 
-  const variantClassMap: Record<string, string> = {
-    primary: 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] border-transparent shadow-sm',
-    outline: 'bg-[var(--color-surface)] text-[var(--color-fg)] border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]',
-    ghost: 'bg-transparent text-[var(--color-fg)] border-transparent hover:bg-[var(--color-surface-hover)]',
-    danger: 'bg-[var(--color-destructive)] text-white hover:bg-[var(--color-destructive-hover)] border-transparent shadow-sm',
-    success: 'bg-[var(--color-success)] text-white hover:bg-[var(--color-success-hover)] border-transparent shadow-sm',
-    warning: 'bg-[var(--color-warning)] text-white hover:bg-[var(--color-warning-hover)] border-transparent shadow-sm',
-    accent: 'bg-[var(--color-accent)] text-[var(--color-accent-foreground)] hover:bg-[var(--color-accent-hover)] border-transparent font-bold shadow-sm',
-    secondary: 'bg-[var(--color-primary-soft)] text-[var(--color-primary)] hover:bg-[var(--color-primary-soft-hover)] border-transparent'
+  $: variantClassMap = {
+    primary: 'btn-primary',
+    outline: 'btn-outline',
+    ghost: 'btn-ghost',
+    danger: 'btn-danger',
+    success: 'btn-success',
+    warning: 'btn-warning',
+    accent: 'btn-accent',
+    secondary: 'btn-soft'
   };
 
   $: sizeClassMap = {
-    sm: isIconOnly ? 'h-8 w-8 text-xs rounded-[var(--radius-xs)] p-0' : 'h-8 px-3 text-xs gap-1.5 rounded-[var(--radius-xs)]',
-    md: isIconOnly ? 'h-10 w-10 text-sm rounded-[var(--radius-sm)] p-0' : 'h-10 px-4 text-sm gap-2 rounded-[var(--radius-sm)]',
-    lg: isIconOnly ? 'h-12 w-12 text-base rounded-[var(--radius-md)] p-0' : 'h-12 px-6 text-base gap-2.5 rounded-[var(--radius-md)]'
+    sm: isIconOnly ? 'btn btn-sm btn-icon-only' : 'btn btn-sm',
+    md: isIconOnly ? 'btn btn-icon-only' : 'btn',
+    lg: isIconOnly ? 'btn btn-lg btn-icon-only' : 'btn btn-lg'
   };
 </script>
 
@@ -34,8 +34,9 @@
   {type}
   {disabled}
   aria-label={ariaLabel}
-  class="inline-flex items-center justify-center font-semibold border transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none {variantClassMap[variant]} {sizeClassMap[size]} {fullWidth ? 'w-full' : ''} {className}"
+  class="{sizeClassMap[size]} {variantClassMap[variant]} {className}"
   {...$$restProps}
+  style={fullWidth ? 'width:100%' : undefined}
   on:click
 >
   {#if icon}

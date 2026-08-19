@@ -1,8 +1,10 @@
 <script lang="ts">
   import Icon from '$lib/components/atoms/icon.svelte';
-  import { authStore } from '$lib/shared/stores/auth-store';
+  import { authStore, getRoleDefaultPath } from '$lib/shared/stores/auth-store';
   import { themeStore } from '$lib/shared/stores/theme-store';
   import { goto } from '$app/navigation';
+  import Button from '$lib/components/atoms/button.svelte';
+  import Input from '$lib/components/atoms/input.svelte';
 
   let emailInput: string = '';
   let passwordInput: string = '';
@@ -47,64 +49,64 @@
     }
 
     const response = authStore.login(emailInput, passwordInput);
-    if (response.error) {
+    if (response.error || !response.data) {
       errorMessage = 'Email atau password salah.';
       return;
     }
 
-    goto('/dashboard');
+    goto(getRoleDefaultPath(response.data.role));
   }
 
   function handlePersonaClick(personaEmail: string) {
     const response = authStore.loginAsPersona(personaEmail);
-    if (!response.error) {
-      goto('/dashboard');
+    if (!response.error && response.data) {
+      goto(getRoleDefaultPath(response.data.role));
     } else {
       errorMessage = response.message;
     }
   }
 </script>
 
-<div class="flex min-h-screen items-center justify-center p-6 sm:p-8 bg-bg">
-  <div class="w-full max-w-[460px] bg-surface border border-border rounded-[18px] shadow-md p-8 sm:p-9">
+<div class="auth-page" style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:2rem 1.5rem">
+  <div class="auth-card" style="width:100%;max-width:460px;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-md);padding:2.2rem">
     <!-- Brand Header -->
-    <div class="flex items-center gap-2.5 font-extrabold text-[1.15rem] mb-4">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;margin-bottom:16px">
       <img
-        class="w-9 h-9 rounded-[11px] object-cover flex-none"
+        class="logo"
         src="/logo-sentraedu.jpg"
         alt="SentraEdu"
+        style="width:36px;height:36px;border-radius:11px;object-fit:cover"
       />
       <span class="brand-name">
-        <span class="text-primary">Sentra</span><span class="text-accent">Edu</span>
+        <span style="color:var(--primary)">Sentra</span><span style="color:var(--accent)">Edu</span>
       </span>
     </div>
 
     <!-- Title & Theme Toggle -->
-    <div class="flex items-center justify-between gap-3">
-      <h1 class="text-[1.4rem] font-bold flex items-center gap-2.5">
-        <Icon name="lock" size="lg" filled={true} /> Masuk
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <h1 style="font-size:1.4rem;display:flex;align-items:center;gap:10px">
+        <Icon name="lock" filled={true} /> Masuk
       </h1>
-      <button
-        type="button"
-        class="top-btn"
-        title="Ganti tema"
-        aria-label="Ganti tema terang/gelap"
+      <Button
+        variant="ghost"
+        isIconOnly
+        size="md"
+        ariaLabel="Ganti tema terang/gelap"
+        icon={$themeStore === 'dark' ? 'light_mode' : 'dark_mode'}
         on:click={themeStore.toggleTheme}
-      >
-        <Icon name={$themeStore === 'dark' ? 'light_mode' : 'dark_mode'} size="md" />
-      </button>
+      />
     </div>
 
-    <p class="text-muted-fg text-[0.9rem] my-1.5 mb-4.5">
+    <p style="color:var(--muted-fg);font-size:.9rem;margin:6px 0 18px">
       Masuk menggunakan akun Anda, atau gunakan tombol login cepat sesuai peran.
     </p>
 
     <!-- Login Form -->
-    <form on:submit|preventDefault={handleSubmit} novalidate>
+    <form id="login-form" on:submit|preventDefault={handleSubmit} novalidate>
       <div class="field">
         <label for="login-email">Email</label>
         <div class="input-wrap">
-          <input
+          <Input
             type="email"
             id="login-email"
             placeholder="nama@sentraedu.id"
@@ -117,7 +119,7 @@
       <div class="field">
         <label for="login-password">Password</label>
         <div class="input-wrap">
-          <input
+          <Input
             type="password"
             id="login-password"
             placeholder="••••••••"
@@ -128,41 +130,41 @@
       </div>
 
       {#if errorMessage}
-        <div class="bg-danger-soft text-danger rounded-[10px] p-2.5 text-[0.85rem] mb-3">
+        <div class="form-error" id="login-error" style="display:block">
           {errorMessage}
         </div>
       {/if}
 
-      <button type="submit" class="btn btn-primary w-full py-2.5">
-        <Icon name="login" size="sm" /> Masuk
-      </button>
+      <Button type="submit" variant="primary" fullWidth icon="login">
+        Masuk
+      </Button>
     </form>
 
     <!-- Divider -->
-    <div class="flex items-center gap-3 my-5 mb-3.5 text-muted-fg text-[0.78rem]">
-      <span class="flex-1 h-px bg-border"></span>
+    <div style="display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--muted-fg);font-size:.78rem">
+      <span style="flex:1;height:1px;background:var(--border)"></span>
       atau login cepat sebagai
-      <span class="flex-1 h-px bg-border"></span>
+      <span style="flex:1;height:1px;background:var(--border)"></span>
     </div>
 
     <!-- Fast Persona Login Grid -->
-    <div class="grid grid-cols-2 gap-2.5">
+    <div class="persona-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       {#each PERSONAS as p}
-        <button
-          type="button"
-          class="flex flex-col items-start gap-1 text-left p-3 bg-surface border border-border rounded-xl transition cursor-pointer hover:border-primary-soft-2 hover:bg-muted"
+        <Button
+          variant="outline"
+          className="persona-btn"
           on:click={() => handlePersonaClick(p.email)}
         >
-          <span class="text-primary text-[22px]">
-            <Icon name={p.icon} size="md" filled={true} />
+          <span style="color:var(--primary);font-size:22px">
+            <Icon name={p.icon} filled={true} />
           </span>
-          <span class="font-bold text-[0.88rem] text-fg">
+          <span style="font-weight:700;font-size:.88rem">
             {p.label}
           </span>
-          <span class="text-muted-fg text-[0.72rem] leading-tight">
+          <span style="color:var(--muted-fg);font-size:.72rem;font-weight:400">
             {p.desc}
           </span>
-        </button>
+        </Button>
       {/each}
     </div>
   </div>
