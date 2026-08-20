@@ -5,7 +5,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { getStudentPrograms, type UnifiedProgram } from '$lib/shared/utils/program-helpers';
   import { formatDateIndonesian } from '$lib/shared/utils/formatting';
-  import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass, getScheduleDaysList, DAY_OPTIONS } from '$lib/shared/utils/status-map';
   import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
 
   let isLoading = true;
@@ -40,17 +40,10 @@
   }
 
   function formatScheduleDays(days: string[]): string {
-    if (days.length === 0) return '—';
-    if (days.length <= 2) return days.join(' & ');
-    return `${days[0]}–${days[days.length - 1]}`;
-  }
-
-  function formatDayShort(day: string): string {
-    const map: Record<string, string> = {
-      'Senin': 'Sn', 'Selasa': 'Sl', 'Rabu': 'Rb', 'Kamis': 'Km',
-      'Jumat': 'Jm', 'Sabtu': 'Sb', 'Minggu': 'Mg'
-    };
-    return map[day] || day.slice(0, 2);
+    const list = getScheduleDaysList(days);
+    if (list.length === 0) return '—';
+    if (list.length <= 2) return list.join(' & ');
+    return `${list[0]}–${list[list.length - 1]}`;
   }
 </script>
 
@@ -112,13 +105,7 @@
 
     <h1 class="hero-title">{program.title}</h1>
     <p class="hero-sub">
-      {program.subjectNames.join(', ')}
-      {#if program.classNames[0] !== 'Semua Kelas'}
-        · {program.classNames.join(', ')}
-      {/if}
-      {#if program.studentCount > 1}
-        · {program.studentCount} siswa
-      {/if}
+      {program.subjectNames.length} Mapel, {program.classNames.length} Kelas, {program.studentNames.length || program.studentCount || 1} Murid
     </p>
 
     {#if program.tentorPhone}
@@ -185,9 +172,9 @@
 
         <!-- Day chips -->
         <div class="day-chips">
-          {#each ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as day}
-            <div class="day-chip" class:active={program.scheduleDays.includes(day)}>
-              {formatDayShort(day)}
+          {#each DAY_OPTIONS as opt}
+            <div class="day-chip" class:active={program.scheduleDays.includes(opt.value) || program.scheduleDays.includes(opt.label)}>
+              {opt.label.slice(0, 2)}
             </div>
           {/each}
         </div>
@@ -241,26 +228,32 @@
           <h3>Tentor</h3>
         </div>
         <div class="sec-body">
-          <div class="tentor-row">
-            <div class="tentor-avatar">
-              {program.tentorName.charAt(0)}
+          {#if program.tentorName && program.tentorName !== 'Belum Ditugaskan' && program.tentorName !== '—'}
+            <div class="tentor-row">
+              <div class="tentor-avatar">
+                {program.tentorName.charAt(0)}
+              </div>
+              <div class="tentor-info">
+                <div class="tentor-name">{program.tentorName}</div>
+                <div class="tentor-role">Pengajar SentraEdu</div>
+                {#if program.tentorPhone}
+                  <a
+                    href="https://wa.me/{program.tentorPhone.replace(/[^0-9]/g, '')}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="tentor-wa"
+                  >
+                    <Icon name="chat" size="xs" />
+                    {program.tentorPhone}
+                  </a>
+                {/if}
+              </div>
             </div>
-            <div class="tentor-info">
-              <div class="tentor-name">{program.tentorName}</div>
-              <div class="tentor-role">Pengajar SentraEdu</div>
-              {#if program.tentorPhone}
-                <a
-                  href="https://wa.me/{program.tentorPhone.replace(/[^0-9]/g, '')}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="tentor-wa"
-                >
-                  <Icon name="chat" size="xs" />
-                  {program.tentorPhone}
-                </a>
-              {/if}
+          {:else}
+            <div class="text-sm text-muted-fg italic py-1">
+              Tentor belum ditugaskan oleh admin.
             </div>
-          </div>
+          {/if}
         </div>
       </div>
 

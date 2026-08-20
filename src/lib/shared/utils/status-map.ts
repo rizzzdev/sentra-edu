@@ -141,6 +141,27 @@ export const STATUS_BADGE_CLASS: Record<string, string> = {
   Dibatalkan: 'b-rejected'
 };
 
+// ── Schedule Days (1 hari 1 mapping) ────────────────────────
+export const DAY_LABEL: Record<string, string> = {
+  MONDAY: 'Senin',
+  TUESDAY: 'Selasa',
+  WEDNESDAY: 'Rabu',
+  THURSDAY: 'Kamis',
+  FRIDAY: 'Jumat',
+  SATURDAY: 'Sabtu',
+  SUNDAY: 'Minggu'
+};
+
+export const DAY_OPTIONS = [
+  { value: 'MONDAY', label: 'Senin' },
+  { value: 'TUESDAY', label: 'Selasa' },
+  { value: 'WEDNESDAY', label: 'Rabu' },
+  { value: 'THURSDAY', label: 'Kamis' },
+  { value: 'FRIDAY', label: 'Jumat' },
+  { value: 'SATURDAY', label: 'Sabtu' },
+  { value: 'SUNDAY', label: 'Minggu' }
+];
+
 // ── Helper Functions ────────────────────────────────────────
 
 /** Get the Indonesian label for any status key. Falls back to the raw key. */
@@ -154,4 +175,18 @@ export function getStatusLabel(
 /** Get the badge CSS class for a status key. Falls back to 'b-neutral'. */
 export function getStatusBadgeClass(status: string): string {
   return STATUS_BADGE_CLASS[status] ?? 'b-neutral';
+}
+
+/** Get the Indonesian label for a day key. */
+export function getDayLabel(day: string): string {
+  return DAY_LABEL[day] ?? day;
+}
+
+/** Format an array of day keys into Indonesian labels for UI display */
+export function getScheduleDaysList(days: string[] | undefined | null): string[] {
+  if (!days || !Array.isArray(days) || days.length === 0) return ['—'];
+  const mapped = days
+    .map((d) => (typeof d === 'string' ? (DAY_LABEL[d] ?? d) : ''))
+    .filter(Boolean);
+  return mapped.length > 0 ? mapped : ['—'];
 }

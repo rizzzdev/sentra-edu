@@ -3,6 +3,7 @@
   import { authStore } from '$lib/shared/stores/auth-store';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { getParentPrograms, type UnifiedProgram } from '$lib/shared/utils/program-helpers';
+  import { getScheduleDaysList } from '$lib/shared/utils/status-map';
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
@@ -274,7 +275,7 @@
                     {/if}
                   </td>
                   <td>
-                    <div class="text-sm font-medium">{prog.scheduleDays.join(', ')}</div>
+                    <div class="text-sm font-medium">{getScheduleDaysList(prog.scheduleDays).join(', ')}</div>
                     <div class="text-xs text-muted-fg">{prog.scheduleTime}{#if prog.scheduleEndTime} – {prog.scheduleEndTime}{/if} WIB</div>
                   </td>
                   <td>

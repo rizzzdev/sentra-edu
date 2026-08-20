@@ -6,7 +6,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
-  import { JOB_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import { JOB_STATUS_LABEL, getStatusLabel, getStatusBadgeClass, getScheduleDaysList } from '$lib/shared/utils/status-map';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import type { JobPosting } from '$lib/shared/types/common.types';
@@ -48,23 +48,6 @@
       .map((id) => $dbStore.subjects.find((s) => s.id === id)?.name)
       .filter((n): n is string => Boolean(n));
     return names.length > 0 ? names : ['—'];
-  }
-
-  const DAY_NAME_MAP: Record<string, string> = {
-    'Monday': 'Senin', 'Tuesday': 'Selasa', 'Wednesday': 'Rabu',
-    'Thursday': 'Kamis', 'Friday': 'Jumat', 'Saturday': 'Sabtu', 'Sunday': 'Minggu',
-    'mon': 'Senin', 'tue': 'Selasa', 'wed': 'Rabu',
-    'thu': 'Kamis', 'fri': 'Jumat', 'sat': 'Sabtu', 'sun': 'Minggu',
-    'Senin': 'Senin', 'Selasa': 'Selasa', 'Rabu': 'Rabu',
-    'Kamis': 'Kamis', 'Jumat': 'Jumat', 'Sabtu': 'Sabtu', 'Minggu': 'Minggu'
-  };
-
-  function getScheduleDaysList(days: string[] | undefined | null): string[] {
-    if (!days || !Array.isArray(days) || days.length === 0) return ['—'];
-    const mapped = days
-      .map((d) => (typeof d === 'string' ? (DAY_NAME_MAP[d.trim()] || d.trim()) : ''))
-      .filter(Boolean);
-    return mapped.length > 0 ? mapped : ['—'];
   }
 
   function getUserName(userId: string | null | undefined): string {

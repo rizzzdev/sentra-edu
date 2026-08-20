@@ -3,8 +3,10 @@
   import { authStore } from '$lib/shared/stores/auth-store';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { getStudentPrograms, type UnifiedProgram } from '$lib/shared/utils/program-helpers';
+  import { getScheduleDaysList } from '$lib/shared/utils/status-map';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import Pagination from '$lib/components/molecules/pagination.svelte';
+  import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import { onMount } from 'svelte';
 
   $: currentUser = $authStore;
@@ -23,13 +25,16 @@
     ? getStudentPrograms($dbStore, currentUser.id, currentUser.fullName)
     : [];
 
+
+
   $: filteredPrograms = allPrograms.filter((p) => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchSubject = p.subjectNames.some((s) => s.toLowerCase().includes(q));
       const matchTentor = p.tentorName.toLowerCase().includes(q);
       const matchClass = p.classNames.some((c) => c.toLowerCase().includes(q));
-      if (!matchSubject && !matchTentor && !matchClass) return false;
+      const matchTitle = p.title.toLowerCase().includes(q);
+      if (!matchSubject && !matchTentor && !matchClass && !matchTitle) return false;
     }
     if (statusFilter) {
       if (statusFilter === 'AKTIF' && p.status !== 'ASSIGNED') return false;
@@ -49,13 +54,6 @@
   // Reset to page 1 when filters change
   $: if (searchQuery || statusFilter || modeFilter) {
     currentPage = 1;
-  }
-
-  function formatSchedule(p: UnifiedProgram): string {
-    const days = p.scheduleDays.length <= 2
-      ? p.scheduleDays.join(' & ')
-      : `${p.scheduleDays[0]}–${p.scheduleDays[p.scheduleDays.length - 1]}`;
-    return `${days} · ${p.scheduleTime}${p.scheduleEndTime ? '–' + p.scheduleEndTime : ''}`;
   }
 </script>
 
@@ -99,54 +97,131 @@
       <table class="tbl">
         <thead>
           <tr>
-            <th>No</th>
-            <th>Mata Pelajaran</th>
+            <th>Program Les</th>
             <th>Kelas</th>
-            <th>Tipe · Mode</th>
-            <th>Tentor</th>
-            <th>Jadwal</th>
-            <th>Status</th>
+            <th>Mata Pelajaran</th>
+            <th>Jadwal Belajar</th>
+            <th>Tentor & Status</th>
+            <th style="text-align:right">Aksi</th>
           </tr>
         </thead>
         <tbody>
           {#if isLoading}
             {#each Array(4) as _}
               <tr>
-                {#each Array(7) as _}
-                  <td><div class="skel-cell"></div></td>
-                {/each}
+                <td><Skeleton width="w-36" height="h-4" /></td>
+                <td><Skeleton width="w-20" height="h-6" className="rounded-full" /></td>
+                <td><Skeleton width="w-24" height="h-6" className="rounded-full" /></td>
+                <td><Skeleton width="w-32" height="h-4" /></td>
+                <td><Skeleton width="w-28" height="h-6" className="rounded-full" /></td>
+                <td><Skeleton width="w-8" height="h-8" className="ml-auto rounded-md" /></td>
               </tr>
             {/each}
           {:else if filteredPrograms.length === 0}
             <tr>
-              <td colspan="7" class="empty">
-                {searchQuery || statusFilter || modeFilter
-                  ? 'Tidak ada program yang cocok.'
-                  : 'Belum ada program les.'}
+              <td colspan="6" class="empty py-10 text-center text-muted-fg">
+                <Icon name="school" size="lg" className="opacity-40 mb-2 block mx-auto text-4xl" />
+                <div class="font-semibold text-fg">
+                  {searchQuery || statusFilter || modeFilter
+                    ? 'Tidak ada program les yang cocok.'
+                    : 'Belum ada program les terdaftar.'}
+                </div>
+                <div class="text-xs text-muted-fg mt-1">
+                  {searchQuery || statusFilter || modeFilter
+                    ? 'Coba sesuaikan kata kunci pencarian atau filter.'
+                    : 'Hubungi admin untuk memulai bimbingan belajar.'}
+                </div>
               </td>
             </tr>
           {:else}
-            {#each paginatedPrograms as prog, i (prog.id)}
-              {@const rowNum = (currentPage - 1) * itemsPerPage + i + 1}
-              <tr class="clickable" on:click={() => { window.location.href = `/student/program/${prog.id}`; }}>
-                <td class="text-muted-fg">{rowNum}</td>
+            {#each paginatedPrograms as prog (prog.id)}
+              <tr>
                 <td>
-                  <div class="font-semibold text-fg">{prog.subjectNames.join(', ')}</div>
-                  <div class="sub">{prog.packageName}</div>
+                  <strong>{prog.title}</strong>
+                  <div class="sub">
+                    <span class="badge {prog.jobMode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
+                      {prog.jobMode === 'ONLINE' ? 'Online' : 'Offline'}
+                    </span>
+                    <span class="badge {prog.packageMode === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
+                      {prog.packageMode === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
+                    </span>
+                  </div>
                 </td>
-                <td>{prog.classNames.join(', ')}</td>
                 <td>
-                  <span class="tag tag-{prog.packageMode === 'PRIVAT' ? 'privat' : 'kelompok'}">
-                    {prog.packageMode === 'PRIVAT' ? 'Privat' : 'Kelompok'}
-                  </span>
-                  <span class="tag tag-{prog.jobMode === 'ONLINE' ? 'online' : 'offline'}">
-                    {prog.jobMode === 'ONLINE' ? 'Online' : 'Offline'}
-                  </span>
+                  <div class="flex flex-col gap-1 items-start">
+                    {#each prog.classNames as cls}
+                      <span class="badge b-neutral text-xs">
+                        <Icon name="stairs" size="xs" />
+                        {cls}
+                      </span>
+                    {/each}
+                  </div>
                 </td>
-                <td>{prog.tentorName}</td>
-                <td class="text-sm">{formatSchedule(prog)}</td>
                 <td>
-                  <span class="badge {prog.statusBadgeClass}">{prog.statusLabel}</span>
+                  <div class="flex flex-col gap-1 items-start">
+                    {#each prog.subjectNames as sub}
+                      <span class="badge b-sky text-xs">
+                        <Icon name="menu_book" size="xs" />
+                        {sub}
+                      </span>
+                    {/each}
+                  </div>
+                </td>
+                <td>
+                  <div class="flex flex-col gap-1.5 items-start">
+                    <div class="flex items-center gap-1 flex-wrap">
+                      {#each getScheduleDaysList(prog.scheduleDays) as day}
+                        <span class="badge b-neutral text-xs font-semibold">
+                          <Icon name="calendar_today" size="xs" />
+                          {day}
+                        </span>
+                      {/each}
+                    </div>
+                    <div class="sub">{prog.scheduleTime || '—'}{#if prog.scheduleEndTime} – {prog.scheduleEndTime}{/if} WIB</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex flex-col gap-1 items-start">
+                    <span class="badge {prog.statusBadgeClass}">
+                      {#if prog.status === 'ASSIGNED'}
+                        <Icon name="check_circle" size="xs" />
+                      {:else if prog.status === 'AVAILABLE'}
+                        <Icon name="event_available" size="xs" />
+                      {:else if prog.status === 'NEGOTIATING'}
+                        <Icon name="handshake" size="xs" />
+                      {:else if prog.status === 'CANCELLED'}
+                        <Icon name="cancel" size="xs" />
+                      {/if}
+                      {prog.statusLabel}
+                    </span>
+                    {#if prog.tentorName && prog.tentorName !== 'Belum Ditugaskan' && prog.tentorName !== '—'}
+                      <div class="text-xs font-medium text-fg flex items-center gap-1 mt-0.5">
+                        <Icon name="badge" size="xs" />
+                        <span>{prog.tentorName}</span>
+                      </div>
+                      {#if prog.tentorPhone}
+                        <a
+                          href="https://wa.me/{prog.tentorPhone.replace(/[^0-9]/g, '')}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-xs text-emerald-600 font-semibold hover:underline inline-flex items-center gap-1"
+                        >
+                          <Icon name="chat" size="xs" /> WA
+                        </a>
+                      {/if}
+                    {/if}
+                  </div>
+                </td>
+                <td>
+                  <div class="actions">
+                    <a
+                      href="/student/program/{prog.id}"
+                      class="btn-icon"
+                      data-tip="Detail"
+                    >
+                      <Icon name="visibility" size="sm" />
+                    </a>
+                  </div>
                 </td>
               </tr>
             {/each}
@@ -163,44 +238,3 @@
     />
   </div>
 </div>
-
-<style>
-  .skel-cell {
-    height: 14px;
-    width: 60%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--color-surface-hover, #f1f5f9) 25%, #e2e8f0 50%, var(--color-surface-hover, #f1f5f9) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 0.68rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 5px;
-    white-space: nowrap;
-  }
-
-  .tag-privat { background: #ede9fe; color: #7c3aed; }
-  .tag-kelompok { background: #fef3c7; color: #b45309; }
-  .tag-online { background: #e0f2fe; color: #0284c7; }
-  .tag-offline { background: #ecfdf5; color: #059669; }
-
-  .sub {
-    font-size: 0.74rem;
-    color: var(--color-fg-muted, #94a3b8);
-    margin-top: 2px;
-  }
-
-  .clickable { cursor: pointer; }
-  .clickable:hover { background: var(--color-surface-hover, #f8fafc); }
-</style>

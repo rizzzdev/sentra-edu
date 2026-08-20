@@ -32,7 +32,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     const subjectIds = Array.isArray(body.subjectIds) ? body.subjectIds : (body.subjectId ? [String(body.subjectId)] : []);
     const studentIds = Array.isArray(body.studentIds) ? body.studentIds : (body.studentId ? [String(body.studentId)] : []);
     const studentNames = Array.isArray(body.studentNames) ? body.studentNames : [];
-    const scheduleDays = Array.isArray(body.scheduleDays) ? body.scheduleDays : ['Senin'];
+    const scheduleDays = Array.isArray(body.scheduleDays)
+      ? body.scheduleDays.map(String)
+      : ['MONDAY'];
 
     if (body.id) {
       const jobId = String(body.id);

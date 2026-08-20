@@ -9,6 +9,7 @@
   import CurrencyInput from '$lib/components/atoms/currency-input.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
+  import { DAY_OPTIONS, getScheduleDaysList } from '$lib/shared/utils/status-map';
 
   export let open: boolean = false;
   export let editingJob: JobPost | null = null;
@@ -21,15 +22,13 @@
   let selectedStudentIds: string[] = [];
   let selectedClassIds: string[] = [];
   let selectedSubjectIds: string[] = [];
-  let preferredDays: string[] = ['Senin', 'Rabu'];
+  let preferredDays: string[] = ['MONDAY', 'WEDNESDAY'];
   let startTime: string = '16:00';
   let endTime: string = '17:30';
   let transportAllowance: number = 0;
   let latitude: number = -6.2;
   let longitude: number = 106.8;
   let description: string = '';
-
-  const dayOptions = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
   // Derived data
   $: enrollments = $dbStore.enrollments.filter((e) => e.deletedAt === null);
@@ -69,8 +68,6 @@
     .filter((s) => s.deletedAt === null)
     .map((s) => ({ value: s.id, label: s.name }));
 
-  $: daySelectOptions = dayOptions.map((d) => ({ value: d, label: d }));
-
   let previousOpen = false;
   let previousJobId: string | null = null;
 
@@ -91,7 +88,9 @@
       selectedSubjectIds = editingJob.subjectIds && editingJob.subjectIds.length > 0
         ? editingJob.subjectIds
         : (editingJob.subjectId ? [editingJob.subjectId] : []);
-      preferredDays = editingJob.scheduleDays || ['Senin', 'Rabu'];
+      preferredDays = editingJob.scheduleDays && editingJob.scheduleDays.length > 0
+        ? editingJob.scheduleDays
+        : ['MONDAY', 'WEDNESDAY'];
       startTime = editingJob.scheduleTime || '16:00';
       endTime = editingJob.scheduleEndTime || '17:30';
       transportAllowance = editingJob.transportAllowance || 0;
@@ -116,7 +115,7 @@
     selectedStudentIds = [];
     selectedClassIds = [];
     selectedSubjectIds = [];
-    preferredDays = ['Senin', 'Rabu'];
+    preferredDays = ['MONDAY', 'WEDNESDAY'];
     startTime = '16:00';
     endTime = '17:30';
     transportAllowance = 0;
@@ -197,7 +196,7 @@
       scheduleDays: preferredDays,
       scheduleTime: startTime,
       scheduleEndTime: endTime,
-      schedulePreference: `${preferredDays.join(', ')} ${startTime}–${endTime} WIB`,
+      schedulePreference: `${getScheduleDaysList(preferredDays).join(', ')} ${startTime}–${endTime} WIB`,
       tentorFee: selectedPackage ? selectedPackage.tentorFee : 100000,
       transportAllowance,
       sessionDurationMinutes: calculateDuration(startTime, endTime),
@@ -325,7 +324,7 @@
         multiple={true}
         bind:value={preferredDays}
         placeholder="— Pilih hari —"
-        options={daySelectOptions}
+        options={DAY_OPTIONS}
       />
     </div>
 

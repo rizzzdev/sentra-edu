@@ -5,7 +5,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { getParentPrograms, type UnifiedProgram } from '$lib/shared/utils/program-helpers';
   import { formatDateIndonesian } from '$lib/shared/utils/formatting';
-  import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass, getScheduleDaysList } from '$lib/shared/utils/status-map';
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
   import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
@@ -239,7 +239,7 @@
           <div>
             <div class="text-xs font-semibold text-muted-fg uppercase tracking-wider mb-1">Hari & Jam Bimbingan</div>
             <div class="text-sm font-bold text-fg">
-              {program.scheduleDays.join(', ')}
+              {getScheduleDaysList(program.scheduleDays).join(', ')}
             </div>
             <div class="text-sm text-primary font-semibold mt-0.5">
               {program.scheduleTime}{#if program.scheduleEndTime} – {program.scheduleEndTime}{/if} WIB

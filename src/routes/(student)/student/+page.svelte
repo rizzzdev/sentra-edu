@@ -3,7 +3,7 @@
   import { authStore } from '$lib/shared/stores/auth-store';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { formatCurrencyIDR, formatDateIndonesian } from '$lib/shared/utils/formatting';
-  import { JOB_STATUS_LABEL, INVOICE_STATUS_LABEL, ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import { JOB_STATUS_LABEL, INVOICE_STATUS_LABEL, ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass, getScheduleDaysList } from '$lib/shared/utils/status-map';
   import type { AttendanceRecord, JobPosting, InvoiceRecord } from '$lib/shared/types/common.types';
   import { getStudentPrograms, getParentPrograms, type UnifiedProgram } from '$lib/shared/utils/program-helpers';
   import AttendanceVerifyModal from '$lib/features/attendance-tracking/components/attendance-verify-modal.svelte';
@@ -461,11 +461,11 @@
         <table class="tbl">
           <thead>
             <tr>
-              <th>Program / Mapel</th>
-              <th>Paket & Mode</th>
-              <th>Tentor Pengajar</th>
+              <th>Program Les</th>
+              <th>Kelas</th>
+              <th>Mata Pelajaran</th>
               <th>Jadwal Belajar</th>
-              <th>Status</th>
+              <th>Tentor & Status</th>
               <th style="text-align:right">Aksi</th>
             </tr>
           </thead>
@@ -473,11 +473,11 @@
             {#if isLoading}
               {#each Array(3) as _}
                 <tr>
-                  <td><Skeleton width="w-32" height="h-4" /></td>
-                  <td><Skeleton width="w-24" height="h-4" /></td>
-                  <td><Skeleton width="w-28" height="h-4" /></td>
-                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-36" height="h-4" /></td>
                   <td><Skeleton width="w-20" height="h-6" className="rounded-full" /></td>
+                  <td><Skeleton width="w-24" height="h-6" className="rounded-full" /></td>
+                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-28" height="h-6" className="rounded-full" /></td>
                   <td><Skeleton width="w-8" height="h-8" className="ml-auto rounded-md" /></td>
                 </tr>
               {/each}
@@ -493,47 +493,80 @@
               {#each studentPaginatedPrograms as prog (prog.id)}
                 <tr>
                   <td>
-                    <div class="font-semibold text-fg">{prog.title}</div>
-                    <div class="text-xs text-muted-fg mt-0.5">{prog.classNames.join(', ')}</div>
-                  </td>
-                  <td>
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="badge {prog.packageMode === 'PRIVAT' ? 'b-sky' : 'b-amber'}">
-                        <Icon name={prog.packageMode === 'PRIVAT' ? 'person' : 'groups'} size="xs" />
-                        {prog.packageMode}
+                    <strong>{prog.title}</strong>
+                    <div class="sub">
+                      <span class="badge {prog.jobMode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
+                        {prog.jobMode === 'ONLINE' ? 'Online' : 'Offline'}
                       </span>
-                      <span class="badge b-neutral">
-                        <Icon name={prog.jobMode === 'OFFLINE' ? 'home_pin' : 'videocam'} size="xs" />
-                        {prog.jobMode === 'OFFLINE' ? 'Tatap Muka' : 'Online'}
+                      <span class="badge {prog.packageMode === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
+                        {prog.packageMode === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
                       </span>
                     </div>
                   </td>
                   <td>
-                    <div class="font-medium text-fg">{prog.tentorName}</div>
-                    {#if prog.tentorPhone}
-                      <a
-                        href="https://wa.me/{prog.tentorPhone.replace(/[^0-9]/g, '')}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-xs text-emerald-600 font-semibold hover:underline inline-flex items-center gap-1 mt-0.5"
-                      >
-                        <Icon name="chat" size="xs" /> WA
-                      </a>
-                    {/if}
+                    <div class="flex flex-col gap-1 items-start">
+                      {#each prog.classNames as cls}
+                        <span class="badge b-neutral text-xs">
+                          <Icon name="stairs" size="xs" />
+                          {cls}
+                        </span>
+                      {/each}
+                    </div>
                   </td>
                   <td>
-                    <div class="text-sm font-medium">{prog.scheduleDays.join(', ')}</div>
-                    <div class="text-xs text-muted-fg">{prog.scheduleTime}{#if prog.scheduleEndTime} – {prog.scheduleEndTime}{/if} WIB</div>
+                    <div class="flex flex-col gap-1 items-start">
+                      {#each prog.subjectNames as sub}
+                        <span class="badge b-sky text-xs">
+                          <Icon name="menu_book" size="xs" />
+                          {sub}
+                        </span>
+                      {/each}
+                    </div>
                   </td>
                   <td>
-                    <span class="badge {prog.statusBadgeClass}">
-                      {#if prog.status === 'ASSIGNED'}
-                        <Icon name="check_circle" size="xs" />
-                      {:else if prog.status === 'AVAILABLE'}
-                        <Icon name="hourglass_empty" size="xs" />
+                    <div class="flex flex-col gap-1.5 items-start">
+                      <div class="flex items-center gap-1 flex-wrap">
+                        {#each getScheduleDaysList(prog.scheduleDays) as day}
+                          <span class="badge b-neutral text-xs font-semibold">
+                            <Icon name="calendar_today" size="xs" />
+                            {day}
+                          </span>
+                        {/each}
+                      </div>
+                      <div class="sub">{prog.scheduleTime || '—'}{#if prog.scheduleEndTime} – {prog.scheduleEndTime}{/if} WIB</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="flex flex-col gap-1 items-start">
+                      <span class="badge {prog.statusBadgeClass}">
+                        {#if prog.status === 'ASSIGNED'}
+                          <Icon name="check_circle" size="xs" />
+                        {:else if prog.status === 'AVAILABLE'}
+                          <Icon name="event_available" size="xs" />
+                        {:else if prog.status === 'NEGOTIATING'}
+                          <Icon name="handshake" size="xs" />
+                        {:else if prog.status === 'CANCELLED'}
+                          <Icon name="cancel" size="xs" />
+                        {/if}
+                        {prog.statusLabel}
+                      </span>
+                      {#if prog.tentorName && prog.tentorName !== 'Belum Ditugaskan' && prog.tentorName !== '—'}
+                        <div class="text-xs font-medium text-fg flex items-center gap-1 mt-0.5">
+                          <Icon name="badge" size="xs" />
+                          <span>{prog.tentorName}</span>
+                        </div>
+                        {#if prog.tentorPhone}
+                          <a
+                            href="https://wa.me/{prog.tentorPhone.replace(/[^0-9]/g, '')}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-xs text-emerald-600 font-semibold hover:underline inline-flex items-center gap-1"
+                          >
+                            <Icon name="chat" size="xs" /> WA
+                          </a>
+                        {/if}
                       {/if}
-                      {prog.statusLabel}
-                    </span>
+                    </div>
                   </td>
                   <td>
                     <div class="actions">
