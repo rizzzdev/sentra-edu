@@ -99,6 +99,9 @@
 	"/api/enrollments": [
 		"src/routes/api/enrollments/+server.ts"
 	],
+	"/api/geocode": [
+		"src/routes/api/geocode/+server.ts"
+	],
 	"/api/invoices": [
 		"src/routes/api/invoices/+server.ts"
 	],
