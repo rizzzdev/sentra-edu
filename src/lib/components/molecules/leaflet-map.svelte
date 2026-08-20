@@ -5,27 +5,36 @@
   export let latitude: number = -6.2;
   export let longitude: number = 106.8;
   export let height: string = '300px';
-  export let zoom: number = 13;
+  export let zoom: number = 15;
   export let readonly: boolean = false;
+  export let radius: number = 50; // meters
 
   let container: HTMLDivElement;
   let map: L.Map;
   let marker: L.Marker;
+  let circle: L.Circle;
   let leaflet: typeof import('leaflet');
+
+  function updateMarkerAndCircle(lat: number, lng: number) {
+    if (!marker || !circle || !map) return;
+    marker.setLatLng([lat, lng]);
+    circle.setLatLng([lat, lng]);
+    if (!map.getBounds().contains([lat, lng])) {
+      map.setView([lat, lng], zoom);
+    }
+  }
 
   $: if (map && latitude !== undefined && longitude !== undefined) {
     const lat = typeof latitude === 'string' ? parseFloat(latitude) : latitude;
     const lng = typeof longitude === 'string' ? parseFloat(longitude) : longitude;
     if (!isNaN(lat) && !isNaN(lng)) {
-      marker.setLatLng([lat, lng]);
-      if (!map.getBounds().contains([lat, lng])) {
-        map.setView([lat, lng], zoom);
-      }
+      updateMarkerAndCircle(lat, lng);
     }
   }
 
   onMount(async () => {
     leaflet = await import('leaflet');
+    const geocoderModule = await import('leaflet-control-geocoder');
 
     // Fix default icon paths
     delete (leaflet.Icon.Default.prototype as any)._getIconUrl;
@@ -50,19 +59,53 @@
       maxZoom: 19
     }).addTo(map);
 
+    // Search bar (geocoder)
+    const geocoder = geocoderModule.geocoder({
+      defaultMarkGeocode: false,
+      placeholder: 'Cari lokasi...',
+      errorMessage: 'Lokasi tidak ditemukan',
+      showResultIcons: true
+    }).addTo(map);
+
+    geocoder.on('markgeocode', (e: any) => {
+      const center = e.geocode.center;
+      if (!readonly) {
+        marker.setLatLng(center);
+        circle.setLatLng(center);
+        latitude = Math.round(center.lat * 1000000) / 1000000;
+        longitude = Math.round(center.lng * 1000000) / 1000000;
+      }
+      map.setView(center, zoom);
+    });
+
+    // Marker
     marker = leaflet.marker([lat || -6.2, lng || 106.8], {
       draggable: !readonly
+    }).addTo(map);
+
+    // Circle with 50m radius
+    circle = leaflet.circle([lat || -6.2, lng || 106.8], {
+      radius: radius,
+      color: '#3b82f6',
+      fillColor: '#3b82f6',
+      fillOpacity: 0.08,
+      weight: 2,
+      dashArray: '6 4'
     }).addTo(map);
 
     if (!readonly) {
       marker.on('dragend', () => {
         const pos = marker.getLatLng();
-        latitude = Math.round(pos.lat * 1000000) / 1000000;
-        longitude = Math.round(pos.lng * 1000000) / 1000000;
+        const newLat = Math.round(pos.lat * 1000000) / 1000000;
+        const newLng = Math.round(pos.lng * 1000000) / 1000000;
+        latitude = newLat;
+        longitude = newLng;
+        circle.setLatLng([newLat, newLng]);
       });
 
       map.on('click', (e: L.LeafletMouseEvent) => {
         marker.setLatLng(e.latlng);
+        circle.setLatLng(e.latlng);
         latitude = Math.round(e.latlng.lat * 1000000) / 1000000;
         longitude = Math.round(e.latlng.lng * 1000000) / 1000000;
       });
@@ -81,7 +124,7 @@
   <div bind:this={container} class="leaflet-container"></div>
   {#if !readonly}
     <div class="leaflet-hint">
-      Klik peta atau geser marker untuk mengatur lokasi
+      Klik peta atau geser marker · lingkaran = radius {radius}m
     </div>
   {/if}
 </div>
@@ -114,5 +157,23 @@
     font-size: 0.72rem;
     pointer-events: none;
     white-space: nowrap;
+  }
+
+  /* Geocoder search bar styling */
+  :global(.leaflet-control-geocoder) {
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  :global(.leaflet-control-geocoder-form input) {
+    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+    border: 1px solid var(--color-border) !important;
+  }
+
+  :global(.leaflet-control-geocoder-alternatives) {
+    max-height: 200px !important;
+    overflow-y: auto !important;
   }
 </style>
