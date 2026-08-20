@@ -5,6 +5,8 @@
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { JobPost, User } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
+  import { getScheduleDaysList } from '$lib/shared/utils/status-map';
+  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
@@ -29,14 +31,15 @@
   {#if job}
     <div class="kv mb-3.5">
       <dt>Judul</dt>
-      <dd>{job.title}</dd>
-      <dt>Siswa</dt>
-      <dd>{job.studentName || '—'}</dd>
+      <dd class="font-semibold">{job.title}</dd>
       <dt>Jadwal</dt>
-      <dd>{job.schedulePreference || '—'}</dd>
+      <dd>{getScheduleDaysList(job.scheduleDays).join(', ')} · {job.scheduleTime || '—'}{#if job.scheduleEndTime} – {job.scheduleEndTime}{/if} WIB</dd>
       <dt>Estimasi Honor/Sesi</dt>
       <dd class="text-primary font-bold">
-        Rp {(job.tentorFee || 0).toLocaleString('id-ID')}
+        {formatCurrencyIDR(job.tentorFee || 0)}
+        {#if job.transportAllowance && job.transportAllowance > 0}
+          <span class="text-xs text-emerald-600 font-normal ml-1">(+ {formatCurrencyIDR(job.transportAllowance)} transport)</span>
+        {/if}
       </dd>
     </div>
 

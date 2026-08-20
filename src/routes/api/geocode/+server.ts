@@ -24,7 +24,55 @@ interface PhotonFeature {
 
 export const GET: RequestHandler = async ({ url }) => {
   const query = (url.searchParams.get('q') || '').trim();
+  const latParam = url.searchParams.get('lat');
+  const lngParam = url.searchParams.get('lng') || url.searchParams.get('lon');
 
+  // 1. Reverse Geocoding (Lat & Lng -> Address)
+  if (latParam && lngParam) {
+    try {
+      const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(latParam)}&lon=${encodeURIComponent(lngParam)}&addressdetails=1`;
+      const nominatimRes = await fetch(nominatimUrl, {
+        headers: {
+          'User-Agent': 'SentraEdu-App/1.0 (info@sentraedu.id)',
+          'Accept-Language': 'id,en;q=0.9'
+        }
+      });
+
+      if (nominatimRes.ok) {
+        const data = (await nominatimRes.json()) as {
+          display_name?: string;
+          name?: string;
+          lat?: string;
+          lon?: string;
+          address?: Record<string, string>;
+        };
+
+        const parts = (data.display_name || '').split(',');
+        const primary = parts[0] ? parts[0].trim() : data.name || 'Lokasi';
+        const secondary = parts.slice(1).join(',').trim();
+
+        return json({
+          error: false,
+          statusCode: 200,
+          data: {
+            displayName: data.display_name || '',
+            name: primary,
+            secondary,
+            road: data.address?.road || data.address?.neighbourhood || data.address?.suburb || '',
+            city: data.address?.city || data.address?.town || data.address?.municipality || data.address?.city_district || '',
+            state: data.address?.state || '',
+            country: data.address?.country || '',
+            lat: parseFloat(data.lat || latParam),
+            lng: parseFloat(data.lon || lngParam)
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Reverse geocoding error:', err);
+    }
+  }
+
+  // 2. Forward Geocoding (Query text -> Coordinates)
   if (!query || query.length < 2) {
     return json({ error: false, statusCode: 200, data: [] });
   }

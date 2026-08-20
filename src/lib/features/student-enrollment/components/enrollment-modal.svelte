@@ -7,6 +7,7 @@
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
+  import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
 
   export let open: boolean = false;
   export let editingEnrollment: Enrollment | null = null;
@@ -161,37 +162,22 @@
     </div>
 
     <div class="field">
-      <label for="f_fullAddress">Alamat Rumah (lokasi les) <i class="req">*</i></label>
-      <Input
-        id="f_fullAddress"
-        type="text"
-        placeholder="Alamat lengkap rumah murid"
-        required
-        bind:value={fullAddress}
-      />
-    </div>
-
-    <div class="form-grid">
-      <div class="field">
-        <label for="f_latitude">Latitude <i class="req">*</i></label>
+      <label for="f_fullAddress">Lokasi & Alamat Rumah Murid <i class="req">*</i></label>
+      <div class="mb-2">
+        <LeafletMap bind:latitude bind:longitude bind:address={fullAddress} height="240px" />
+      </div>
+      <div class="space-y-1">
+        <label for="f_fullAddress" class="text-xs font-semibold text-muted-fg block">Alamat Lengkap</label>
         <Input
-          id="f_latitude"
-          type="number"
-          step="0.0001"
+          id="f_fullAddress"
+          type="text"
+          placeholder="Alamat terisi otomatis dari peta atau ketik manual..."
           required
-          bind:value={latitude}
+          bind:value={fullAddress}
         />
       </div>
-
-      <div class="field">
-        <label for="f_longitude">Longitude <i class="req">*</i></label>
-        <Input
-          id="f_longitude"
-          type="number"
-          step="0.0001"
-          required
-          bind:value={longitude}
-        />
+      <div class="help mt-1 text-xs text-muted-fg">
+        Koordinat: {latitude}, {longitude}
       </div>
     </div>
   </form>

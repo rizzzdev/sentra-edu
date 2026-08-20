@@ -3,7 +3,7 @@
   import { authStore } from '$lib/shared/stores/auth-store';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { formatCurrencyIDR, formatDateIndonesian } from '$lib/shared/utils/formatting';
-  import { JOB_STATUS_LABEL, ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
+  import { JOB_STATUS_LABEL, ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass, getScheduleDaysList } from '$lib/shared/utils/status-map';
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import Button from '$lib/components/atoms/button.svelte';
   import { goto } from '$app/navigation';
@@ -36,7 +36,7 @@
         studentName: student?.fullName || 'Murid',
         subjectName: getSubjectName(enr.subjectId),
         className: getClassName(enr.classId),
-        schedule: `${enr.scheduleDay} · ${enr.scheduleTime}`,
+        schedule: `${enr.scheduleDay ? getScheduleDaysList([enr.scheduleDay]).join(', ') : '—'} · ${enr.scheduleTime}`,
         mode: 'Privat'
       });
     }
@@ -65,7 +65,7 @@
         studentName: studentNames || 'Murid',
         subjectName: subjectNames,
         className: classNames,
-        schedule: `${Array.isArray(job.scheduleDays) ? job.scheduleDays.join(', ') : 'Senin'} · ${job.scheduleTime || '16:00'}${job.scheduleEndTime ? ` - ${job.scheduleEndTime}` : ''}`,
+        schedule: `${getScheduleDaysList(job.scheduleDays).join(', ')} · ${job.scheduleTime || '16:00'}${job.scheduleEndTime ? ` - ${job.scheduleEndTime}` : ''}`,
         mode: isGroup ? 'Kelompok' : 'Privat'
       });
     }

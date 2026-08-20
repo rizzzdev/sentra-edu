@@ -9,6 +9,8 @@
   export let zoom: number = 16;
   export let readonly: boolean = false;
   export let radius: number = 50;
+  export let address: string = '';
+  export let onAddressChange: ((addr: string) => void) | undefined = undefined;
 
   interface SearchResultItem {
     id: string;
@@ -28,12 +30,14 @@
   let resizeObserver: ResizeObserver | null = null;
   let invalidateTimers: ReturnType<typeof setTimeout>[] = [];
 
-  // Search state
+  // Search & Reverse Geocode state
   let searchQuery: string = '';
   let searchResults: SearchResultItem[] = [];
   let isSearching: boolean = false;
+  let isReverseGeocoding: boolean = false;
   let showDropdown: boolean = false;
   let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let reverseGeocodeTimer: ReturnType<typeof setTimeout> | null = null;
   let searchError: string | null = null;
 
   function invalidateSize() {
@@ -58,6 +62,37 @@
     if (!isNaN(lat) && !isNaN(lng)) {
       updateMarkerAndCircle(lat, lng);
     }
+  }
+
+  async function performReverseGeocode(lat: number, lng: number) {
+    if (readonly) return;
+    isReverseGeocoding = true;
+    try {
+      const response = await fetch(`/api/geocode?lat=${lat}&lng=${lng}`);
+      if (response.ok) {
+        const jsonRes = await response.json();
+        const data = jsonRes.data;
+        if (data && data.displayName) {
+          const resolved = data.displayName;
+          address = resolved;
+          searchQuery = data.name || resolved;
+          if (onAddressChange) {
+            onAddressChange(resolved);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Reverse geocoding error:', err);
+    } finally {
+      isReverseGeocoding = false;
+    }
+  }
+
+  function triggerReverseGeocode(lat: number, lng: number) {
+    if (reverseGeocodeTimer) clearTimeout(reverseGeocodeTimer);
+    reverseGeocodeTimer = setTimeout(() => {
+      performReverseGeocode(lat, lng);
+    }, 350);
   }
 
   async function performSearch(query: string) {
@@ -113,9 +148,15 @@
 
     latitude = Math.round(item.lat * 1000000) / 1000000;
     longitude = Math.round(item.lng * 1000000) / 1000000;
+    const fullAddr = item.secondary ? `${item.name}, ${item.secondary}` : item.name;
+    address = fullAddr;
     searchQuery = item.name;
     showDropdown = false;
     searchResults = [];
+
+    if (onAddressChange) {
+      onAddressChange(fullAddr);
+    }
 
     if (map) {
       map.setView([item.lat, item.lng], 17);
@@ -143,6 +184,7 @@
             circle?.setLatLng([lat, lng]);
             centerPulseMarker?.setLatLng([lat, lng]);
           }
+          triggerReverseGeocode(lat, lng);
         },
         () => {
           isSearching = false;
@@ -251,14 +293,18 @@
         longitude = newLng;
         circle?.setLatLng([newLat, newLng]);
         centerPulseMarker?.setLatLng([newLat, newLng]);
+        triggerReverseGeocode(newLat, newLng);
       });
 
       map.on('click', (e: L.LeafletMouseEvent) => {
         marker?.setLatLng(e.latlng);
         circle?.setLatLng(e.latlng);
         centerPulseMarker?.setLatLng(e.latlng);
-        latitude = Math.round(e.latlng.lat * 1000000) / 1000000;
-        longitude = Math.round(e.latlng.lng * 1000000) / 1000000;
+        const newLat = Math.round(e.latlng.lat * 1000000) / 1000000;
+        const newLng = Math.round(e.latlng.lng * 1000000) / 1000000;
+        latitude = newLat;
+        longitude = newLng;
+        triggerReverseGeocode(newLat, newLng);
       });
     }
 

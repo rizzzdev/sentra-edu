@@ -26,6 +26,7 @@
   let startTime: string = '16:00';
   let endTime: string = '17:30';
   let transportAllowance: number = 0;
+  let location: string = '';
   let latitude: number = -6.2;
   let longitude: number = 106.8;
   let description: string = '';
@@ -94,6 +95,7 @@
       startTime = editingJob.scheduleTime || '16:00';
       endTime = editingJob.scheduleEndTime || '17:30';
       transportAllowance = editingJob.transportAllowance || 0;
+      location = editingJob.location || '';
       latitude = editingJob.latitude ?? -6.2;
       longitude = editingJob.longitude ?? 106.8;
       description = editingJob.additionalNotes || editingJob.notes || '';
@@ -119,6 +121,7 @@
     startTime = '16:00';
     endTime = '17:30';
     transportAllowance = 0;
+    location = '';
     latitude = -6.2;
     longitude = 106.8;
     description = '';
@@ -137,9 +140,11 @@
     if (studentLat && studentLng) {
       latitude = studentLat;
       longitude = studentLng;
-      toastStore.success('Lokasi GPS diambil dari data murid.');
+      location = studentUser?.address || enrollment?.address || '';
+      toastStore.success('Lokasi GPS dan alamat diambil dari data murid.');
     } else if (studentUser?.address || enrollment?.address) {
-      toastStore.info(`Alamat murid: ${studentUser?.address || enrollment?.address}. Silakan gunakan pencarian pada peta.`);
+      location = studentUser?.address || enrollment?.address || '';
+      toastStore.info(`Alamat murid: ${location}. Silakan gunakan pencarian pada peta.`);
     } else {
       toastStore.error('Data koordinat GPS murid belum tersedia.');
     }
@@ -201,7 +206,7 @@
       transportAllowance,
       sessionDurationMinutes: calculateDuration(startTime, endTime),
       studentCount: selectedStudentIds.length,
-      location: selectedEnrollment?.address || studentUsers[0]?.address || 'Lokasi Les',
+      location: location.trim() || selectedEnrollment?.address || studentUsers[0]?.address || 'Lokasi Les',
       latitude: mode === 'ONLINE' ? null : latitude,
       longitude: mode === 'ONLINE' ? null : longitude,
       notes: description.trim(),
@@ -369,7 +374,16 @@
             Ambil Lokasi dari Murid
           </Button>
         </div>
-        <LeafletMap bind:latitude bind:longitude height="280px" />
+        <LeafletMap bind:latitude bind:longitude bind:address={location} height="280px" />
+        <div class="mt-2 space-y-1">
+          <label for="f_loc_text" class="text-xs font-semibold text-muted-fg block">Alamat / Patokan Lokasi</label>
+          <Input
+            id="f_loc_text"
+            type="text"
+            placeholder="Alamat terisi otomatis saat pin digeser atau dapat diedit manual..."
+            bind:value={location}
+          />
+        </div>
         <div class="help" style="margin-top:6px">
           Koordinat: {latitude}, {longitude}
         </div>
