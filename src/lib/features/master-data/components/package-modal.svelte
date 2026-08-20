@@ -6,6 +6,7 @@
   import type { PackagePlan } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import CurrencyInput from '$lib/components/atoms/currency-input.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
@@ -117,12 +118,8 @@
     <div class="form-grid">
       <div class="field">
         <label for="f_price">Biaya Wali Murid (Rp) <i class="req">*</i></label>
-        <Input
+        <CurrencyInput
           id="f_price"
-          type="number"
-          min="0"
-          step="50000"
-          required
           bind:value={price}
         />
         <div class="help">Harga paket yang dibayar wali murid (SPP).</div>
@@ -130,12 +127,8 @@
 
       <div class="field">
         <label for="f_tentorFee">Honor Tentor per Sesi (Rp) <i class="req">*</i></label>
-        <Input
+        <CurrencyInput
           id="f_tentorFee"
-          type="number"
-          min="0"
-          step="5000"
-          required
           bind:value={tentorFee}
         />
         <div class="help">Yang diterima tentor per sesi (sudah termasuk transport).</div>

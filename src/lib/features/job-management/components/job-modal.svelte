@@ -6,6 +6,7 @@
   import type { JobPost, JobType, JobMode } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import CurrencyInput from '$lib/components/atoms/currency-input.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
@@ -279,11 +280,8 @@
 
       <div class="field">
         <label for="f_transportAllowance">Tunjangan Transport (Rp/sesi)</label>
-        <Input
+        <CurrencyInput
           id="f_transportAllowance"
-          type="number"
-          min="0"
-          step="5000"
           bind:value={transportAllowance}
         />
       </div>

@@ -6,6 +6,7 @@
   import type { ClassLevel } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
+  import CurrencyInput from '$lib/components/atoms/currency-input.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
   export let open: boolean = false;
@@ -81,12 +82,8 @@
 
     <div class="field">
       <label for="f_baseRatePer90Min">Tarif Dasar / 90 Menit (Rp) <i class="req">*</i></label>
-      <Input
+      <CurrencyInput
         id="f_baseRatePer90Min"
-        type="number"
-        min="0"
-        step="5000"
-        required
         bind:value={baseRatePer90Min}
       />
     </div>
