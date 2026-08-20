@@ -1,9 +1,8 @@
 <script lang="ts">
   import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
+  import { authStore } from '$lib/shared/stores/auth-store';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
-  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { AttendanceRecord } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
@@ -16,13 +15,13 @@
   let rejectionModalOpen: boolean = false;
   let rejectionReason: string = '';
 
+  $: canVerify = $authStore?.role === 'SUPER_ADMIN';
   $: job = attendance?.jobId
     ? $dbStore.jobs.find((jobItem) => jobItem.id === attendance?.jobId)
     : (attendance?.enrollmentId ? $dbStore.jobs.find((jobItem) => jobItem.enrollmentId === attendance?.enrollmentId) : null);
 
   $: enrollment = attendance?.enrollmentId ? $dbStore.enrollments.find((enrollmentItem) => enrollmentItem.id === attendance?.enrollmentId) : null;
   $: tentor = attendance ? $dbStore.users.find((userItem) => userItem.id === attendance?.tentorId) : null;
-  $: pkg = enrollment ? $dbStore.packages.find((packageItem) => packageItem.id === enrollment?.packageId) : null;
 
   // Resolved Subject Names
   $: subjectNames = (() => {
@@ -74,8 +73,7 @@
 
   $: isOffline = Boolean(
     attendance?.latitudeCheckIn !== null &&
-    attendance?.longitudeCheckIn !== null &&
-    (job?.location ? !job.location.toLowerCase().includes('online') : true)
+    attendance?.longitudeCheckIn !== null
   );
 
   function formatDisplayTime(isoOrTimeString: string): string {
@@ -88,7 +86,7 @@
   }
 
   function handleApprove() {
-    if (!attendance) return;
+    if (!attendance || !canVerify) return;
     const response = dbStore.verifyAttendance(attendance.id, 'APPROVED');
     if (!response.error) {
       toastStore.success('Presensi berhasil diverifikasi dan disetujui.');
@@ -99,7 +97,7 @@
   }
 
   function handleRejectSubmit() {
-    if (!attendance || !rejectionReason.trim()) {
+    if (!attendance || !canVerify || !rejectionReason.trim()) {
       toastStore.error('Alasan penolakan wajib diisi.');
       return;
     }
@@ -115,53 +113,48 @@
 </script>
 
 {#if !rejectionModalOpen}
-  <Modal {open} {onClose} title="Detail Presensi Pembelajaran" icon="fact_check" maxWidth="max-w-2xl">
+  <Modal {open} {onClose} title="Detail Presensi" icon="fact_check" maxWidth="max-w-xl">
     {#if attendance}
-      <div class="space-y-4">
-        <!-- Lowongan / Program Card -->
-        <div class="p-3 rounded-xl border border-border bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <div class="text-xs text-muted-fg font-medium">Lowongan / Program</div>
-            <div class="font-bold text-fg text-sm">{job?.title || 'Program Bimbingan Belajar'}</div>
+      <div class="space-y-3">
+        <!-- Lowongan Info -->
+        {#if job?.title}
+          <div class="field">
+            <span class="text-xs text-muted-fg block">Lowongan</span>
+            <div class="font-bold text-fg">{job.title}</div>
           </div>
-          <div>
-            <span class="badge {isOffline ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary-strong'} font-bold">
-              {isOffline ? 'OFFLINE (Tatap Muka)' : 'ONLINE'}
-            </span>
-          </div>
-        </div>
+        {/if}
 
-        <!-- Key-Value Details -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          <div class="p-3 rounded-xl border border-border bg-surface">
-            <span class="text-xs text-muted-fg block">Tentor Pengajar</span>
+        <!-- Details Grid -->
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="p-2.5 rounded-lg border border-border bg-surface">
+            <span class="text-xs text-muted-fg block">Tentor</span>
             <strong class="text-fg">{tentor?.fullName || '—'}</strong>
           </div>
 
-          <div class="p-3 rounded-xl border border-border bg-surface">
-            <span class="text-xs text-muted-fg block">Murid yang Hadir</span>
+          <div class="p-2.5 rounded-lg border border-border bg-surface">
+            <span class="text-xs text-muted-fg block">Murid</span>
             <strong class="text-fg">{studentNames}</strong>
           </div>
 
-          <div class="p-3 rounded-xl border border-border bg-surface">
+          <div class="p-2.5 rounded-lg border border-border bg-surface">
             <span class="text-xs text-muted-fg block">Mata Pelajaran</span>
             <strong class="text-fg">{subjectNames}</strong>
           </div>
 
-          <div class="p-3 rounded-xl border border-border bg-surface">
-            <span class="text-xs text-muted-fg block">Kelas / Jenjang</span>
+          <div class="p-2.5 rounded-lg border border-border bg-surface">
+            <span class="text-xs text-muted-fg block">Kelas</span>
             <strong class="text-fg">{classNames}</strong>
           </div>
 
-          <div class="p-3 rounded-xl border border-border bg-surface">
-            <span class="text-xs text-muted-fg block">Tanggal & Waktu</span>
+          <div class="p-2.5 rounded-lg border border-border bg-surface">
+            <span class="text-xs text-muted-fg block">Waktu Sesi</span>
             <strong class="text-fg">
               {attendance.sessionDate} ({formatDisplayTime(attendance.startTime)} - {formatDisplayTime(attendance.endTime)})
             </strong>
           </div>
 
-          <div class="p-3 rounded-xl border border-border bg-surface">
-            <span class="text-xs text-muted-fg block">Durasi & Sesi</span>
+          <div class="p-2.5 rounded-lg border border-border bg-surface">
+            <span class="text-xs text-muted-fg block">Durasi</span>
             <strong class="text-fg">
               {attendance.durationMinutes || 90} menit ({attendance.sessionsCount || 1} sesi)
             </strong>
@@ -169,14 +162,14 @@
         </div>
 
         <!-- Topic and Notes -->
-        <div class="p-3 rounded-xl border border-border bg-surface space-y-2 text-sm">
+        <div class="p-2.5 rounded-lg border border-border bg-surface space-y-1.5 text-sm">
           <div>
-            <span class="text-xs text-muted-fg block font-semibold">Topik Materi:</span>
+            <span class="text-xs text-muted-fg block font-medium">Topik Materi:</span>
             <div class="text-fg font-medium">{attendance.topic}</div>
           </div>
           {#if attendance.studentNotes}
-            <div class="pt-2 border-t border-border">
-              <span class="text-xs text-muted-fg block font-semibold">Catatan Kegiatan / Evaluasi:</span>
+            <div class="pt-1.5 border-t border-border">
+              <span class="text-xs text-muted-fg block font-medium">Catatan Kegiatan:</span>
               <div class="text-muted-fg whitespace-pre-line">{attendance.studentNotes}</div>
             </div>
           {/if}
@@ -184,22 +177,14 @@
 
         <!-- GPS Leaflet Map for Offline -->
         {#if isOffline && attendance.latitudeCheckIn !== null && attendance.longitudeCheckIn !== null}
-          <div class="p-3 rounded-xl border border-border bg-surface space-y-2">
-            <div class="flex items-center justify-between text-xs">
-              <div class="flex items-center gap-1.5 font-bold">
-                <Icon name="pin_drop" size="xs" className="text-primary" />
-                <span>Koordinat Check-in GPS: {attendance.latitudeCheckIn}, {attendance.longitudeCheckIn}</span>
-              </div>
-              <span class="badge {attendance.isRadiusValid ? 'bg-success-soft text-success' : 'bg-warn-soft text-warn'}">
-                {attendance.isRadiusValid ? 'Dalam Radius Lokasi' : 'Luar Radius'}
-              </span>
-            </div>
+          <div class="space-y-1.5">
+            <span class="text-xs text-muted-fg font-medium">Lokasi GPS Check-in</span>
             <div class="rounded-lg overflow-hidden border border-border">
               <LeafletMap
                 latitude={attendance.latitudeCheckIn}
                 longitude={attendance.longitudeCheckIn}
                 readonly={true}
-                height="180px"
+                height="150px"
                 zoom={16}
                 radius={100}
               />
@@ -208,8 +193,8 @@
         {/if}
 
         <!-- Status -->
-        <div class="flex items-center justify-between p-3 rounded-xl border border-border bg-surface">
-          <span class="text-xs text-muted-fg">Status Verifikasi</span>
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-xs text-muted-fg">Status</span>
           <span class="badge {getStatusBadgeClass(attendance.status)}">
             {getStatusLabel(attendance.status, ATTENDANCE_STATUS_LABEL)}
           </span>
@@ -218,12 +203,12 @@
     {/if}
 
     <svelte:fragment slot="footer">
-      {#if attendance?.status === 'SUBMITTED'}
+      {#if canVerify && attendance?.status === 'SUBMITTED'}
         <Button variant="danger" on:click={() => { rejectionModalOpen = true; }} icon="close">
-          Tolak Presensi
+          Tolak
         </Button>
         <Button variant="primary" on:click={handleApprove} icon="check">
-          Setujui Presensi
+          Setujui
         </Button>
       {:else}
         <Button variant="outline" on:click={onClose} icon="close">
@@ -240,7 +225,7 @@
         id="f_reason"
         rows="3"
         class="w-full p-3 border border-border rounded-xl text-sm bg-surface text-fg outline-none focus:border-danger focus:ring-2 focus:ring-danger/10 resize-y"
-        placeholder="cth: Koordinat tidak sesuai lokasi siswa atau materi belum sesuai target"
+        placeholder="cth: Materi belum sesuai target"
         required
         bind:value={rejectionReason}
       ></textarea>

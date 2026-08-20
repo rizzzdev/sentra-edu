@@ -19,7 +19,7 @@ export const GET: RequestHandler = async () => {
   }
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
   try {
     const body = (await request.json()) as Record<string, string | number | boolean | null | undefined | string[]>;
     const now = new Date().toISOString();
@@ -27,6 +27,14 @@ export const POST: RequestHandler = async ({ request }) => {
     if (body.id) {
       const attId = String(body.id);
       if (!isValidId(attId)) return json({ error: true, statusCode: 400, message: 'ID tidak valid.', data: null }, { status: 400 });
+
+      // Only Admin can verify/approve/reject attendance
+      if (body.status === 'APPROVED' || body.status === 'REJECTED') {
+        const authCheck = requireAdmin(cookies);
+        if (!authCheck.allowed && authCheck.error) {
+          return authCheck.error;
+        }
+      }
 
       await sql`UPDATE attendances SET
         status=${(body.status as string) ?? 'SUBMITTED'},

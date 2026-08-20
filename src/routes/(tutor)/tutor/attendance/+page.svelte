@@ -149,6 +149,10 @@
   }
 
   function handleApprove(attendanceItem: AttendanceRecord) {
+    if (currentUser?.role !== 'SUPER_ADMIN') {
+      toastStore.error('Hanya admin yang dapat menyetujui presensi.');
+      return;
+    }
     const response = dbStore.verifyAttendance(attendanceItem.id, 'APPROVED');
     if (!response.error) {
       toastStore.success('Presensi disetujui.');
@@ -158,6 +162,10 @@
   }
 
   function handleReject(attendanceItem: AttendanceRecord) {
+    if (currentUser?.role !== 'SUPER_ADMIN') {
+      toastStore.error('Hanya admin yang dapat menolak presensi.');
+      return;
+    }
     const response = dbStore.verifyAttendance(attendanceItem.id, 'REJECTED', 'Ditolak oleh admin.');
     if (!response.error) {
       toastStore.success('Presensi ditolak.');

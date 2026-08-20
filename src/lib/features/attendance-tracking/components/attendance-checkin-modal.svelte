@@ -47,18 +47,10 @@
       const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0
         ? job.subjectIds
         : (job.subjectId ? [job.subjectId] : []);
-      const subjectNames = $dbStore.subjects
-        .filter((subjectItem) => subjectIds.includes(subjectItem.id))
-        .map((subjectItem) => subjectItem.name)
-        .join(', ') || 'Mapel';
 
       const classIds = Array.isArray(job.classIds) && job.classIds.length > 0
         ? job.classIds
         : (job.classId ? [job.classId] : []);
-      const classNames = $dbStore.classes
-        .filter((classItem) => classIds.includes(classItem.id))
-        .map((classItem) => classItem.className)
-        .join(', ') || 'Kelas';
 
       const studentIds = Array.isArray(job.studentIds) && job.studentIds.length > 0
         ? job.studentIds
@@ -68,14 +60,13 @@
         : ($dbStore.users.filter((userItem) => studentIds.includes(userItem.id)).map((userItem) => userItem.fullName));
 
       const isOfflineMode = Boolean(job.location && !job.location.toLowerCase().includes('online'));
-      const isGroup = (job.studentCount && job.studentCount > 1) || studentIds.length > 1;
 
       list.push({
         id: job.id,
         enrollmentId: job.enrollmentId || undefined,
         job,
         enrollment: null,
-        label: `${job.title || 'Lowongan'} — ${studentNames.join(', ') || 'Murid'} (${classNames} · ${subjectNames}) [${isOfflineMode ? 'OFFLINE' : 'ONLINE'}]`,
+        label: `${job.title || 'Lowongan'}${studentNames.length > 0 ? ` (${studentNames.join(', ')})` : ''}`,
         isOffline: isOfflineMode,
         location: job.location || '',
         latitude: job.latitude ?? -6.2,
@@ -96,8 +87,6 @@
     for (const enr of directEnrollments) {
       if (enr.id && seenJobIds.has(enr.id)) continue;
       const student = $dbStore.users.find((userItem) => userItem.id === enr.studentId);
-      const subject = $dbStore.subjects.find((subjectItem) => subjectItem.id === enr.subjectId);
-      const cls = $dbStore.classes.find((classItem) => classItem.id === enr.classId);
       const isOfflineMode = Boolean(enr.latitude !== null && enr.longitude !== null);
 
       list.push({
@@ -105,7 +94,7 @@
         enrollmentId: enr.id,
         job: null,
         enrollment: enr,
-        label: `${student?.fullName || 'Murid'} — ${cls?.className || 'Kelas'} ${subject?.name || 'Mapel'} (Privat) [${isOfflineMode ? 'OFFLINE' : 'ONLINE'}]`,
+        label: `${student?.fullName || 'Murid'} (Privat)`,
         isOffline: isOfflineMode,
         location: enr.address || '',
         latitude: enr.latitude ?? -6.2,
@@ -133,6 +122,8 @@
   let activityNotes: string = '';
   let latitudeCheckIn: number = -6.2;
   let longitudeCheckIn: number = 106.8;
+  let isFetchingGps: boolean = false;
+  let hasGpsDevice: boolean = false;
 
   $: if (tentorJobOptions.length > 0 && !selectedJobId) {
     selectedJobId = tentorJobOptions[0].id;
@@ -155,6 +146,7 @@
     
     latitudeCheckIn = currentJobOption.latitude;
     longitudeCheckIn = currentJobOption.longitude;
+    hasGpsDevice = false;
   }
 
   // Available options for current job
@@ -208,34 +200,25 @@
 
   function handleGetGps() {
     if (!navigator.geolocation) {
-      toastStore.error('Browser tidak mendukung geolocation.');
+      toastStore.error('Browser tidak mendukung akses GPS.');
       return;
     }
-    toastStore.info('Meminta lokasi GPS perangkat...');
+    isFetchingGps = true;
+    toastStore.info('Mengakses GPS perangkat...');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         latitudeCheckIn = Number(pos.coords.latitude.toFixed(6));
         longitudeCheckIn = Number(pos.coords.longitude.toFixed(6));
+        hasGpsDevice = true;
+        isFetchingGps = false;
         toastStore.success('Lokasi GPS perangkat berhasil didapat.');
       },
       () => {
-        toastStore.error('Izin lokasi ditolak. Anda dapat menggunakan tombol Simulasi GPS.');
+        isFetchingGps = false;
+        toastStore.error('Izin lokasi perangkat ditolak atau tidak tersedia. Mohon izinkan akses lokasi di browser.');
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }
-
-  function handleSimulateGps() {
-    if (!currentJobOption) {
-      latitudeCheckIn = -6.2;
-      longitudeCheckIn = 106.8;
-      toastStore.success('Simulasi GPS terpasang.');
-      return;
-    }
-    const jitter = 0.0002;
-    latitudeCheckIn = Number((currentJobOption.latitude + (Math.random() - 0.5) * jitter).toFixed(6));
-    longitudeCheckIn = Number((currentJobOption.longitude + (Math.random() - 0.5) * jitter).toFixed(6));
-    toastStore.success('Simulasi GPS di lokasi lowongan terpasang.');
   }
 
   function handleSubmit() {
@@ -249,6 +232,10 @@
     }
     if (selectedClassIds.length === 0) {
       toastStore.error('Pilih minimal satu kelas/jenjang.');
+      return;
+    }
+    if (currentJobOption.isOffline && !hasGpsDevice) {
+      toastStore.error('Silakan klik "Ambil GPS Perangkat" untuk mencatat lokasi kehadiran Anda.');
       return;
     }
     if (!topicTaught.trim()) {
@@ -300,11 +287,11 @@
   }
 </script>
 
-<Modal {open} {onClose} title="Check-in Presensi Les" icon="location_on" maxWidth="max-w-2xl">
+<Modal {open} {onClose} title="Check-in Presensi" icon="location_on" maxWidth="max-w-2xl">
   <form id="form-checkin" on:submit|preventDefault={handleSubmit} class="space-y-4">
     <!-- 1. Lowongan Selection -->
     <div class="field">
-      <label for="f_job">Pilih Data Lowongan Mengajar <i class="req">*</i></label>
+      <label for="f_job">Data Lowongan <i class="req">*</i></label>
       <SelectSearch
         id="f_job"
         required
@@ -313,30 +300,47 @@
       />
     </div>
 
-    <!-- Info Banner for Selected Job -->
+    <!-- Readonly Info from Job: Mode, Jadwal, Alamat -->
     {#if currentJobOption}
-      <div class="p-3 rounded-xl border border-border bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-        <div class="flex items-center gap-2">
-          <span class="badge {currentJobOption.isOffline ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary-strong'} font-bold">
-            {currentJobOption.isOffline ? 'MODE OFFLINE (Tatap Muka)' : 'MODE ONLINE'}
-          </span>
-          {#if currentJobOption.location}
-            <span class="text-muted-fg flex items-center gap-1">
-              <Icon name="location_on" size="xs" />
-              {currentJobOption.location}
-            </span>
-          {/if}
+      <div class="form-grid">
+        <div class="field">
+          <label for="f_mode">Mode Pembelajaran</label>
+          <Input
+            id="f_mode"
+            type="text"
+            readonly
+            value={currentJobOption.isOffline ? 'Offline (Tatap Muka)' : 'Online'}
+          />
         </div>
-        <div class="text-muted-fg font-semibold">
-          Jadwal: {currentJobOption.scheduleTime} - {currentJobOption.scheduleEndTime}
+
+        <div class="field">
+          <label for="f_schedule">Jadwal Sesi</label>
+          <Input
+            id="f_schedule"
+            type="text"
+            readonly
+            value="{currentJobOption.scheduleTime} - {currentJobOption.scheduleEndTime}"
+          />
         </div>
       </div>
+
+      {#if currentJobOption.isOffline && currentJobOption.location}
+        <div class="field">
+          <label for="f_address">Alamat Lokasi Les</label>
+          <Input
+            id="f_address"
+            type="text"
+            readonly
+            value={currentJobOption.location}
+          />
+        </div>
+      {/if}
     {/if}
 
-    <!-- 2. Multiple Dropdown Mapel & Kelas from Job -->
+    <!-- 2. Dropdown Mapel & Kelas from Job -->
     <div class="form-grid">
       <div class="field">
-        <label for="f_subjects">Mata Pelajaran (Bisa Multiple) <i class="req">*</i></label>
+        <label for="f_subjects">Mata Pelajaran <i class="req">*</i></label>
         <SelectSearch
           id="f_subjects"
           multiple={true}
@@ -345,11 +349,10 @@
           bind:value={selectedSubjectIds}
           options={subjectOptions}
         />
-        <div class="help">Sesuai mata pelajaran yang terdaftar pada lowongan ini.</div>
       </div>
 
       <div class="field">
-        <label for="f_classes">Kelas / Jenjang (Bisa Multiple) <i class="req">*</i></label>
+        <label for="f_classes">Kelas / Jenjang <i class="req">*</i></label>
         <SelectSearch
           id="f_classes"
           multiple={true}
@@ -358,18 +361,17 @@
           bind:value={selectedClassIds}
           options={classOptions}
         />
-        <div class="help">Sesuai kelas/jenjang yang terdaftar pada lowongan ini.</div>
       </div>
     </div>
 
-    <!-- 3. Multiple Dropdown Murid from Job -->
+    <!-- 3. Dropdown Murid from Job -->
     {#if studentOptions.length > 0}
       <div class="field">
-        <label for="f_students">Murid yang Hadir (Bisa Multiple) <i class="req">*</i></label>
+        <label for="f_students">Murid yang Hadir <i class="req">*</i></label>
         <SelectSearch
           id="f_students"
           multiple={true}
-          placeholder="Pilih Murid Hadir..."
+          placeholder="Pilih Murid..."
           bind:value={selectedStudentIds}
           options={studentOptions}
         />
@@ -399,77 +401,75 @@
     <!-- 5. Durasi & Sesi Otomatis -->
     <div class="form-grid">
       <div class="field">
-        <label for="f_durationMinutes">Lama Pembelajaran (Menit)</label>
-        <Input id="f_durationMinutes" type="number" readonly value={durationMinutes} />
-        <div class="help">Dihitung otomatis dari selisih jam mulai & selesai.</div>
+        <label for="f_durationMinutes">Lama Pembelajaran</label>
+        <Input id="f_durationMinutes" type="text" readonly value="{durationMinutes} menit" />
       </div>
 
       <div class="field">
-        <label for="f_sessionsCount">Jumlah Sesi (90 mnt/sesi)</label>
-        <Input id="f_sessionsCount" type="number" readonly value={sessionsCount} />
-        <div class="help">Dihitung otomatis: lama ÷ 90 menit.</div>
+        <label for="f_sessionsCount">Jumlah Sesi</label>
+        <Input id="f_sessionsCount" type="text" readonly value="{sessionsCount} sesi" />
       </div>
     </div>
 
     <!-- 6. GPS dengan Leaflet jika Program Offline -->
     {#if currentJobOption?.isOffline}
-      <div class="p-4 rounded-xl border border-border bg-surface space-y-3">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <div class="flex items-center gap-2">
-            <Icon name="map" size="sm" className="text-primary" />
-            <span class="font-bold text-sm">Lokasi & GPS Check-in (Program Tatap Muka)</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" on:click={handleGetGps} icon="gps_fixed">
-              GPS Perangkat
-            </Button>
-            <Button type="button" variant="primary" size="sm" on:click={handleSimulateGps} icon="my_location">
-              Lokasi Lowongan
-            </Button>
-          </div>
+      <div class="field">
+        <div class="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+          <label for="f_map" class="text-sm font-medium">GPS Check-in (Perangkat) <i class="req">*</i></label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isFetchingGps}
+            on:click={handleGetGps}
+            icon={isFetchingGps ? 'sync' : 'gps_fixed'}
+          >
+            {isFetchingGps ? 'Mengambil GPS...' : (hasGpsDevice ? 'Perbarui GPS' : 'Ambil GPS Perangkat')}
+          </Button>
         </div>
-
         <div class="rounded-xl overflow-hidden border border-border">
           <LeafletMap
             bind:latitude={latitudeCheckIn}
             bind:longitude={longitudeCheckIn}
-            height="220px"
+            readonly={true}
+            height="180px"
             zoom={16}
             radius={100}
           />
         </div>
-
-        <div class="grid grid-cols-2 gap-2 text-xs text-muted-fg">
-          <div>Latitude: <strong class="text-fg">{latitudeCheckIn}</strong></div>
-          <div>Longitude: <strong class="text-fg">{longitudeCheckIn}</strong></div>
-        </div>
-      </div>
-    {:else if currentJobOption}
-      <div class="p-3 rounded-xl border border-primary/20 bg-primary-soft text-primary-strong text-xs flex items-center gap-2">
-        <Icon name="videocam" size="sm" />
-        <span>Program ini berlangsung secara <strong>ONLINE</strong>. Perekaman koordinat GPS tidak diperlukan.</span>
+        {#if hasGpsDevice}
+          <div class="text-xs text-success flex items-center gap-1 mt-1 font-medium">
+            <Icon name="check_circle" size="xs" />
+            <span>GPS perangkat tercatat ({latitudeCheckIn}, {longitudeCheckIn})</span>
+          </div>
+        {:else}
+          <div class="text-xs text-warn flex items-center gap-1 mt-1">
+            <Icon name="info" size="xs" />
+            <span>Klik tombol "Ambil GPS Perangkat" di atas untuk mencatat koordinat kehadiran Anda.</span>
+          </div>
+        {/if}
       </div>
     {/if}
 
     <!-- 7. Topik Materi & Catatan Kegiatan -->
     <div class="field">
-      <label for="f_topicTaught">Topik Materi Pembelajaran <i class="req">*</i></label>
+      <label for="f_topicTaught">Topik Materi <i class="req">*</i></label>
       <Input
         id="f_topicTaught"
         type="text"
-        placeholder="cth: Fisika: Hukum Newton & Pembahasan Soal Latihan"
+        placeholder="cth: Fisika: Hukum Newton"
         required
         bind:value={topicTaught}
       />
     </div>
 
     <div class="field">
-      <label for="f_activityNotes">Catatan Kegiatan / Evaluasi Murid</label>
+      <label for="f_activityNotes">Catatan Kegiatan</label>
       <textarea
         id="f_activityNotes"
-        rows="3"
+        rows="2"
         class="w-full p-3 border border-border rounded-xl text-sm bg-surface text-fg outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-y"
-        placeholder="cth: Murid memahami konsep dasar dengan baik, perlu latihan tambahan di soal aplikasi numerik."
+        placeholder="cth: Latihan soal dan pembahasan"
         bind:value={activityNotes}
       ></textarea>
     </div>
