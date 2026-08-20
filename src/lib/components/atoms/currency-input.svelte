@@ -7,38 +7,45 @@
   export let id: string | undefined = undefined;
   export let className: string = '';
 
-  let displayValue: string = '';
-  let isFocused: boolean = false;
+  let rawDigits: string = '';
 
-  function formatRupiah(num: number): string {
-    return num.toLocaleString('id-ID');
+  function formatDisplay(digits: string): string {
+    if (!digits) return '';
+    // Add thousand separators using id-ID locale
+    return Number(digits).toLocaleString('id-ID');
   }
 
-  function parseRupiah(str: string): number {
-    const cleaned = str.replace(/[^0-9]/g, '');
-    return cleaned ? parseInt(cleaned, 10) : 0;
+  function initFromValue() {
+    rawDigits = value ? String(Math.floor(value)) : '';
   }
 
-  $: if (!isFocused) {
-    displayValue = formatRupiah(value);
-  }
-
-  function handleFocus() {
-    isFocused = true;
-    displayValue = String(value || '');
-  }
-
-  function handleBlur() {
-    isFocused = false;
-    value = parseRupiah(displayValue);
-    displayValue = formatRupiah(value);
-  }
+  // Sync when value changes externally (e.g. editing mode)
+  $: value, initFromValue();
 
   function handleInput(e: Event) {
     const input = e.target as HTMLInputElement;
-    const raw = input.value.replace(/[^0-9]/g, '');
-    displayValue = raw;
-    value = raw ? parseInt(raw, 10) : 0;
+    // Strip everything that isn't a digit
+    const caretPos = input.selectionStart || 0;
+    const oldLen = rawDigits.length;
+    rawDigits = input.value.replace(/[^0-9]/g, '');
+    value = rawDigits ? parseInt(rawDigits, 10) : 0;
+
+    // Reformat display
+    const formatted = formatDisplay(rawDigits);
+    input.value = formatted;
+
+    // Restore caret position adjusted for added separators
+    const newLen = formatted.length;
+    const diff = newLen - oldLen;
+    const newPos = Math.max(0, caretPos + diff);
+    input.setSelectionRange(newPos, newPos);
+  }
+
+  function handleFocus(e: Event) {
+    const input = e.target as HTMLInputElement;
+    // Place caret at end
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -48,8 +55,8 @@
   }
 </script>
 
-<div class="currency-input-wrapper {className}">
-  <span class="currency-prefix">Rp</span>
+<div class="currency-wrapper {className}">
+  <span class="currency-prefix" class:disabled>Rp</span>
   <input
     {id}
     type="text"
@@ -58,17 +65,16 @@
     {disabled}
     {readonly}
     {required}
-    value={displayValue}
-    on:focus={handleFocus}
-    on:blur={handleBlur}
+    value={formatDisplay(rawDigits)}
     on:input={handleInput}
+    on:focus={handleFocus}
     on:keydown={handleKeydown}
-    class="currency-input"
+    class="currency-field"
   />
 </div>
 
 <style>
-  .currency-input-wrapper {
+  .currency-wrapper {
     display: flex;
     align-items: center;
     width: 100%;
@@ -77,10 +83,9 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     transition: border-color 0.15s, box-shadow 0.15s;
-    overflow: hidden;
   }
 
-  .currency-input-wrapper:focus-within {
+  .currency-wrapper:focus-within {
     border-color: var(--color-primary);
     box-shadow: 0 0 0 2px var(--color-primary-soft);
   }
@@ -89,17 +94,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     padding: 0 0.75rem;
+    height: 100%;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--color-fg-muted);
     background: var(--color-surface-hover);
-    height: 100%;
     border-right: 1px solid var(--color-border);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
     user-select: none;
   }
 
-  .currency-input {
+  .currency-prefix.disabled {
+    opacity: 0.5;
+  }
+
+  .currency-field {
     width: 100%;
     height: 100%;
     padding: 0 0.75rem;
@@ -109,13 +120,14 @@
     border: none;
     outline: none;
     text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 
-  .currency-input::placeholder {
+  .currency-field::placeholder {
     color: var(--color-fg-muted);
   }
 
-  .currency-input:disabled {
+  .currency-field:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
