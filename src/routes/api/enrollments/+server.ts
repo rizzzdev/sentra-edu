@@ -28,19 +28,38 @@ export const POST: RequestHandler = async ({ request }) => {
       const enrId = String(body.id);
       if (!isValidId(enrId)) return json({ error: true, statusCode: 400, message: 'ID tidak valid.', data: null }, { status: 400 });
 
+      const existingRows = await sql`SELECT * FROM enrollments WHERE id=${enrId} AND deleted_at IS NULL`;
+      if (existingRows.length === 0) {
+        return json({ error: true, statusCode: 404, message: 'Pendaftaran tidak ditemukan.', data: null }, { status: 404 });
+      }
+      const prev = existingRows[0];
+
+      const studentId = body.studentId !== undefined ? body.studentId : prev.student_id;
+      const subjectId = body.subjectId !== undefined ? body.subjectId : prev.subject_id;
+      const classId = body.classId !== undefined ? body.classId : prev.class_id;
+      const packageId = body.packageId !== undefined ? body.packageId : prev.package_id;
+      const tentorId = body.tentorId !== undefined ? body.tentorId : prev.tentor_id;
+      const scheduleDay = body.scheduleDay !== undefined ? body.scheduleDay : prev.schedule_day;
+      const scheduleTime = body.scheduleTime !== undefined ? body.scheduleTime : prev.schedule_time;
+      const status = body.status !== undefined ? body.status : prev.status;
+      const address = body.address !== undefined ? sanitizeInput(String(body.address)) : prev.address;
+      const latitude = body.latitude !== undefined ? body.latitude : prev.latitude;
+      const longitude = body.longitude !== undefined ? body.longitude : prev.longitude;
+      const waliUserId = body.waliUserId !== undefined ? body.waliUserId : prev.wali_user_id;
+
       await sql`UPDATE enrollments SET
-        student_id=${body.studentId},
-        subject_id=${body.subjectId},
-        class_id=${body.classId},
-        package_id=${body.packageId},
-        tentor_id=${body.tentorId},
-        schedule_day=${body.scheduleDay ?? ''},
-        schedule_time=${body.scheduleTime ?? ''},
-        status=${body.status ?? 'ACTIVE'},
-        address=${sanitizeInput(String(body.address ?? ''))},
-        latitude=${body.latitude},
-        longitude=${body.longitude},
-        wali_user_id=${body.waliUserId},
+        student_id=${studentId},
+        subject_id=${subjectId},
+        class_id=${classId},
+        package_id=${packageId},
+        tentor_id=${tentorId},
+        schedule_day=${scheduleDay ?? ''},
+        schedule_time=${scheduleTime ?? ''},
+        status=${status ?? 'ACTIVE'},
+        address=${address},
+        latitude=${latitude},
+        longitude=${longitude},
+        wali_user_id=${waliUserId},
         updated_at=${now}
       WHERE id=${enrId}`;
 

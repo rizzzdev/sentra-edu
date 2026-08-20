@@ -72,16 +72,14 @@ async function loadDatabaseFromApi(): Promise<DatabaseSchema> {
     return getEmptyDatabase();
   }
 
-  // Try Neon via BFF
+  // Load from Database via BFF
   try {
-    console.log('[SentraEdu] Loading data from Neon...');
     const response = await apiFetch<DatabaseSchema>('/api/db');
     if (!response.error && response.data) {
-      console.log('[SentraEdu] Neon data loaded successfully.');
       return { ...response.data, isLoaded: true };
     }
   } catch (error) {
-    console.warn('[SentraEdu] Neon load failed:', error);
+    console.warn('[SentraEdu] Database load failed:', error);
   }
 
   return { ...getEmptyDatabase(), isLoaded: true };
@@ -366,7 +364,7 @@ function createDatabaseStore() {
         let updated: JobPost | null = null;
         const list = currentDb.jobs.map((j) => { if (j.id === jobPayload.id) { updated = { ...j, ...jobPayload, updatedAt: now } as JobPost; return updated; } return j; });
         persistDatabase({ ...currentDb, jobs: list });
-        apiPost('/api/jobs', jobPayload);
+        apiPost('/api/jobs', updated || jobPayload);
         return { error: false, statusCode: 200, message: 'Lowongan diperbarui.', data: updated };
       } else {
         const newJob: JobPost = {
@@ -419,7 +417,7 @@ function createDatabaseStore() {
         updatedEnrollments = currentDb.enrollments.map((e) => e.id === (targetJob as JobPost).enrollmentId ? { ...e, tentorId, status: 'ACTIVE', updatedAt: now } : e);
       }
       persistDatabase({ ...currentDb, jobs: updatedJobs, enrollments: updatedEnrollments });
-      apiPost('/api/jobs', { id: jobId, assignedTentorId: tentorId, status: 'ASSIGNED' });
+      apiPost('/api/jobs', targetJob || { id: jobId, assignedTentorId: tentorId, status: 'ASSIGNED' });
       return { error: false, statusCode: 200, message: 'Tentor berhasil ditugaskan.', data: targetJob };
     },
 
@@ -430,7 +428,7 @@ function createDatabaseStore() {
         return { error: true, statusCode: 409, message: 'Anda sudah pernah melamar.', data: null };
       const newApp: JobApplication = { id: generateEntityId('app'), jobId, tentorId, status: 'PENDING', appliedAt: now, notes: notes || '', createdAt: now, updatedAt: now, deletedAt: null };
       persistDatabase({ ...currentDb, applications: [newApp, ...currentDb.applications] });
-      apiPost('/api/enrollments', { jobId, tentorId, notes });
+      apiPost('/api/applications', { jobId, tentorId, notes });
       return { error: false, statusCode: 201, message: 'Lamaran berhasil dikirim.', data: newApp };
     },
 

@@ -19,6 +19,7 @@
   const pageTitleMap: Record<string, string> = {
     '/tutor': 'Dashboard Ikhtisar',
     '/tutor/dashboard': 'Dashboard Ikhtisar',
+    '/tutor/classes': 'Program Les Aktif',
     '/tutor/job-board': 'Bursa Lowongan Mengajar',
     '/tutor/jobboard': 'Bursa Lowongan Mengajar',
     '/tutor/attendance': 'Presensi Saya',

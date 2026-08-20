@@ -10,16 +10,21 @@
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
-  export let tentor: User;
+  export let tentor: User | null = null;
   export let onClose: () => void = () => {};
 
   let notes: string = '';
 
   function handleApply() {
     if (!job) return;
+    if (!tentor?.id) {
+      toastStore.error('Sesi pengajar tidak ditemukan. Silakan login kembali.');
+      return;
+    }
     const response = dbStore.applyToJob(job.id, tentor.id, notes.trim());
     if (!response.error) {
       toastStore.success('Lamaran lowongan les berhasil dikirim ke admin.');
+      notes = '';
       onClose();
     } else {
       toastStore.error(response.message);

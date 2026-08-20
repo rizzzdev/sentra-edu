@@ -156,21 +156,29 @@
 
   <!-- QUICK ACTIONS -->
   <div class="quick-actions" style="margin-bottom:20px">
-    <Button variant="primary" icon="work" on:click={() => goto('/tutor/job-board')}>
+    <Button variant="primary" icon="school" on:click={() => goto('/tutor/classes')}>
+      Program Les Aktif
+    </Button>
+    <Button variant="outline" icon="work" on:click={() => goto('/tutor/job-board')}>
       Cari Lowongan
     </Button>
     <Button variant="outline" icon="location_on" on:click={() => goto('/tutor/attendance')}>
       Presensi Saya
     </Button>
-
   </div>
 
   <!-- TWO COLUMN LAYOUT -->
   <div class="grid-2">
     <!-- Active Lessons -->
     <div class="card">
-      <div class="card-head">
-        <Icon name="menu_book" size="md" /> Les Aktif Saya
+      <div class="card-head flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <Icon name="menu_book" size="md" />
+          <span>Les Aktif Saya</span>
+        </div>
+        <a href="/tutor/classes" class="text-xs text-primary font-semibold hover:underline inline-flex items-center gap-1">
+          Lihat Semua <Icon name="arrow_forward" size="xs" />
+        </a>
       </div>
       <div class="card-body flush">
         {#if myActiveLessons.length === 0}
@@ -193,7 +201,11 @@
               <tbody>
                 {#each myActiveLessons as lesson (lesson.id)}
                   <tr>
-                    <td><strong>{lesson.studentName}</strong></td>
+                    <td>
+                      <a href="/tutor/classes/{lesson.id}" class="font-semibold text-primary hover:underline">
+                        {lesson.studentName}
+                      </a>
+                    </td>
                     <td>{lesson.subjectName}</td>
                     <td>{lesson.className}</td>
                     <td><span class="badge {lesson.mode === 'Privat' ? 'b-sky' : 'b-amber'}">{lesson.mode}</span></td>

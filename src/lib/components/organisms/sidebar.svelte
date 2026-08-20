@@ -41,6 +41,7 @@
     ],
     TENTOR: [
       { path: '/tutor', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
+      { path: '/tutor/classes', label: 'Les Aktif', icon: 'school', group: 'Pekerjaan' },
       { path: '/tutor/job-board', label: 'Cari Lowongan', icon: 'search', group: 'Pekerjaan' },
       { path: '/tutor/attendance', label: 'Presensi Saya', icon: 'location_on', group: 'Pekerjaan' },
       { path: '/tutor/payroll', label: 'Penggajian', icon: 'payments', group: 'Pekerjaan' },
