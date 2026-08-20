@@ -37,84 +37,84 @@
 
   function getPackage(packageId?: string) {
     if (!packageId) return null;
-    return $dbStore.packages.find((p) => p.id === packageId) || null;
+    return $dbStore.packages.find((pkg) => pkg.id === packageId) || null;
   }
 
-  function getJobFee(j: JobPost): number {
-    const pkg = getPackage(j.packageId);
-    return pkg ? pkg.tentorFee : (j.tentorFee || 100000);
+  function getJobFee(jobPosting: JobPost): number {
+    const packagePlan = getPackage(jobPosting.packageId);
+    return packagePlan ? packagePlan.tentorFee : (jobPosting.tentorFee || 100000);
   }
 
-  function getTransportAllowance(j: JobPost): number {
-    return (j as any).transportAllowance || 0;
+  function getTransportAllowance(jobPosting: JobPost): number {
+    return jobPosting.transportAllowance || 0;
   }
 
-  function getStudentNames(j: JobPost): string {
-    const studentIds = (j as any).studentIds;
+  function getStudentNames(jobPosting: JobPost): string {
+    const studentIds = jobPosting.studentIds;
     if (Array.isArray(studentIds) && studentIds.length > 0) {
       const names = studentIds
-        .map((id: string) => $dbStore.users.find((u) => u.id === id)?.fullName)
-        .filter(Boolean);
+        .map((studentId: string) => $dbStore.users.find((user) => user.id === studentId)?.fullName)
+        .filter((name): name is string => typeof name === 'string' && name.length > 0);
       if (names.length > 0) return names.join(', ');
     }
-    return j.studentName || getUserName(j.studentId) || '—';
+    return jobPosting.studentName || getUserName(jobPosting.studentId) || '—';
   }
 
-  function getClassNames(j: JobPost): string {
-    const classIds = (j as any).classIds;
+  function getClassNames(jobPosting: JobPost): string {
+    const classIds = jobPosting.classIds;
     if (Array.isArray(classIds) && classIds.length > 0) {
       const names = classIds
-        .map((id: string) => $dbStore.classes.find((c) => c.id === id)?.className)
-        .filter(Boolean);
+        .map((classId: string) => $dbStore.classes.find((classLevel) => classLevel.id === classId)?.className)
+        .filter((name): name is string => typeof name === 'string' && name.length > 0);
       if (names.length > 0) return names.join(', ');
     }
-    return getClassName(j.classId);
+    return getClassName(jobPosting.classId);
   }
 
-  function getSubjectNames(j: JobPost): string {
-    const subjectIds = (j as any).subjectIds;
+  function getSubjectNames(jobPosting: JobPost): string {
+    const subjectIds = jobPosting.subjectIds;
     if (Array.isArray(subjectIds) && subjectIds.length > 0) {
       const names = subjectIds
-        .map((id: string) => $dbStore.subjects.find((s) => s.id === id)?.name)
-        .filter(Boolean);
+        .map((subjectId: string) => $dbStore.subjects.find((subject) => subject.id === subjectId)?.name)
+        .filter((name): name is string => typeof name === 'string' && name.length > 0);
       if (names.length > 0) return names.join(', ');
     }
-    return getSubjectName(j.subjectId);
+    return getSubjectName(jobPosting.subjectId);
   }
 
-  function handleAppApprove(appId: string) {
-    const app = applications.find((a) => a.id === appId);
+  function handleAppApprove(applicationId: string) {
+    const app = applications.find((application) => application.id === applicationId);
     if (!app || !job) return;
-    const res = dbStore.assignTentorToJob(job.id, app.tentorId);
-    if (!res.error) {
+    const response = dbStore.assignTentorToJob(job.id, app.tentorId);
+    if (!response.error) {
       toastStore.success('Pelamar berhasil disetujui dan ditugaskan.');
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 
   function handleAppRejectConfirm() {
     if (!confirmRejectAppId) return;
-    const updatedApps = $dbStore.applications.map((a) =>
-      a.id === confirmRejectAppId ? { ...a, status: 'REJECTED' as const } : a
+    const updatedApps = $dbStore.applications.map((application) =>
+      application.id === confirmRejectAppId ? { ...application, status: 'REJECTED' as const } : application
     );
-    const snap = dbStore.getSnapshot();
-    dbStore.importDatabaseJson(JSON.stringify({ ...snap, applications: updatedApps }));
+    const snapshot = dbStore.getSnapshot();
+    dbStore.importDatabaseJson(JSON.stringify({ ...snapshot, applications: updatedApps }));
     confirmRejectAppId = null;
     toastStore.success('Lamaran ditolak.');
   }
 
   function handleSetStatus(newStatus: 'AVAILABLE' | 'CANCELLED') {
     if (!job) return;
-    const res = dbStore.saveJobPost({
+    const response = dbStore.saveJobPost({
       id: job.id,
       status: newStatus,
       assignedTentorId: newStatus === 'AVAILABLE' ? null : job.assignedTentorId
     });
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success(`Status lowongan diubah menjadi ${newStatus}.`);
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 </script>
@@ -125,7 +125,7 @@
     {@const fee = getJobFee(job)}
     {@const transport = getTransportAllowance(job)}
     {@const totalHonor = fee + transport}
-    {@const isOffline = (job.mode || (job as any).jobMode || 'OFFLINE') !== 'ONLINE'}
+    {@const isOffline = (job.mode || job.jobMode || 'OFFLINE') !== 'ONLINE'}
 
     <div class="manage-container">
       <!-- 1. Header Overview & Status -->
@@ -218,7 +218,7 @@
             <div class="kv-label">Waktu & Durasi</div>
             <div class="kv-value">
               <Icon name="schedule" size="xs" />
-              {job.scheduleTime || '16:00'} – {(job as any).scheduleEndTime || '17:30'} WIB
+              {job.scheduleTime || '16:00'} – {job.scheduleEndTime || '17:30'} WIB
               <span class="kv-sub">({job.sessionDurationMinutes || 90} menit)</span>
             </div>
           </div>

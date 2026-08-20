@@ -13,7 +13,7 @@ export const GET: RequestHandler = async () => {
 
     const db = await loadFullDatabase();
     // Strip passwords from users
-    db.users = db.users.map((u: any) => ({ ...u, password: undefined }));
+    db.users = db.users.map((userItem) => ({ ...userItem, password: undefined }));
     
     setCache('full_db', db);
     return json({ error: false, statusCode: 200, data: db });

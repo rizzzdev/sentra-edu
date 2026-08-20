@@ -65,19 +65,19 @@
     title = editingJob.title;
     packageId = editingJob.packageId || '';
     mode = editingJob.mode || editingJob.jobMode || 'OFFLINE';
-    selectedStudentIds = (editingJob as any).studentIds && (editingJob as any).studentIds.length > 0
-      ? (editingJob as any).studentIds
+    selectedStudentIds = editingJob.studentIds && editingJob.studentIds.length > 0
+      ? editingJob.studentIds
       : (editingJob.studentId ? [editingJob.studentId] : []);
-    selectedClassIds = (editingJob as any).classIds && (editingJob as any).classIds.length > 0
-      ? (editingJob as any).classIds
+    selectedClassIds = editingJob.classIds && editingJob.classIds.length > 0
+      ? editingJob.classIds
       : (editingJob.classId ? [editingJob.classId] : []);
-    selectedSubjectIds = (editingJob as any).subjectIds && (editingJob as any).subjectIds.length > 0
-      ? (editingJob as any).subjectIds
+    selectedSubjectIds = editingJob.subjectIds && editingJob.subjectIds.length > 0
+      ? editingJob.subjectIds
       : (editingJob.subjectId ? [editingJob.subjectId] : []);
     preferredDays = editingJob.scheduleDays || ['Senin', 'Rabu'];
     startTime = editingJob.scheduleTime || '16:00';
-    endTime = (editingJob as any).scheduleEndTime || '17:30';
-    transportAllowance = (editingJob as any).transportAllowance || 0;
+    endTime = editingJob.scheduleEndTime || '17:30';
+    transportAllowance = editingJob.transportAllowance || 0;
     latitude = editingJob.latitude ?? -6.2;
     longitude = editingJob.longitude ?? 106.8;
     description = editingJob.additionalNotes || editingJob.notes || '';
@@ -87,7 +87,7 @@
 
   function resetForm() {
     title = '';
-    packageId = $dbStore.packages.filter((p) => p.deletedAt === null && p.active)[0]?.id || '';
+    packageId = $dbStore.packages.filter((pkg) => pkg.deletedAt === null && pkg.active)[0]?.id || '';
     mode = 'OFFLINE';
     selectedStudentIds = [];
     selectedClassIds = [];
@@ -107,16 +107,16 @@
       return;
     }
     const studentId = selectedStudentIds[0];
-    const enr = enrollments.find((e) => e.studentId === studentId);
-    const stu = $dbStore.users.find((u) => u.id === studentId);
-    const lat = enr?.latitude ?? (stu as any)?.latitude;
-    const lng = enr?.longitude ?? (stu as any)?.longitude;
-    if (lat && lng) {
-      latitude = lat;
-      longitude = lng;
+    const enrollment = enrollments.find((enr) => enr.studentId === studentId);
+    const studentUser = $dbStore.users.find((user) => user.id === studentId);
+    const studentLat = enrollment?.latitude ?? studentUser?.latitude;
+    const studentLng = enrollment?.longitude ?? studentUser?.longitude;
+    if (studentLat && studentLng) {
+      latitude = studentLat;
+      longitude = studentLng;
       toastStore.success('Lokasi GPS diambil dari data murid.');
-    } else if (stu?.address || enr?.address) {
-      toastStore.info(`Alamat murid: ${stu?.address || enr?.address}. Silakan gunakan pencarian pada peta.`);
+    } else if (studentUser?.address || enrollment?.address) {
+      toastStore.info(`Alamat murid: ${studentUser?.address || enrollment?.address}. Silakan gunakan pencarian pada peta.`);
     } else {
       toastStore.error('Data koordinat GPS murid belum tersedia.');
     }
@@ -149,11 +149,11 @@
     }
 
     const studentUsers = selectedStudentIds
-      .map((id) => $dbStore.users.find((u) => u.id === id))
-      .filter(Boolean) as any[];
-    const studentNames = studentUsers.map((u) => u.fullName).join(', ');
+      .map((studentId) => $dbStore.users.find((user) => user.id === studentId))
+      .filter((user): user is NonNullable<typeof user> => user !== undefined && user !== null);
+    const studentNames = studentUsers.map((user) => user.fullName).join(', ');
     const firstStudentId = selectedStudentIds[0] || null;
-    const selectedEnr = enrollments.find((e) => e.studentId === firstStudentId);
+    const selectedEnrollment = enrollments.find((enr) => enr.studentId === firstStudentId);
 
     const payload: Partial<JobPost> = {
       id: editingJob ? editingJob.id : undefined,
@@ -161,33 +161,31 @@
       jobMode: mode as JobMode,
       mode: mode as JobMode,
       classId: selectedClassIds[0],
+      classIds: selectedClassIds,
       subjectId: selectedSubjectIds[0],
+      subjectIds: selectedSubjectIds,
       packageId,
       studentId: firstStudentId,
-      enrollmentId: selectedEnr?.id || null,
+      studentIds: selectedStudentIds,
       studentName: studentNames || 'Murid',
+      studentNames: studentUsers.map((user) => user.fullName),
+      enrollmentId: selectedEnrollment?.id || null,
       scheduleDays: preferredDays,
       scheduleTime: startTime,
+      scheduleEndTime: endTime,
       schedulePreference: `${preferredDays.join(', ')} ${startTime}–${endTime} WIB`,
       tentorFee: selectedPackage ? selectedPackage.tentorFee : 100000,
+      transportAllowance,
       sessionDurationMinutes: calculateDuration(startTime, endTime),
       studentCount: selectedStudentIds.length,
-      location: selectedEnr?.address || studentUsers[0]?.address || 'Lokasi Les',
+      location: selectedEnrollment?.address || studentUsers[0]?.address || 'Lokasi Les',
       latitude: mode === 'ONLINE' ? null : latitude,
       longitude: mode === 'ONLINE' ? null : longitude,
       notes: description.trim(),
       additionalNotes: description.trim()
-    } as any;
+    };
 
-    // Add multi-select fields
-    (payload as any).classIds = selectedClassIds;
-    (payload as any).subjectIds = selectedSubjectIds;
-    (payload as any).studentIds = selectedStudentIds;
-    (payload as any).studentNames = studentUsers.map((u) => u.fullName);
-    (payload as any).transportAllowance = transportAllowance;
-    (payload as any).scheduleEndTime = endTime;
-
-    const response = dbStore.saveJobPost(payload as any);
+    const response = dbStore.saveJobPost(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();

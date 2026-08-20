@@ -61,7 +61,7 @@
       longitude: Number(longitude)
     };
 
-    const response = dbStore.saveEnrollment(payload as any);
+    const response = dbStore.saveEnrollment(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();

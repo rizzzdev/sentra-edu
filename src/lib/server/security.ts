@@ -1,6 +1,5 @@
-/**
- * Security utilities for SentraEdu BFF
- */
+import type { Cookies } from '@sveltejs/kit';
+import type { User } from '$lib/shared/types/common.types';
 
 // ── Rate Limiter ─────────────────────────────────────────
 // Simple in-memory rate limiter (per-IP)
@@ -64,11 +63,12 @@ export function sanitizeInput(input: string): string {
   return input.replace(/[&<>"'/]/g, (char) => HTML_ESCAPE_MAP[char] || char);
 }
 
-export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
+export function sanitizeObject<T extends Record<string, string | number | boolean | string[] | null | undefined>>(obj: T): T {
   const sanitized = { ...obj };
-  for (const [key, value] of Object.entries(sanitized)) {
+  for (const key of Object.keys(sanitized)) {
+    const value = sanitized[key];
     if (typeof value === 'string') {
-      (sanitized as any)[key] = sanitizeInput(value);
+      (sanitized as Record<string, string | number | boolean | string[] | null | undefined>)[key] = sanitizeInput(value);
     }
   }
   return sanitized;
@@ -84,7 +84,7 @@ export function isValidId(id: string): boolean {
   return /^[a-zA-Z0-9_-]{1,50}$/.test(id);
 }
 
-export function isNonEmptyString(value: any, maxLength: number = 500): boolean {
+export function isNonEmptyString(value: string | number | boolean | null | undefined, maxLength: number = 500): boolean {
   return typeof value === 'string' && value.trim().length > 0 && value.length <= maxLength;
 }
 
@@ -143,8 +143,6 @@ export function isJsonRequest(request: Request): boolean {
 
 // ── Auth Helpers ─────────────────────────────────────────
 
-import type { Cookies } from '@sveltejs/kit';
-
 export function getSessionUser(cookies: Cookies): { id: string; email: string; fullName: string; role: string } | null {
   const session = cookies.get('session');
   const sessionUser = cookies.get('session_user');
@@ -167,8 +165,8 @@ export function getSessionUser(cookies: Cookies): { id: string; email: string; f
   }
 }
 
-export function requireAdmin(cookies: Cookies): { allowed: boolean; user: any; error?: any } {
-  const user = getSessionUser(cookies);
+export function requireAdmin(cookies: Cookies): { allowed: boolean; user: User | null; error?: Response } {
+  const user = getSessionUser(cookies) as User | null;
   if (!user) return { allowed: false, user: null, error: unauthorizedResponse() };
   if (user.role !== 'SUPER_ADMIN') return { allowed: false, user, error: forbiddenResponse('Hanya admin yang dapat melakukan aksi ini.') };
   return { allowed: true, user };

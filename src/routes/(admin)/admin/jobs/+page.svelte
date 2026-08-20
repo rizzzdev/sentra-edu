@@ -38,24 +38,30 @@
   }
 
   function getClassesLabel(job: JobPosting): string {
-    if ((job as any).classIds && Array.isArray((job as any).classIds) && (job as any).classIds.length > 0) {
-      const names = (job as any).classIds.map((id: string) => getClassName(id)).filter((n: string) => n && n !== '—');
+    if (job.classIds && Array.isArray(job.classIds) && job.classIds.length > 0) {
+      const names = job.classIds
+        .map((classId: string) => getClassName(classId))
+        .filter((name: string) => name && name !== '—');
       if (names.length > 0) return names.join(', ');
     }
     return getClassName(job.classId);
   }
 
   function getSubjectsLabel(job: JobPosting): string {
-    if ((job as any).subjectIds && Array.isArray((job as any).subjectIds) && (job as any).subjectIds.length > 0) {
-      const names = (job as any).subjectIds.map((id: string) => getSubjectName(id)).filter((n: string) => n && n !== '—');
+    if (job.subjectIds && Array.isArray(job.subjectIds) && job.subjectIds.length > 0) {
+      const names = job.subjectIds
+        .map((subjectId: string) => getSubjectName(subjectId))
+        .filter((name: string) => name && name !== '—');
       if (names.length > 0) return names.join(', ');
     }
     return getSubjectName(job.subjectId);
   }
 
   function getStudentsLabel(job: JobPosting): string {
-    if ((job as any).studentIds && Array.isArray((job as any).studentIds) && (job as any).studentIds.length > 0) {
-      const names = (job as any).studentIds.map((id: string) => getUserName(id)).filter(Boolean);
+    if (job.studentIds && Array.isArray(job.studentIds) && job.studentIds.length > 0) {
+      const names = job.studentIds
+        .map((studentId: string) => getUserName(studentId))
+        .filter((name: string) => typeof name === 'string' && name.length > 0);
       if (names.length > 0) return names.join(', ');
     }
     return job.studentName || getUserName(job.studentId) || '—';

@@ -95,31 +95,31 @@
       toastStore.error('Tentukan jadwal tes.');
       return;
     }
-    const res = dbStore.saveCandidate({
+    const response = dbStore.saveCandidate({
       ...scheduleTestCand,
-      status: 'TEST_SCHEDULED' as any,
+      status: 'TEST_SCHEDULED',
       notes: `Tes dijadwalkan pada ${testDateTime}`
     });
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success('Jadwal tes berhasil disimpan.');
       scheduleTestCand = null;
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 
   function handleRecordTestSubmit() {
     if (!recordTestCand) return;
-    const res = dbStore.saveCandidate({
+    const response = dbStore.saveCandidate({
       ...recordTestCand,
-      status: 'TESTED' as any,
+      status: 'TESTED',
       notes: `Skor: ${testScore}. ${testNotes}`
     });
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success('Hasil tes berhasil dicatat.');
       recordTestCand = null;
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 
@@ -128,16 +128,16 @@
       toastStore.error('Tentukan jadwal wawancara.');
       return;
     }
-    const res = dbStore.saveCandidate({
+    const response = dbStore.saveCandidate({
       ...scheduleInterviewCand,
-      status: 'INTERVIEW_SCHEDULED' as any,
+      status: 'INTERVIEW_SCHEDULED',
       interviewDate: interviewDateTime
     });
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success('Jadwal wawancara berhasil disimpan.');
       scheduleInterviewCand = null;
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 
@@ -146,27 +146,27 @@
       toastStore.error('Hasil wawancara wajib diisi.');
       return;
     }
-    const res = dbStore.saveCandidate({
+    const response = dbStore.saveCandidate({
       ...recordInterviewCand,
-      status: 'INTERVIEWED' as any,
+      status: 'INTERVIEWED',
       notes: interviewNotes.trim()
     });
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success('Hasil wawancara berhasil dicatat.');
       recordInterviewCand = null;
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 
   function handleAcceptSubmit() {
     if (!acceptCand) return;
-    const res = dbStore.convertCandidateToTentorUser(acceptCand.id);
-    if (!res.error) {
-      toastStore.success(res.message);
+    const response = dbStore.convertCandidateToTentorUser(acceptCand.id);
+    if (!response.error) {
+      toastStore.success(response.message);
       acceptCand = null;
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 
@@ -175,34 +175,28 @@
       toastStore.error('Alasan penolakan wajib diisi.');
       return;
     }
-    const res = dbStore.saveCandidate({
+    const response = dbStore.saveCandidate({
       ...rejectCand,
-      status: 'REJECTED' as any,
+      status: 'REJECTED',
       notes: rejectionReason.trim()
     });
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success('Kandidat ditolak.');
       rejectCand = null;
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 
   function handleConfirmDelete() {
     if (!deletingCandidateId) return;
-    const res = dbStore.saveCandidate({
-      id: deletingCandidateId,
-      fullName: '',
-      email: '',
-      phone: '',
-      deletedAt: new Date().toISOString()
-    } as any);
+    const response = dbStore.deleteCandidate(deletingCandidateId);
     deleteDialogOpen = false;
     deletingCandidateId = null;
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success('Kandidat berhasil dihapus.');
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 </script>
@@ -276,7 +270,7 @@
                   <div class="sub">{c.email}</div>
                 </td>
                 <td>{getSubjectNames(c.subjectIds)}</td>
-                <td>{(c as any).source || '—'}</td>
+                <td>{c.source || '—'}</td>
                 <td>
                   <span class="badge {getStatusBadgeClass(c.status)}">{getStatusLabel(c.status, CANDIDATE_STATUS_LABEL)}</span>
                 </td>
@@ -450,7 +444,7 @@
       <dt>Pengalaman</dt>
       <dd>{detailCandidate.experienceYears} tahun</dd>
       <dt>Sumber</dt>
-      <dd>{(detailCandidate as any).source || '—'}</dd>
+      <dd>{detailCandidate.source || '—'}</dd>
       <dt>Tahap</dt>
       <dd>
         <span class="badge {getStatusBadgeClass(detailCandidate.status)}">{CANDIDATE_STATUS_LABEL[detailCandidate.status] || detailCandidate.status}</span>

@@ -25,9 +25,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     }
 
     // 2. Parse + validate input
-    let body: any;
+    let body: Record<string, unknown>;
     try {
-      body = await request.json();
+      body = (await request.json()) as Record<string, unknown>;
     } catch {
       return json({ error: true, statusCode: 400, message: 'Request body harus JSON.', data: null }, { status: 400 });
     }

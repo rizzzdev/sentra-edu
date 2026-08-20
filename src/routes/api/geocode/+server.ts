@@ -1,6 +1,27 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+interface NominatimItem {
+  place_id?: number | string;
+  display_name?: string;
+  name?: string;
+  lat: string;
+  lon: string;
+}
+
+interface PhotonFeature {
+  geometry: {
+    coordinates: [number, number];
+  };
+  properties?: {
+    name?: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+}
+
 export const GET: RequestHandler = async ({ url }) => {
   const query = (url.searchParams.get('q') || '').trim();
 
@@ -19,16 +40,16 @@ export const GET: RequestHandler = async ({ url }) => {
     });
 
     if (nominatimRes.ok) {
-      const data = await nominatimRes.json();
+      const data = (await nominatimRes.json()) as NominatimItem[];
       if (Array.isArray(data) && data.length > 0) {
-        const results = data.map((item: any) => {
+        const results = data.map((item: NominatimItem) => {
           const parts = (item.display_name || '').split(',');
           const primary = parts[0] ? parts[0].trim() : item.name || 'Lokasi';
           const secondary = parts.slice(1).join(',').trim();
           return {
             id: String(item.place_id || Math.random()),
             name: primary,
-            secondary: secondary || item.display_name,
+            secondary: secondary || item.display_name || '',
             lat: parseFloat(item.lat),
             lng: parseFloat(item.lon)
           };
@@ -47,14 +68,14 @@ export const GET: RequestHandler = async ({ url }) => {
     });
 
     if (photonRes.ok) {
-      const photonData = await photonRes.json();
+      const photonData = (await photonRes.json()) as { features?: PhotonFeature[] };
       if (photonData.features && photonData.features.length > 0) {
-        const results = photonData.features.map((feature: any, idx: number) => {
+        const results = photonData.features.map((feature: PhotonFeature, index: number) => {
           const props = feature.properties || {};
           const primary = props.name || props.street || 'Lokasi';
           const details = [props.city, props.state, props.country].filter(Boolean).join(', ');
           return {
-            id: `photon-${idx}-${Math.random()}`,
+            id: `photon-${index}-${Math.random()}`,
             name: primary,
             secondary: details,
             lat: feature.geometry.coordinates[1],

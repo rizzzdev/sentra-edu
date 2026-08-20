@@ -154,9 +154,9 @@
             <span class="select-tag">
               {label}
               <!-- svelte-ignore a11y_no_static_element_interactions -->
-              <span class="select-tag-x" role="button" tabindex="-1" on:mousedown={(e) => {
-                const opt = options.find((o) => o.label === label);
-                if (opt) removeTag(opt.value, e as unknown as MouseEvent);
+              <span class="select-tag-x" role="button" tabindex="-1" on:mousedown={(mouseEvent) => {
+                const opt = options.find((option) => option.label === label);
+                if (opt) removeTag(opt.value, mouseEvent);
               }}>&times;</span>
             </span>
           {/each}

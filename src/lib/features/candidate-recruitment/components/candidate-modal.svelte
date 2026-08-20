@@ -29,7 +29,7 @@
     experienceYears = editingCandidate.experienceYears || 0;
     subjectIds = editingCandidate.subjectIds || [];
     levelIds = editingCandidate.levelIds || [];
-    source = (editingCandidate as any).source || 'Media Sosial';
+    source = editingCandidate.source || 'Media Sosial';
   } else {
     fullName = '';
     email = '';
@@ -73,7 +73,7 @@
       return;
     }
 
-    const payload = {
+    const payload: Partial<RecruitmentCandidate> & { fullName: string; email: string; phone: string } = {
       id: editingCandidate ? editingCandidate.id : undefined,
       fullName: fullName.trim(),
       email: email.trim(),
@@ -85,7 +85,7 @@
       source
     };
 
-    const response = dbStore.saveCandidate(payload as any);
+    const response = dbStore.saveCandidate(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();

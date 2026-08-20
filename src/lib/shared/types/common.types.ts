@@ -38,6 +38,8 @@ export interface User extends BaseEntity {
   levelIds?: string[];
   school?: string;
   address?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   occupation?: string;
   waliUserId?: string;
   isActive?: boolean;
@@ -210,6 +212,7 @@ export interface RecruitmentCandidate extends BaseEntity {
   subjectIds: string[];
   levelIds: string[];
   cvUrl?: string;
+  source?: string;
   status: CandidateStatus;
   notes?: string;
   interviewDate?: string;

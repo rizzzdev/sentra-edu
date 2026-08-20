@@ -7,6 +7,8 @@
   import Input from '$lib/components/atoms/input.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
+  import type { Enrollment } from '$lib/shared/types/common.types';
+
   export let open: boolean = false;
   export let onClose: () => void = () => {};
 
@@ -15,17 +17,17 @@
   let selectedMonth: string = String(now.getMonth() + 1);
   let selectedYear: number = now.getFullYear();
 
-  $: enrollments = $dbStore.enrollments.filter((e) => e.deletedAt === null);
+  $: enrollments = $dbStore.enrollments.filter((enrollment) => enrollment.deletedAt === null);
 
   $: if (enrollments.length > 0 && !selectedStudentId) {
     selectedStudentId = enrollments[0].studentId;
   }
 
-  function getStudentEnrollmentLabel(enr: any): string {
-    const student = $dbStore.users.find((u) => u.id === enr.studentId);
-    const cls = $dbStore.classes.find((c) => c.id === enr.classId);
-    const sub = $dbStore.subjects.find((s) => s.id === enr.subjectId);
-    return `${student?.fullName || 'Siswa'} — ${cls?.className || ''} ${sub?.name || ''}`;
+  function getStudentEnrollmentLabel(enrollment: Enrollment): string {
+    const student = $dbStore.users.find((user) => user.id === enrollment.studentId);
+    const classLevel = $dbStore.classes.find((classItem) => classItem.id === enrollment.classId);
+    const subject = $dbStore.subjects.find((subjectItem) => subjectItem.id === enrollment.subjectId);
+    return `${student?.fullName || 'Siswa'} — ${classLevel?.className || ''} ${subject?.name || ''}`;
   }
 
   const monthNames = [
@@ -39,17 +41,17 @@
       return;
     }
 
-    const enr = enrollments.find((e) => e.studentId === selectedStudentId);
-    if (!enr) {
+    const enrollment = enrollments.find((enr) => enr.studentId === selectedStudentId);
+    if (!enrollment) {
       toastStore.error('Data pendaftaran murid tidak ditemukan.');
       return;
     }
 
-    const pkg = $dbStore.packages.find((p) => p.id === enr.packageId);
-    const amount = pkg ? pkg.price : 1000000;
+    const packagePlan = $dbStore.packages.find((pkg) => pkg.id === enrollment.packageId);
+    const amount = packagePlan ? packagePlan.price : 1000000;
 
     const payload = {
-      enrollmentId: enr.id,
+      enrollmentId: enrollment.id,
       amount,
       dueDate: `${selectedYear}-${selectedMonth.padStart(2, '0')}-25`,
       periodMonth: Number(selectedMonth),

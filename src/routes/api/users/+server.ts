@@ -6,17 +6,46 @@ import { mapUserRow, generateEntityId } from '$lib/server/api-helpers';
 import bcrypt from 'bcryptjs';
 import { isValidEmail, isValidId, sanitizeInput, requireAdmin } from '$lib/server/security';
 
+interface UserPayload {
+  id?: string;
+  fullName?: string;
+  full_name?: string;
+  email?: string;
+  password?: string;
+  phone?: string;
+  role?: string;
+  position?: string;
+  education?: string;
+  experienceYears?: number;
+  experience_years?: number;
+  subjectIds?: string[];
+  subject_ids?: string[];
+  levelIds?: string[];
+  level_ids?: string[];
+  school?: string;
+  address?: string;
+  occupation?: string;
+  waliUserId?: string;
+  wali_user_id?: string;
+  isActive?: boolean;
+  is_active?: boolean;
+  candidateStatus?: string;
+  candidate_status?: string;
+}
+
 /** GET /api/users */
 export const GET: RequestHandler = async ({ cookies }) => {
   try {
     const auth = requireAdmin(cookies);
-    if (!auth.allowed) return auth.error;
+    if (!auth.allowed) {
+      return auth.error || json({ error: true, statusCode: 401, message: 'Unauthorized', data: null }, { status: 401 });
+    }
     const cached = getCached('users');
     if (cached) return json({ error: false, statusCode: 200, data: cached });
 
     const rows = await sql`SELECT * FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC`;
     // Strip passwords from response
-    const users = rows.map(mapUserRow).map((u: any) => ({ ...u, password: undefined }));
+    const users = rows.map(mapUserRow).map((userItem) => ({ ...userItem, password: undefined }));
     setCache('users', users);
     return json({ error: false, statusCode: 200, data: users });
   } catch (err_raw) {
@@ -29,11 +58,13 @@ export const GET: RequestHandler = async ({ cookies }) => {
 export const POST: RequestHandler = async ({ request, cookies }) => {
   try {
     const auth = requireAdmin(cookies);
-    if (!auth.allowed) return auth.error;
+    if (!auth.allowed) {
+      return auth.error || json({ error: true, statusCode: 401, message: 'Unauthorized', data: null }, { status: 401 });
+    }
 
-    let body: any;
+    let body: UserPayload;
     try {
-      body = await request.json();
+      body = (await request.json()) as UserPayload;
     } catch {
       return json({ error: true, statusCode: 400, message: 'Request body harus JSON.', data: null }, { status: 400 });
     }
@@ -137,7 +168,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
       const rows = await sql`SELECT * FROM users WHERE id = ${body.id}`;
       const user = rows[0] ? mapUserRow(rows[0]) : null;
-      if (user) (user as any).password = undefined;
+      if (user) {
+        delete user.password;
+      }
       invalidateCache();
       return json({ error: false, statusCode: 200, message: 'User diperbarui.', data: user });
     } else {
@@ -169,7 +202,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
       const rows = await sql`SELECT * FROM users WHERE id = ${id}`;
       const user = rows[0] ? mapUserRow(rows[0]) : null;
-      if (user) (user as any).password = undefined;
+      if (user) {
+        delete user.password;
+      }
       invalidateCache();
       return json({ error: false, statusCode: 201, message: 'User dibuat.', data: user });
     }
@@ -183,7 +218,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 export const DELETE: RequestHandler = async ({ url, cookies }) => {
   try {
     const auth = requireAdmin(cookies);
-    if (!auth.allowed) return auth.error;
+    if (!auth.allowed) {
+      return auth.error || json({ error: true, statusCode: 401, message: 'Unauthorized', data: null }, { status: 401 });
+    }
 
     const id = url.searchParams.get('id');
     if (!id || !isValidId(id)) {

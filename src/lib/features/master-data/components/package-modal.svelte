@@ -64,7 +64,7 @@
       description: description.trim()
     };
 
-    const response = dbStore.savePackage(payload as any);
+    const response = dbStore.savePackagePlan(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();

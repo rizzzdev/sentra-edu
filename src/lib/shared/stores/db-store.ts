@@ -2,6 +2,7 @@ import { writable, get } from 'svelte/store';
 import type {
   DatabaseSchema,
   ApiResponse,
+  BaseEntity,
   User,
   JobPost,
   JobApplication,
@@ -56,7 +57,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<{ error
   }
 }
 
-async function apiPost<T>(path: string, body: any): Promise<{ error: boolean; data: T | null; message?: string }> {
+async function apiPost<T>(path: string, body: Record<string, string | number | boolean | string[] | null | undefined> | Partial<BaseEntity> | Record<string, unknown>): Promise<{ error: boolean; data: T | null; message?: string }> {
   return apiFetch<T>(path, { method: 'POST', body: JSON.stringify(body) });
 }
 
@@ -74,14 +75,13 @@ async function loadDatabaseFromApi(): Promise<DatabaseSchema> {
   // Try Neon via BFF
   try {
     console.log('[SentraEdu] Loading data from Neon...');
-    const res = await apiFetch<{ data: DatabaseSchema }>('/api/db');
-    if (!res.error && res.data) {
+    const response = await apiFetch<DatabaseSchema>('/api/db');
+    if (!response.error && response.data) {
       console.log('[SentraEdu] Neon data loaded successfully.');
-      const data = (res.data as any).data || res.data;
-      return { ...data, isLoaded: true };
+      return { ...response.data, isLoaded: true };
     }
-  } catch (err) {
-    console.warn('[SentraEdu] Neon load failed:', err);
+  } catch (error) {
+    console.warn('[SentraEdu] Neon load failed:', error);
   }
 
   return { ...getEmptyDatabase(), isLoaded: true };
@@ -585,6 +585,14 @@ function createDatabaseStore() {
       persistDatabase({ ...currentDb, users: [...currentDb.users, newTentor], candidates: currentDb.candidates.map((c) => c.id === candidateId ? { ...c, status: 'ACCEPTED' as const, updatedAt: now } : c) });
       apiPost('/api/users', { email: cand.email, password: 'tentor123', fullName: cand.fullName, phone: cand.phone, role: 'TENTOR', education: cand.education, experienceYears: cand.experienceYears, subjectIds: cand.subjectIds, levelIds: cand.levelIds });
       return { error: false, statusCode: 201, message: `Kandidat berhasil diterima sebagai tentor.`, data: newTentor };
+    },
+
+    deleteCandidate: (candidateId: string): ApiResponse<null> => {
+      const currentDb = get(store);
+      const now = new Date().toISOString();
+      persistDatabase({ ...currentDb, candidates: currentDb.candidates.map((cand) => cand.id === candidateId ? { ...cand, deletedAt: now, updatedAt: now } : cand) });
+      apiDelete('/api/candidates', candidateId);
+      return { error: false, statusCode: 200, message: 'Kandidat berhasil dihapus.', data: null };
     },
 
     // ── MAGIC LINKS ──
