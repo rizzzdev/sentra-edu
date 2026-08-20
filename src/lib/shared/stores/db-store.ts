@@ -526,11 +526,55 @@ function createDatabaseStore() {
     },
 
     // ── ATTENDANCE ──
-    submitAttendance: (payload: { enrollmentId: string; tentorId: string; sessionDate: string; startTime: string; endTime: string; topic: string; studentNotes: string; latitudeCheckIn: number | null; longitudeCheckIn: number | null; isRadiusValid: boolean; proofPhotoUrl?: string }): ApiResponse<AttendanceRecord> => {
-      if (!payload.topic.trim()) return { error: true, statusCode: 400, message: 'Topik wajib diisi.', data: null };
+    submitAttendance: (payload: {
+      jobId?: string;
+      enrollmentId?: string;
+      tentorId: string;
+      subjectIds?: string[];
+      classIds?: string[];
+      studentIds?: string[];
+      studentNames?: string[];
+      sessionDate: string;
+      startTime: string;
+      endTime: string;
+      durationMinutes?: number;
+      sessionsCount?: number;
+      topic: string;
+      studentNotes: string;
+      latitudeCheckIn: number | null;
+      longitudeCheckIn: number | null;
+      isRadiusValid: boolean;
+      proofPhotoUrl?: string;
+    }): ApiResponse<AttendanceRecord> => {
+      if (!payload.topic.trim()) return { error: true, statusCode: 400, message: 'Topik materi wajib diisi.', data: null };
       const currentDb = get(store);
       const now = new Date().toISOString();
-      const newAtt: AttendanceRecord = { id: generateEntityId('att'), enrollmentId: payload.enrollmentId, tentorId: payload.tentorId, sessionDate: payload.sessionDate, startTime: payload.startTime, endTime: payload.endTime, topic: payload.topic.trim(), studentNotes: payload.studentNotes.trim(), status: 'SUBMITTED', latitudeCheckIn: payload.latitudeCheckIn, longitudeCheckIn: payload.longitudeCheckIn, isRadiusValid: payload.isRadiusValid, proofPhotoUrl: payload.proofPhotoUrl || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&q=80', studentConfirmed: false, createdAt: now, updatedAt: now, deletedAt: null };
+      const newAtt: AttendanceRecord = {
+        id: generateEntityId('att'),
+        jobId: payload.jobId,
+        enrollmentId: payload.enrollmentId || '',
+        tentorId: payload.tentorId,
+        subjectIds: payload.subjectIds || [],
+        classIds: payload.classIds || [],
+        studentIds: payload.studentIds || [],
+        studentNames: payload.studentNames || [],
+        sessionDate: payload.sessionDate,
+        startTime: payload.startTime,
+        endTime: payload.endTime,
+        durationMinutes: payload.durationMinutes ?? 90,
+        sessionsCount: payload.sessionsCount ?? 1,
+        topic: payload.topic.trim(),
+        studentNotes: payload.studentNotes.trim(),
+        status: 'SUBMITTED',
+        latitudeCheckIn: payload.latitudeCheckIn,
+        longitudeCheckIn: payload.longitudeCheckIn,
+        isRadiusValid: payload.isRadiusValid,
+        proofPhotoUrl: payload.proofPhotoUrl || 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&q=80',
+        studentConfirmed: false,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: null
+      };
       persistDatabase({ ...currentDb, attendances: [newAtt, ...currentDb.attendances] });
       apiPost('/api/attendances', payload);
       return { error: false, statusCode: 201, message: 'Presensi berhasil dikirim.', data: newAtt };

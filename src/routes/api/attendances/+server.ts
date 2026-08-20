@@ -21,7 +21,7 @@ export const GET: RequestHandler = async () => {
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const body = (await request.json()) as Record<string, string | number | boolean | null | undefined>;
+    const body = (await request.json()) as Record<string, string | number | boolean | null | undefined | string[]>;
     const now = new Date().toISOString();
 
     if (body.id) {
@@ -29,9 +29,9 @@ export const POST: RequestHandler = async ({ request }) => {
       if (!isValidId(attId)) return json({ error: true, statusCode: 400, message: 'ID tidak valid.', data: null }, { status: 400 });
 
       await sql`UPDATE attendances SET
-        status=${body.status ?? 'SUBMITTED'},
+        status=${(body.status as string) ?? 'SUBMITTED'},
         review_notes=${sanitizeInput(String(body.reviewNotes ?? ''))},
-        student_confirmed=${body.studentConfirmed ?? false},
+        student_confirmed=${Boolean(body.studentConfirmed ?? false)},
         student_rating=${body.studentRating ? Number(body.studentRating) : null},
         student_feedback=${sanitizeInput(String(body.studentFeedback ?? ''))},
         updated_at=${now}
@@ -42,8 +42,34 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ error: false, statusCode: 200, message: 'Presensi diperbarui.', data: rows[0] ? mapAttendanceRow(rows[0]) : null });
     } else {
       const id = generateEntityId('att');
-      await sql`INSERT INTO attendances (id,enrollment_id,tentor_id,session_date,start_time,end_time,topic,student_notes,status,latitude_check_in,longitude_check_in,is_radius_valid,proof_photo_url,student_confirmed,created_at,updated_at)
-        VALUES (${id},${body.enrollmentId},${body.tentorId},${body.sessionDate},${body.startTime},${body.endTime},${sanitizeInput(String(body.topic ?? ''))},${sanitizeInput(String(body.studentNotes ?? ''))},${body.status ?? 'SUBMITTED'},${body.latitudeCheckIn},${body.longitudeCheckIn},${body.isRadiusValid ?? false},${body.proofPhotoUrl},${body.studentConfirmed ?? false},${now},${now})`;
+      const subjectIds = Array.isArray(body.subjectIds) ? (body.subjectIds as string[]) : [];
+      const classIds = Array.isArray(body.classIds) ? (body.classIds as string[]) : [];
+      const studentIds = Array.isArray(body.studentIds) ? (body.studentIds as string[]) : [];
+      const studentNames = Array.isArray(body.studentNames) ? (body.studentNames as string[]) : [];
+      const durationMinutes = body.durationMinutes ? Number(body.durationMinutes) : 90;
+      const sessionsCount = body.sessionsCount ? Number(body.sessionsCount) : 1;
+      const jobId = body.jobId ? String(body.jobId) : null;
+      const enrollmentId = body.enrollmentId ? String(body.enrollmentId) : null;
+
+      await sql`INSERT INTO attendances (
+        id, job_id, enrollment_id, tentor_id, subject_ids, class_ids, student_ids, student_names,
+        session_date, start_time, end_time, duration_minutes, sessions_count, topic, student_notes,
+        status, latitude_check_in, longitude_check_in, is_radius_valid, proof_photo_url, student_confirmed,
+        created_at, updated_at
+      ) VALUES (
+        ${id}, ${jobId}, ${enrollmentId}, ${body.tentorId ? String(body.tentorId) : null},
+        ${subjectIds}, ${classIds}, ${studentIds}, ${studentNames},
+        ${body.sessionDate ? String(body.sessionDate) : null}, ${body.startTime ? String(body.startTime) : ''}, ${body.endTime ? String(body.endTime) : ''},
+        ${durationMinutes}, ${sessionsCount},
+        ${sanitizeInput(String(body.topic ?? ''))}, ${sanitizeInput(String(body.studentNotes ?? ''))},
+        ${(body.status as string) ?? 'SUBMITTED'},
+        ${body.latitudeCheckIn !== null && body.latitudeCheckIn !== undefined ? Number(body.latitudeCheckIn) : null},
+        ${body.longitudeCheckIn !== null && body.longitudeCheckIn !== undefined ? Number(body.longitudeCheckIn) : null},
+        ${Boolean(body.isRadiusValid ?? false)},
+        ${body.proofPhotoUrl ? String(body.proofPhotoUrl) : null},
+        ${Boolean(body.studentConfirmed ?? false)},
+        ${now}, ${now}
+      )`;
 
       const rows = await sql`SELECT * FROM attendances WHERE id=${id}`;
       invalidateCache();

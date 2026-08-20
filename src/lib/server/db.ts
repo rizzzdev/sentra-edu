@@ -237,11 +237,18 @@ export async function initDatabase() {
 
     CREATE TABLE IF NOT EXISTS attendances (
       id TEXT PRIMARY KEY,
+      job_id TEXT REFERENCES jobs(id),
       enrollment_id TEXT REFERENCES enrollments(id),
       tentor_id TEXT REFERENCES users(id),
+      subject_ids TEXT[] DEFAULT '{}',
+      class_ids TEXT[] DEFAULT '{}',
+      student_ids TEXT[] DEFAULT '{}',
+      student_names TEXT[] DEFAULT '{}',
       session_date DATE,
       start_time TEXT DEFAULT '',
       end_time TEXT DEFAULT '',
+      duration_minutes INTEGER DEFAULT 90,
+      sessions_count DOUBLE PRECISION DEFAULT 1,
       topic TEXT DEFAULT '',
       student_notes TEXT DEFAULT '',
       status TEXT DEFAULT 'SUBMITTED',
@@ -340,5 +347,12 @@ export async function initDatabase() {
     );
 
     ALTER TABLE jobs DROP COLUMN IF EXISTS job_type;
+    ALTER TABLE attendances ADD COLUMN IF NOT EXISTS job_id TEXT REFERENCES jobs(id);
+    ALTER TABLE attendances ADD COLUMN IF NOT EXISTS subject_ids TEXT[] DEFAULT '{}';
+    ALTER TABLE attendances ADD COLUMN IF NOT EXISTS class_ids TEXT[] DEFAULT '{}';
+    ALTER TABLE attendances ADD COLUMN IF NOT EXISTS student_ids TEXT[] DEFAULT '{}';
+    ALTER TABLE attendances ADD COLUMN IF NOT EXISTS student_names TEXT[] DEFAULT '{}';
+    ALTER TABLE attendances ADD COLUMN IF NOT EXISTS duration_minutes INTEGER DEFAULT 90;
+    ALTER TABLE attendances ADD COLUMN IF NOT EXISTS sessions_count DOUBLE PRECISION DEFAULT 1;
   `;
 }

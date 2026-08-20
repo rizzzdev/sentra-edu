@@ -53,6 +53,41 @@
     return $dbStore.users.find((userItem) => userItem.id === userId)?.fullName || '—';
   }
 
+  function getAttendanceStudents(attendanceItem: AttendanceRecord): string {
+    if (attendanceItem.studentNames && attendanceItem.studentNames.length > 0) {
+      return attendanceItem.studentNames.join(', ');
+    }
+    if (attendanceItem.studentIds && attendanceItem.studentIds.length > 0) {
+      const names = $dbStore.users
+        .filter((userItem) => attendanceItem.studentIds?.includes(userItem.id))
+        .map((userItem) => userItem.fullName);
+      if (names.length > 0) return names.join(', ');
+    }
+    if (attendanceItem.enrollmentId) {
+      const enr = $dbStore.enrollments.find((enrollmentItem) => enrollmentItem.id === attendanceItem.enrollmentId);
+      if (enr) {
+        return $dbStore.users.find((userItem) => userItem.id === enr.studentId)?.fullName || '—';
+      }
+    }
+    return '—';
+  }
+
+  function getAttendanceSubjects(attendanceItem: AttendanceRecord): string {
+    if (attendanceItem.subjectIds && attendanceItem.subjectIds.length > 0) {
+      const names = $dbStore.subjects
+        .filter((subjectItem) => attendanceItem.subjectIds?.includes(subjectItem.id))
+        .map((subjectItem) => subjectItem.name);
+      if (names.length > 0) return names.join(', ');
+    }
+    if (attendanceItem.enrollmentId) {
+      const enr = $dbStore.enrollments.find((enrollmentItem) => enrollmentItem.id === attendanceItem.enrollmentId);
+      if (enr) {
+        return $dbStore.subjects.find((subjectItem) => subjectItem.id === enr.subjectId)?.name || '—';
+      }
+    }
+    return '—';
+  }
+
   function getStudentOf(enrollmentId: string): string {
     const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
     if (enrollmentItem) {
@@ -84,8 +119,10 @@
   function getSessionDuration(startTime?: string, endTime?: string): number {
     if (!startTime || !endTime) return 90;
     try {
-      const [startHour, startMin] = startTime.split(':').map(Number);
-      const [endHour, endMin] = endTime.split(':').map(Number);
+      const startParts = startTime.includes('T') ? startTime.split('T')[1].slice(0, 5) : startTime;
+      const endParts = endTime.includes('T') ? endTime.split('T')[1].slice(0, 5) : endTime;
+      const [startHour, startMin] = startParts.split(':').map(Number);
+      const [endHour, endMin] = endParts.split(':').map(Number);
       if (!isNaN(startHour) && !isNaN(endHour)) {
         const diff = (endHour * 60 + endMin) - (startHour * 60 + startMin);
         return diff > 0 ? diff : 90;
@@ -102,7 +139,8 @@
       const matchesSearch =
         !query ||
         attendanceItem.topic.toLowerCase().includes(query) ||
-        getStudentOf(attendanceItem.enrollmentId).toLowerCase().includes(query) ||
+        getAttendanceStudents(attendanceItem).toLowerCase().includes(query) ||
+        getAttendanceSubjects(attendanceItem).toLowerCase().includes(query) ||
         getUserName(attendanceItem.tentorId).toLowerCase().includes(query);
       const matchesStatus = !statusFilter || attendanceItem.status === statusFilter;
       return matchesSearch && matchesStatus;
@@ -432,31 +470,56 @@
         <table class="tbl">
           <thead>
             <tr>
-              <th>Tanggal</th>
+              <th>Tanggal & Waktu</th>
               <th>Tentor</th>
               <th>Mapel</th>
-              <th>Topik</th>
-              <th>Catatan</th>
+              <th>Topik Materi</th>
+              <th>Durasi / Sesi</th>
               <th>Status</th>
+              <th class="text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {#if paginatedAttendances.length === 0}
               <tr>
-                <td colspan="6" class="empty">Belum ada riwayat presensi.</td>
+                <td colspan="7" class="empty">Belum ada riwayat presensi.</td>
               </tr>
             {:else}
               {#each paginatedAttendances as attendanceItem (attendanceItem.id)}
                 <tr>
-                  <td>{formatDateIndonesian(attendanceItem.sessionDate)}</td>
-                  <td>{getUserName(attendanceItem.tentorId)}</td>
-                  <td>{getSubjectName(attendanceItem.enrollmentId)}</td>
+                  <td>
+                    <div class="font-medium">{formatDateIndonesian(attendanceItem.sessionDate)}</div>
+                    {#if attendanceItem.startTime && attendanceItem.endTime}
+                      <div class="text-xs text-muted-fg">
+                        {attendanceItem.startTime.includes('T') ? attendanceItem.startTime.split('T')[1].substring(0, 5) : attendanceItem.startTime} - 
+                        {attendanceItem.endTime.includes('T') ? attendanceItem.endTime.split('T')[1].substring(0, 5) : attendanceItem.endTime}
+                      </div>
+                    {/if}
+                  </td>
+                  <td class="font-medium">{getUserName(attendanceItem.tentorId)}</td>
+                  <td>{getAttendanceSubjects(attendanceItem)}</td>
                   <td>{attendanceItem.topic}</td>
-                  <td>{attendanceItem.studentNotes || '—'}</td>
+                  <td>
+                    <span class="badge bg-muted text-muted-fg font-medium">
+                      {attendanceItem.durationMinutes || 90} mnt ({attendanceItem.sessionsCount || 1} sesi)
+                    </span>
+                  </td>
                   <td>
                     <span class="badge {getStatusBadgeClass(attendanceItem.status)}">
                       {getStatusLabel(attendanceItem.status, ATTENDANCE_STATUS_LABEL)}
                     </span>
+                  </td>
+                  <td>
+                    <div class="actions">
+                      <button
+                        type="button"
+                        class="btn-icon"
+                        data-tip="Lihat Detail"
+                        on:click={() => handleOpenDetail(attendanceItem)}
+                      >
+                        <Icon name="visibility" size="sm" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               {/each}

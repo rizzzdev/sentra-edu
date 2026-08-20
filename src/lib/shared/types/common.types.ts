@@ -142,11 +142,18 @@ export interface JobApplication extends BaseEntity {
 export type AttendanceStatus = 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 export interface AttendanceRecord extends BaseEntity {
+  jobId?: string;
   enrollmentId: string;
   tentorId: string;
+  subjectIds?: string[];
+  classIds?: string[];
+  studentIds?: string[];
+  studentNames?: string[];
   sessionDate: string;
   startTime: string;
   endTime: string;
+  durationMinutes?: number;
+  sessionsCount?: number;
   topic: string;
   studentNotes: string;
   status: AttendanceStatus;
