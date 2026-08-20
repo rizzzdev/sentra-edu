@@ -3,27 +3,42 @@
   import { authStore } from '$lib/shared/stores/auth-store';
   import { dbStore } from '$lib/shared/stores/db-store';
 
+  import { getStudentPrograms, getParentPrograms } from '$lib/shared/utils/program-helpers';
+
   $: currentUser = $authStore;
 
   // Student data calculation
+  $: studentPrograms = currentUser ? getStudentPrograms($dbStore, currentUser.id, currentUser.fullName) : [];
+  $: studentProgramIds = studentPrograms.map((p) => p.id);
   $: studentEnrs = currentUser
     ? $dbStore.enrollments.filter((e) => e.deletedAt === null && e.studentId === currentUser?.id)
     : [];
   $: studentEnrIds = studentEnrs.map((e) => e.id);
 
   $: studentApprovedAtt = $dbStore.attendances.filter(
-    (a) => a.deletedAt === null && studentEnrIds.includes(a.enrollmentId) && a.status === 'APPROVED'
+    (a) => a.deletedAt === null && (studentEnrIds.includes(a.enrollmentId) || studentProgramIds.includes(a.enrollmentId)) && a.status === 'APPROVED'
   );
 
   $: studentBySubject = (() => {
     const map: Record<string, { count: number; topics: string[] }> = {};
     studentApprovedAtt.forEach((a) => {
+      let sName = 'Lainnya';
       const enr = $dbStore.enrollments.find((e) => e.id === a.enrollmentId);
-      const sub = enr ? $dbStore.subjects.find((s) => s.id === enr.subjectId) : null;
-      const sName = sub ? sub.name : 'Lainnya';
+      if (enr) {
+        const sub = $dbStore.subjects.find((s) => s.id === enr.subjectId);
+        if (sub) sName = sub.name;
+      } else {
+        const job = $dbStore.jobs.find((j) => j.id === a.enrollmentId);
+        if (job) {
+          const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
+          const sub = $dbStore.subjects.find((s) => subjectIds.includes(s.id));
+          if (sub) sName = sub.name;
+        }
+      }
+
       if (!map[sName]) map[sName] = { count: 0, topics: [] };
       map[sName].count++;
-      if (!map[sName].topics.includes(a.topic)) {
+      if (a.topic && !map[sName].topics.includes(a.topic)) {
         map[sName].topics.push(a.topic);
       }
     });
@@ -33,6 +48,8 @@
   $: totalStudentHours = Math.round(studentApprovedAtt.length * 1.5);
 
   // Wali Murid data calculation
+  $: waliPrograms = currentUser ? getParentPrograms($dbStore, currentUser.id) : [];
+  $: waliProgramIds = waliPrograms.map((p) => p.id);
   $: waliStudents = currentUser
     ? $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.waliUserId === currentUser?.id)
     : [];
@@ -44,15 +61,26 @@
   $: waliEnrIds = waliEnrs.map((e) => e.id);
 
   $: waliApprovedAtt = $dbStore.attendances.filter(
-    (a) => a.deletedAt === null && waliEnrIds.includes(a.enrollmentId) && a.status === 'APPROVED'
+    (a) => a.deletedAt === null && (waliEnrIds.includes(a.enrollmentId) || waliProgramIds.includes(a.enrollmentId)) && a.status === 'APPROVED'
   );
 
   $: waliByStudent = (() => {
     const map: Record<string, { count: number; hours: number }> = {};
     waliApprovedAtt.forEach((a) => {
+      let sName = '—';
       const enr = $dbStore.enrollments.find((e) => e.id === a.enrollmentId);
-      const student = enr ? $dbStore.users.find((u) => u.id === enr.studentId) : null;
-      const sName = student ? student.fullName : '—';
+      if (enr) {
+        const student = $dbStore.users.find((u) => u.id === enr.studentId);
+        if (student) sName = student.fullName;
+      } else {
+        const job = $dbStore.jobs.find((j) => j.id === a.enrollmentId);
+        if (job) {
+          if (Array.isArray(job.studentNames) && job.studentNames.length > 0) sName = job.studentNames.join(', ');
+          else if (job.studentName) sName = job.studentName;
+          else if (job.studentId) sName = $dbStore.users.find((u) => u.id === job.studentId)?.fullName || '—';
+        }
+      }
+
       if (!map[sName]) map[sName] = { count: 0, hours: 0 };
       map[sName].count++;
       map[sName].hours += 90;

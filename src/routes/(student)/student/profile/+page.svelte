@@ -5,6 +5,7 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import type { UserRole } from '$lib/shared/types/common.types';
+  import { getStudentPrograms, getParentPrograms } from '$lib/shared/utils/program-helpers';
   import { ROLE_LABEL } from '$lib/shared/utils/status-map';
 
   let editModalOpen: boolean = false;
@@ -42,9 +43,19 @@
         .reduce((sum, c) => sum + c.totalAmount, 0)
     : 0;
 
-  $: studentPrograms = currentUser
-    ? $dbStore.enrollments.filter((e) => e.deletedAt === null && e.studentId === currentUser?.id).length
+  $: studentProgramsList = currentUser
+    ? getStudentPrograms($dbStore, currentUser.id, currentUser.fullName)
+    : [];
+  $: studentPrograms = studentProgramsList.length;
+  $: studentProgramIds = studentProgramsList.map((p) => p.id);
+  $: studentApprovedSessions = currentUser
+    ? $dbStore.attendances.filter((a) => a.deletedAt === null && a.status === 'APPROVED' && (studentProgramIds.includes(a.enrollmentId) || a.enrollmentId === currentUser.id)).length
     : 0;
+
+  $: waliProgramsList = currentUser
+    ? getParentPrograms($dbStore, currentUser.id)
+    : [];
+  $: waliProgramsCount = waliProgramsList.length;
 
   $: waliChildren = currentUser
     ? $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.waliUserId === currentUser?.id).length
@@ -212,7 +223,7 @@
           <div class="stat">
             <div class="s-icon tone-emerald"><Icon name="fact_check" size="lg" /></div>
             <div>
-              <div class="s-val">{$dbStore.attendances.filter((a) => a.status === 'APPROVED').length}</div>
+              <div class="s-val">{studentApprovedSessions}</div>
               <div class="s-lbl">Sesi Disetujui</div>
             </div>
           </div>
@@ -227,7 +238,7 @@
           <div class="stat">
             <div class="s-icon tone-emerald"><Icon name="school" size="lg" /></div>
             <div>
-              <div class="s-val">{$dbStore.enrollments.filter((e) => e.waliUserId === currentUser?.id).length}</div>
+              <div class="s-val">{waliProgramsCount}</div>
               <div class="s-lbl">Program Les Anak</div>
             </div>
           </div>

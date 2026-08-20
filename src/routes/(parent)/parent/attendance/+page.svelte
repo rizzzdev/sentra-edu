@@ -28,10 +28,20 @@
     if (currentUser.role === 'SUPER_ADMIN') return true;
     if (currentUser.role === 'TENTOR') return a.tentorId === currentUser.id;
 
-    // Student or Wali
+    // Student or Wali check via Enrollment
     const enr = $dbStore.enrollments.find((e) => e.id === a.enrollmentId);
-    if (!enr) return false;
-    return enr.studentId === currentUser.id || enr.waliUserId === currentUser.id;
+    if (enr && (enr.studentId === currentUser.id || enr.waliUserId === currentUser.id)) return true;
+
+    // Student or Wali check via Job
+    const job = $dbStore.jobs.find((j) => j.id === a.enrollmentId);
+    if (job) {
+      if (job.studentId === currentUser.id || (Array.isArray(job.studentIds) && job.studentIds.includes(currentUser.id))) return true;
+      if (currentUser.fullName && (job.studentName === currentUser.fullName || (Array.isArray(job.studentNames) && job.studentNames.includes(currentUser.fullName)))) return true;
+      const myStudents = $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.waliUserId === currentUser.id).map((s) => s.id);
+      if (myStudents.includes(job.studentId || '') || (Array.isArray(job.studentIds) && job.studentIds.some((id) => myStudents.includes(id)))) return true;
+    }
+
+    return false;
   });
 
   $: nSubmitted = allAttendances.filter((a) => a.status === 'SUBMITTED').length;
@@ -45,14 +55,30 @@
 
   function getStudentOf(enrollmentId: string): string {
     const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    if (!enr) return '—';
-    return $dbStore.users.find((u) => u.id === enr.studentId)?.fullName || '—';
+    if (enr) {
+      return $dbStore.users.find((u) => u.id === enr.studentId)?.fullName || '—';
+    }
+    const job = $dbStore.jobs.find((j) => j.id === enrollmentId);
+    if (job) {
+      if (Array.isArray(job.studentNames) && job.studentNames.length > 0) return job.studentNames.join(', ');
+      if (job.studentName) return job.studentName;
+      if (job.studentId) return $dbStore.users.find((u) => u.id === job.studentId)?.fullName || '—';
+    }
+    return '—';
   }
 
   function getSubjectName(enrollmentId: string): string {
     const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    if (!enr) return '—';
-    return $dbStore.subjects.find((s) => s.id === enr.subjectId)?.name || '—';
+    if (enr) {
+      return $dbStore.subjects.find((s) => s.id === enr.subjectId)?.name || '—';
+    }
+    const job = $dbStore.jobs.find((j) => j.id === enrollmentId);
+    if (job) {
+      const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
+      const names = $dbStore.subjects.filter((s) => subjectIds.includes(s.id)).map((s) => s.name);
+      return names.length > 0 ? names.join(', ') : '—';
+    }
+    return '—';
   }
 
   $: filteredAttendances = allAttendances

@@ -5,6 +5,7 @@
   import { formatCurrencyIDR, formatDateIndonesian } from '$lib/shared/utils/formatting';
   import { JOB_STATUS_LABEL, INVOICE_STATUS_LABEL, ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { AttendanceRecord, JobPosting, InvoiceRecord } from '$lib/shared/types/common.types';
+  import { getStudentPrograms, getParentPrograms, type UnifiedProgram } from '$lib/shared/utils/program-helpers';
   import AttendanceVerifyModal from '$lib/features/attendance-tracking/components/attendance-verify-modal.svelte';
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
@@ -48,19 +49,22 @@
   $: tentorPaginatedJobs = tentorMyJobs.slice((tentorPage - 1) * itemsPerPage, tentorPage * itemsPerPage);
 
   // Student stats & list
-  $: studentMyEnr = currentUser ? $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && enroll.studentId === currentUser?.id) : [];
-  $: studentEnrIds = studentMyEnr.map((enroll) => enroll.id);
-  $: studentMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && studentEnrIds.includes(att.enrollmentId));
+  $: studentPrograms = currentUser ? getStudentPrograms($dbStore, currentUser.id, currentUser.fullName) : [];
+  $: studentEnrIds = $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && enroll.studentId === currentUser?.id).map((e) => e.id);
+  $: studentProgramIds = studentPrograms.map((p) => p.id);
+  $: studentMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && (studentEnrIds.includes(att.enrollmentId) || studentProgramIds.includes(att.enrollmentId)));
   $: studentApprovedAtt = studentMyAtt.filter((att) => att.status === 'APPROVED');
 
   // Wali stats & list
+  $: waliPrograms = currentUser ? getParentPrograms($dbStore, currentUser.id) : [];
   $: waliMyStudents = currentUser ? $dbStore.users.filter((user) => user.deletedAt === null && user.role === 'STUDENT' && user.waliUserId === currentUser?.id) : [];
   $: waliStudentIds = waliMyStudents.map((student) => student.id);
   $: waliMyEnr = $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && (enroll.waliUserId === currentUser?.id || waliStudentIds.includes(enroll.studentId)));
   $: waliEnrIds = waliMyEnr.map((enroll) => enroll.id);
-  $: waliMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && waliEnrIds.includes(att.enrollmentId));
+  $: waliProgramIds = waliPrograms.map((p) => p.id);
+  $: waliMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && (waliEnrIds.includes(att.enrollmentId) || waliProgramIds.includes(att.enrollmentId)));
   $: waliApprovedAtt = waliMyAtt.filter((att) => att.status === 'APPROVED');
-  $: waliInvoices = $dbStore.invoices.filter((inv) => inv.deletedAt === null && waliEnrIds.includes(inv.enrollmentId));
+  $: waliInvoices = $dbStore.invoices.filter((inv) => inv.deletedAt === null && (waliEnrIds.includes(inv.enrollmentId) || waliProgramIds.includes(inv.enrollmentId)));
   $: waliUnpaidInvoices = waliInvoices.filter((inv) => inv.status === 'UNPAID');
   $: waliUnpaidTotal = waliUnpaidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
 
@@ -417,7 +421,7 @@
     <div class="stat">
       <div class="s-icon tone-sky"><Icon name="school" size="lg" /></div>
       <div>
-        <div class="s-val">{studentMyEnr.length}</div>
+        <div class="s-val">{studentPrograms.length}</div>
         <div class="s-lbl">Program Les Aktif</div>
       </div>
     </div>
@@ -459,7 +463,7 @@
     <div class="stat">
       <div class="s-icon tone-sky"><Icon name="school" size="lg" /></div>
       <div>
-        <div class="s-val">{waliMyEnr.length}</div>
+        <div class="s-val">{waliPrograms.length}</div>
         <div class="s-lbl">Program Les Anak</div>
       </div>
     </div>

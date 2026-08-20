@@ -11,10 +11,67 @@
   $: currentUser = $authStore;
   $: tentorId = currentUser?.id || '';
 
-  // My enrollments (active jobs assigned to me)
-  $: myEnrollments = $dbStore.enrollments.filter(
-    (e) => e.deletedAt === null && e.tentorId === tentorId && e.status === 'ACTIVE'
-  );
+  interface TutorActiveLesson {
+    id: string;
+    studentName: string;
+    subjectName: string;
+    className: string;
+    schedule: string;
+    mode: string;
+  }
+
+  // My active lessons (both direct enrollments and assigned jobs)
+  $: myActiveLessons = (() => {
+    const list: TutorActiveLesson[] = [];
+    const seenIds = new Set<string>();
+
+    const directEnrollments = $dbStore.enrollments.filter(
+      (e) => e.deletedAt === null && e.tentorId === tentorId && e.status === 'ACTIVE'
+    );
+    for (const enr of directEnrollments) {
+      seenIds.add(enr.id);
+      const student = $dbStore.users.find((u) => u.id === enr.studentId);
+      list.push({
+        id: enr.id,
+        studentName: student?.fullName || 'Murid',
+        subjectName: getSubjectName(enr.subjectId),
+        className: getClassName(enr.classId),
+        schedule: `${enr.scheduleDay} · ${enr.scheduleTime}`,
+        mode: 'Privat'
+      });
+    }
+
+    const assignedJobs = $dbStore.jobs.filter(
+      (j) => j.deletedAt === null && j.assignedTentorId === tentorId && j.status === 'ASSIGNED'
+    );
+    for (const job of assignedJobs) {
+      if (job.enrollmentId && seenIds.has(job.enrollmentId)) continue;
+      seenIds.add(job.id);
+
+      const studentNames = Array.isArray(job.studentNames) && job.studentNames.length > 0
+        ? job.studentNames.join(', ')
+        : (job.studentName || (job.studentId ? $dbStore.users.find((u) => u.id === job.studentId)?.fullName : 'Murid'));
+
+      const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
+      const subjectNames = $dbStore.subjects.filter((s) => subjectIds.includes(s.id)).map((s) => s.name).join(', ') || 'Mapel';
+
+      const classIds = Array.isArray(job.classIds) && job.classIds.length > 0 ? job.classIds : (job.classId ? [job.classId] : []);
+      const classNames = $dbStore.classes.filter((c) => classIds.includes(c.id)).map((c) => c.className).join(', ') || 'Kelas';
+
+      const isGroup = (job.studentCount && job.studentCount > 1) || (Array.isArray(job.studentIds) && job.studentIds.length > 1);
+
+      list.push({
+        id: job.id,
+        studentName: studentNames || 'Murid',
+        subjectName: subjectNames,
+        className: classNames,
+        schedule: `${Array.isArray(job.scheduleDays) ? job.scheduleDays.join(', ') : 'Senin'} · ${job.scheduleTime || '16:00'}${job.scheduleEndTime ? ` - ${job.scheduleEndTime}` : ''}`,
+        mode: isGroup ? 'Kelompok' : 'Privat'
+      });
+    }
+
+    return list;
+  })();
 
   // My attendance records
   $: myAttendances = $dbStore.attendances.filter(
@@ -70,7 +127,7 @@
     <div class="stat">
       <div class="s-icon tone-sky"><Icon name="menu_book" size="lg" /></div>
       <div>
-        <div class="s-val">{myEnrollments.length}</div>
+        <div class="s-val">{myActiveLessons.length}</div>
         <div class="s-lbl">Les Aktif</div>
       </div>
     </div>
@@ -116,7 +173,7 @@
         <Icon name="menu_book" size="md" /> Les Aktif Saya
       </div>
       <div class="card-body flush">
-        {#if myEnrollments.length === 0}
+        {#if myActiveLessons.length === 0}
           <div class="empty-state">
             <Icon name="school" size="lg" />
             <p>Belum ada les aktif yang ditugaskan.</p>
@@ -129,17 +186,18 @@
                   <th>Siswa</th>
                   <th>Mapel</th>
                   <th>Kelas</th>
+                  <th>Mode</th>
                   <th>Jadwal</th>
                 </tr>
               </thead>
               <tbody>
-                {#each myEnrollments as enr (enr.id)}
-                  {@const student = $dbStore.users.find((u) => u.id === enr.studentId)}
+                {#each myActiveLessons as lesson (lesson.id)}
                   <tr>
-                    <td><strong>{student?.fullName || '—'}</strong></td>
-                    <td>{getSubjectName(enr.subjectId)}</td>
-                    <td>{getClassName(enr.classId)}</td>
-                    <td class="sub">{enr.scheduleDay} · {enr.scheduleTime}</td>
+                    <td><strong>{lesson.studentName}</strong></td>
+                    <td>{lesson.subjectName}</td>
+                    <td>{lesson.className}</td>
+                    <td><span class="badge {lesson.mode === 'Privat' ? 'b-sky' : 'b-amber'}">{lesson.mode}</span></td>
+                    <td class="sub">{lesson.schedule}</td>
                   </tr>
                 {/each}
               </tbody>

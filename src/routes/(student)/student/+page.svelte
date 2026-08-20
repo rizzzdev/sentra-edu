@@ -5,6 +5,7 @@
   import { formatCurrencyIDR, formatDateIndonesian } from '$lib/shared/utils/formatting';
   import { JOB_STATUS_LABEL, INVOICE_STATUS_LABEL, ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { AttendanceRecord, JobPosting, InvoiceRecord } from '$lib/shared/types/common.types';
+  import { getStudentPrograms, getParentPrograms, type UnifiedProgram } from '$lib/shared/utils/program-helpers';
   import AttendanceVerifyModal from '$lib/features/attendance-tracking/components/attendance-verify-modal.svelte';
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
@@ -48,19 +49,22 @@
   $: tentorPaginatedJobs = tentorMyJobs.slice((tentorPage - 1) * itemsPerPage, tentorPage * itemsPerPage);
 
   // Student stats & list
-  $: studentMyEnr = currentUser ? $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && enroll.studentId === currentUser?.id) : [];
-  $: studentEnrIds = studentMyEnr.map((enroll) => enroll.id);
-  $: studentMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && studentEnrIds.includes(att.enrollmentId));
+  $: studentPrograms = currentUser ? getStudentPrograms($dbStore, currentUser.id, currentUser.fullName) : [];
+  $: studentEnrIds = $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && enroll.studentId === currentUser?.id).map((e) => e.id);
+  $: studentProgramIds = studentPrograms.map((p) => p.id);
+  $: studentMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && (studentEnrIds.includes(att.enrollmentId) || studentProgramIds.includes(att.enrollmentId)));
   $: studentApprovedAtt = studentMyAtt.filter((att) => att.status === 'APPROVED');
 
   // Wali stats & list
+  $: waliPrograms = currentUser ? getParentPrograms($dbStore, currentUser.id) : [];
   $: waliMyStudents = currentUser ? $dbStore.users.filter((user) => user.deletedAt === null && user.role === 'STUDENT' && user.waliUserId === currentUser?.id) : [];
   $: waliStudentIds = waliMyStudents.map((student) => student.id);
   $: waliMyEnr = $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && (enroll.waliUserId === currentUser?.id || waliStudentIds.includes(enroll.studentId)));
   $: waliEnrIds = waliMyEnr.map((enroll) => enroll.id);
-  $: waliMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && waliEnrIds.includes(att.enrollmentId));
+  $: waliProgramIds = waliPrograms.map((p) => p.id);
+  $: waliMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && (waliEnrIds.includes(att.enrollmentId) || waliProgramIds.includes(att.enrollmentId)));
   $: waliApprovedAtt = waliMyAtt.filter((att) => att.status === 'APPROVED');
-  $: waliInvoices = $dbStore.invoices.filter((inv) => inv.deletedAt === null && waliEnrIds.includes(inv.enrollmentId));
+  $: waliInvoices = $dbStore.invoices.filter((inv) => inv.deletedAt === null && (waliEnrIds.includes(inv.enrollmentId) || waliProgramIds.includes(inv.enrollmentId)));
   $: waliUnpaidInvoices = waliInvoices.filter((inv) => inv.status === 'UNPAID');
   $: waliUnpaidTotal = waliUnpaidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
 
@@ -417,7 +421,7 @@
     <div class="stat">
       <div class="s-icon tone-sky"><Icon name="school" size="lg" /></div>
       <div>
-        <div class="s-val">{studentMyEnr.length}</div>
+        <div class="s-val">{studentPrograms.length}</div>
         <div class="s-lbl">Program Les Aktif</div>
       </div>
     </div>
@@ -434,6 +438,71 @@
         <div class="s-val">{studentMyAtt.length}</div>
         <div class="s-lbl">Total Sesi Tercatat</div>
       </div>
+    </div>
+  </div>
+
+  <div class="card mb-6">
+    <div class="card-head">
+      <div class="card-title">
+        <Icon name="school" size="sm" /> Program Les Anda
+      </div>
+      <a href="/student/program" class="btn btn-sm btn-outline">Lihat Semua</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Program / Mapel</th>
+            <th>Paket & Mode</th>
+            <th>Tentor</th>
+            <th>Jadwal</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#if studentPrograms.length === 0}
+            <tr>
+              <td colspan="5" class="empty-cell text-center py-6">
+                <Icon name="school" size="lg" className="text-muted mb-2" />
+                <div>Belum ada program les terdaftar.</div>
+              </td>
+            </tr>
+          {:else}
+            {#each studentPrograms.slice(0, 5) as prog (prog.id)}
+              <tr>
+                <td>
+                  <div class="font-medium">{prog.title}</div>
+                  <div class="text-xs text-muted">{prog.classNames.join(', ')}</div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="badge {prog.packageMode === 'PRIVAT' ? 'b-sky' : 'b-amber'}">
+                      <Icon name={prog.packageMode === 'PRIVAT' ? 'person' : 'groups'} size="xs" />
+                      {prog.packageMode}
+                    </span>
+                    <span class="badge b-neutral">
+                      {prog.jobMode === 'OFFLINE' ? 'Tatap Muka' : 'Online'}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="font-medium">{prog.tentorName}</div>
+                  {#if prog.tentorPhone}
+                    <div class="text-xs text-muted">{prog.tentorPhone}</div>
+                  {/if}
+                </td>
+                <td>
+                  <div class="text-sm">{prog.scheduleDays.join(', ')}</div>
+                  <div class="text-xs text-muted">{prog.scheduleTime}{#if prog.scheduleEndTime} - {prog.scheduleEndTime}{/if} WIB</div>
+                </td>
+                <td>
+                  <span class="badge {prog.statusBadgeClass}">{prog.statusLabel}</span>
+                </td>
+              </tr>
+            {/each}
+          {/if}
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -459,7 +528,7 @@
     <div class="stat">
       <div class="s-icon tone-sky"><Icon name="school" size="lg" /></div>
       <div>
-        <div class="s-val">{waliMyEnr.length}</div>
+        <div class="s-val">{waliPrograms.length}</div>
         <div class="s-lbl">Program Les Anak</div>
       </div>
     </div>

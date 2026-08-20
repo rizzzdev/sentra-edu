@@ -12,9 +12,69 @@
   export let tentor: User;
   export let onClose: () => void = () => {};
 
-  $: myEnrollments = $dbStore.enrollments.filter(
-    (e) => e.deletedAt === null && e.tentorId === tentor.id && e.status === 'ACTIVE'
-  );
+  interface ActiveAssignment {
+    id: string;
+    label: string;
+    latitude: number;
+    longitude: number;
+    scheduleTime?: string;
+    scheduleEndTime?: string;
+  }
+
+  $: myActiveAssignments = (() => {
+    const list: ActiveAssignment[] = [];
+    const seenIds = new Set<string>();
+
+    // 1. Direct Enrollments
+    const directEnrollments = $dbStore.enrollments.filter(
+      (e) => e.deletedAt === null && e.tentorId === tentor.id && e.status === 'ACTIVE'
+    );
+    for (const enr of directEnrollments) {
+      seenIds.add(enr.id);
+      const student = $dbStore.users.find((u) => u.id === enr.studentId);
+      const subject = $dbStore.subjects.find((s) => s.id === enr.subjectId);
+      const cls = $dbStore.classes.find((c) => c.id === enr.classId);
+      list.push({
+        id: enr.id,
+        label: `${student?.fullName || 'Murid'} — ${cls?.className || 'Kelas'} ${subject?.name || 'Mapel'} (Privat)`,
+        latitude: enr.latitude ?? -6.2,
+        longitude: enr.longitude ?? 106.8,
+        scheduleTime: enr.scheduleTime
+      });
+    }
+
+    // 2. Assigned Jobs
+    const assignedJobs = $dbStore.jobs.filter(
+      (j) => j.deletedAt === null && j.assignedTentorId === tentor.id && j.status === 'ASSIGNED'
+    );
+    for (const job of assignedJobs) {
+      if (job.enrollmentId && seenIds.has(job.enrollmentId)) continue;
+      seenIds.add(job.id);
+      
+      const studentNames = Array.isArray(job.studentNames) && job.studentNames.length > 0
+        ? job.studentNames.join(', ')
+        : (job.studentName || (job.studentId ? $dbStore.users.find((u) => u.id === job.studentId)?.fullName : 'Murid'));
+      
+      const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
+      const subjectNames = $dbStore.subjects.filter((s) => subjectIds.includes(s.id)).map((s) => s.name).join(', ') || 'Mapel';
+
+      const classIds = Array.isArray(job.classIds) && job.classIds.length > 0 ? job.classIds : (job.classId ? [job.classId] : []);
+      const classNames = $dbStore.classes.filter((c) => classIds.includes(c.id)).map((c) => c.className).join(', ') || 'Kelas';
+
+      const isGroup = (job.studentCount && job.studentCount > 1) || (Array.isArray(job.studentIds) && job.studentIds.length > 1);
+
+      list.push({
+        id: job.id,
+        label: `${studentNames || 'Murid'} — ${classNames} ${subjectNames} (${isGroup ? 'Kelompok' : 'Privat'})`,
+        latitude: job.latitude ?? -6.2,
+        longitude: job.longitude ?? 106.8,
+        scheduleTime: job.scheduleTime,
+        scheduleEndTime: job.scheduleEndTime
+      });
+    }
+
+    return list;
+  })();
 
   let selectedEnrollmentId: string = '';
   let sessionDate: string = new Date().toISOString().split('T')[0];
@@ -25,11 +85,16 @@
   let latitudeCheckIn: number | string = -6.2;
   let longitudeCheckIn: number | string = 106.8;
 
-  $: if (myEnrollments.length > 0 && !selectedEnrollmentId) {
-    selectedEnrollmentId = myEnrollments[0].id;
+  $: if (myActiveAssignments.length > 0 && !selectedEnrollmentId) {
+    selectedEnrollmentId = myActiveAssignments[0].id;
   }
 
-  $: selectedEnrollment = $dbStore.enrollments.find((e) => e.id === selectedEnrollmentId);
+  $: selectedAssignment = myActiveAssignments.find((a) => a.id === selectedEnrollmentId);
+
+  $: if (selectedAssignment) {
+    if (selectedAssignment.scheduleTime) startTime = selectedAssignment.scheduleTime;
+    if (selectedAssignment.scheduleEndTime) endTime = selectedAssignment.scheduleEndTime;
+  }
 
   // Duration calculation
   function time24ToMin(t: string): number | null {
@@ -66,15 +131,15 @@
   }
 
   function handleSimulateGps() {
-    if (!selectedEnrollment || selectedEnrollment.latitude === undefined || selectedEnrollment.longitude === undefined) {
+    if (!selectedAssignment || selectedAssignment.latitude === undefined || selectedAssignment.longitude === undefined) {
       latitudeCheckIn = -6.2;
       longitudeCheckIn = 106.8;
       toastStore.success('Simulasi GPS terpasang.');
       return;
     }
     const jitter = 0.0004;
-    latitudeCheckIn = Number((selectedEnrollment.latitude + (Math.random() - 0.5) * jitter).toFixed(6));
-    longitudeCheckIn = Number((selectedEnrollment.longitude + (Math.random() - 0.5) * jitter).toFixed(6));
+    latitudeCheckIn = Number((selectedAssignment.latitude + (Math.random() - 0.5) * jitter).toFixed(6));
+    longitudeCheckIn = Number((selectedAssignment.longitude + (Math.random() - 0.5) * jitter).toFixed(6));
     toastStore.success('Simulasi GPS (lokasi les) terpasang.');
   }
 
@@ -133,12 +198,7 @@
         id="f_enr"
         required
         bind:value={selectedEnrollmentId}
-        options={myEnrollments.map(e => {
-          const student = $dbStore.users.find((u) => u.id === e.studentId);
-          const subject = $dbStore.subjects.find((s) => s.id === e.subjectId);
-          const cls = $dbStore.classes.find((c) => c.id === e.classId);
-          return { value: e.id, label: `${student?.fullName || 'Murid'} — ${cls?.className} ${subject?.name}` };
-        })}
+        options={myActiveAssignments.map((a) => ({ value: a.id, label: a.label }))}
       />
     </div>
 
