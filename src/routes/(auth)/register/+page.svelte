@@ -32,7 +32,9 @@
   let errorMessage: string | null = null;
   let createdAccounts: { student: User; wali: User } | null = null;
 
-  $: tokenValidation = token ? dbStore.validateMagicToken(token) : { valid: false, message: 'Token pendaftaran tidak ditemukan.', magicLink: null };
+  $: tokenValidation = token
+    ? dbStore.validateMagicToken(token, $dbStore)
+    : { valid: false, message: 'Token pendaftaran tidak ditemukan.', magicLink: null };
 
   function handleNextToStep2() {
     errorMessage = null;
@@ -181,6 +183,13 @@
         >
           Masuk ke Halaman Login
         </Button>
+      </div>
+
+    {:else if tokenValidation.isLoading}
+      <!-- LOADING STATE -->
+      <div class="flex flex-col items-center gap-4 text-center py-12">
+        <div class="w-10 h-10 rounded-full border-3 border-primary border-t-transparent animate-spin"></div>
+        <p class="text-muted-fg text-sm font-medium">Memverifikasi tautan pendaftaran...</p>
       </div>
 
     {:else if !tokenValidation.valid}

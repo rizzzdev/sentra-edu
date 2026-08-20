@@ -575,13 +575,16 @@ function createDatabaseStore() {
       return { error: false, statusCode: 200, message: 'Magic link berhasil dihapus.', data: null };
     },
 
-    validateMagicToken: (token: string): { valid: boolean; message: string; magicLink: MagicLinkRegistration | null } => {
-      const currentDb = get(store);
+    validateMagicToken: (token: string, dbSnapshot?: DatabaseSchema): { valid: boolean; message: string; magicLink: MagicLinkRegistration | null; isLoading?: boolean } => {
+      const currentDb = dbSnapshot || get(store);
+      if (!currentDb.isLoaded && (currentDb.magicLinks || []).length === 0) {
+        return { valid: false, message: 'Memuat data pendaftaran...', magicLink: null, isLoading: true };
+      }
       const link = (currentDb.magicLinks || []).find((l) => l.token === token && l.deletedAt === null);
-      if (!link) return { valid: false, message: 'Magic link tidak ditemukan.', magicLink: null };
-      if (!link.active) return { valid: false, message: 'Magic link telah kadaluarsa.', magicLink: link };
-      if (new Date() > new Date(link.expiresAt)) return { valid: false, message: `Magic link kadaluarsa.`, magicLink: link };
-      return { valid: true, message: 'Magic link valid.', magicLink: link };
+      if (!link) return { valid: false, message: 'Tautan pendaftaran (Magic Link) tidak ditemukan.', magicLink: null, isLoading: false };
+      if (!link.active) return { valid: false, message: 'Tautan pendaftaran telah dinonaktifkan oleh admin.', magicLink: link, isLoading: false };
+      if (link.expiresAt && new Date() > new Date(link.expiresAt)) return { valid: false, message: 'Tautan pendaftaran telah melewati batas waktu kadaluarsa.', magicLink: link, isLoading: false };
+      return { valid: true, message: 'Magic link valid.', magicLink: link, isLoading: false };
     },
 
     registerStudentViaMagicLink: (payload: { token: string; studentFullName: string; studentEmail: string; studentPassword?: string; studentPhone?: string; school?: string; address?: string; isExistingWali?: boolean; waliFullName?: string; waliEmail: string; waliPassword?: string; waliPhone?: string; waliOccupation?: string }): ApiResponse<{ student: User; wali: User }> => {
