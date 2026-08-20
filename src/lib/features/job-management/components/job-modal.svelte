@@ -3,123 +3,175 @@
   import Icon from '$lib/components/atoms/icon.svelte';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { JobPost, JobType, JobMode } from '$lib/shared/types/common.types';
+  import type { JobPost, JobMode } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
   import Input from '$lib/components/atoms/input.svelte';
   import CurrencyInput from '$lib/components/atoms/currency-input.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
+  import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
 
   export let open: boolean = false;
   export let editingJob: JobPost | null = null;
   export let onClose: () => void = () => {};
 
+  // Form fields
   let title: string = '';
-  let jobType: string = 'REGULAR';
-  let studentEnrollmentId: string = '';
-  let classId: string = '';
-  let subjectId: string = '';
-  let mode: string = 'OFFLINE';
   let packageId: string = '';
+  let mode: string = 'OFFLINE';
+  let selectedStudentIds: string[] = [];
+  let selectedClassIds: string[] = [];
+  let selectedSubjectIds: string[] = [];
   let preferredDays: string[] = ['Senin', 'Rabu'];
-  let preferredTime: string = '16:00';
+  let startTime: string = '16:00';
+  let endTime: string = '17:30';
   let transportAllowance: number = 0;
-  let latitude: number | string = -6.2;
-  let longitude: number | string = 106.8;
-  let additionalNotes: string = '';
+  let latitude: number = -6.2;
+  let longitude: number = 106.8;
+  let description: string = '';
 
   const dayOptions = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
+  // Derived data
   $: enrollments = $dbStore.enrollments.filter((e) => e.deletedAt === null);
+  $: selectedPackage = $dbStore.packages.find((p) => p.id === packageId);
+  $: isGroupMode = selectedPackage?.mode === 'KELOMPOK';
 
-  function getEnrollmentLabel(e: any): string {
+  // Student options based on enrollment
+  $: studentOptions = enrollments.map((e) => {
     const u = $dbStore.users.find((user) => user.id === e.studentId);
     const cls = $dbStore.classes.find((c) => c.id === e.classId);
     const sub = $dbStore.subjects.find((s) => s.id === e.subjectId);
-    return `${u?.fullName || 'Siswa'} — ${cls?.className || ''} ${sub?.name || ''}`;
+    return {
+      value: e.studentId,
+      label: `${u?.fullName || 'Siswa'} — ${cls?.className || ''} ${sub?.name || ''}`
+    };
+  });
+
+  $: classOptions = $dbStore.classes
+    .filter((c) => c.deletedAt === null)
+    .map((c) => ({ value: c.id, label: c.className }));
+
+  $: subjectOptions = $dbStore.subjects
+    .filter((s) => s.deletedAt === null)
+    .map((s) => ({ value: s.id, label: s.name }));
+
+  $: daySelectOptions = dayOptions.map((d) => ({ value: d, label: d }));
+
+  // Reset student selection when package mode changes
+  $: if (isGroupMode === false && selectedStudentIds.length > 1) {
+    selectedStudentIds = selectedStudentIds.slice(0, 1);
   }
 
+  // Initialize from editing job
   $: if (editingJob) {
     title = editingJob.title;
-    jobType = editingJob.jobType;
-    studentEnrollmentId = editingJob.enrollmentId || enrollments[0]?.id || '';
-    classId = editingJob.classId;
-    subjectId = editingJob.subjectId;
+    packageId = editingJob.packageId || '';
     mode = editingJob.mode || editingJob.jobMode || 'OFFLINE';
-    packageId = editingJob.packageId || $dbStore.packages[0]?.id || '';
+    selectedStudentIds = editingJob.studentId ? [editingJob.studentId] : [];
+    selectedClassIds = editingJob.classId ? [editingJob.classId] : [];
+    selectedSubjectIds = editingJob.subjectId ? [editingJob.subjectId] : [];
     preferredDays = editingJob.scheduleDays || ['Senin', 'Rabu'];
-    preferredTime = editingJob.scheduleTime || '16:00';
+    startTime = editingJob.scheduleTime || '16:00';
+    endTime = (editingJob as any).scheduleEndTime || '17:30';
+    transportAllowance = (editingJob as any).transportAllowance || 0;
     latitude = editingJob.latitude ?? -6.2;
     longitude = editingJob.longitude ?? 106.8;
-    additionalNotes = editingJob.additionalNotes || editingJob.notes || '';
+    description = editingJob.additionalNotes || editingJob.notes || '';
   } else {
+    resetForm();
+  }
+
+  function resetForm() {
     title = '';
-    jobType = 'REGULAR';
-    studentEnrollmentId = enrollments[0]?.id || '';
-    classId = $dbStore.classes.filter((c) => c.deletedAt === null)[0]?.id || '';
-    subjectId = $dbStore.subjects.filter((s) => s.deletedAt === null)[0]?.id || '';
-    mode = 'OFFLINE';
     packageId = $dbStore.packages.filter((p) => p.deletedAt === null && p.active)[0]?.id || '';
+    mode = 'OFFLINE';
+    selectedStudentIds = [];
+    selectedClassIds = [];
+    selectedSubjectIds = [];
     preferredDays = ['Senin', 'Rabu'];
-    preferredTime = '16:00';
+    startTime = '16:00';
+    endTime = '17:30';
     transportAllowance = 0;
     latitude = -6.2;
     longitude = 106.8;
-    additionalNotes = '';
+    description = '';
   }
 
   function handleTakeFromStudent() {
-    const enr = enrollments.find((e) => e.id === studentEnrollmentId);
+    if (selectedStudentIds.length === 0) {
+      toastStore.error('Pilih murid terlebih dahulu.');
+      return;
+    }
+    const enr = enrollments.find((e) => e.studentId === selectedStudentIds[0]);
     if (enr && enr.latitude && enr.longitude) {
       latitude = enr.latitude;
       longitude = enr.longitude;
       toastStore.success('Lokasi GPS diambil dari data murid.');
     } else {
-      toastStore.error('Pilih murid terlebih dahulu.');
-    }
-  }
-
-  function handleToggleDay(d: string) {
-    if (preferredDays.includes(d)) {
-      preferredDays = preferredDays.filter((day) => day !== d);
-    } else {
-      preferredDays = [...preferredDays, d];
+      toastStore.error('Data GPS murid tidak tersedia.');
     }
   }
 
   function handleSubmit() {
-    if (!title.trim() || !studentEnrollmentId || !classId || !subjectId || !packageId) {
-      toastStore.error('Semua data wajib diisi.');
+    if (!title.trim()) {
+      toastStore.error('Judul lowongan wajib diisi.');
+      return;
+    }
+    if (!packageId) {
+      toastStore.error('Paket les wajib dipilih.');
+      return;
+    }
+    if (selectedStudentIds.length === 0) {
+      toastStore.error('Pilih minimal satu murid.');
+      return;
+    }
+    if (selectedClassIds.length === 0) {
+      toastStore.error('Pilih minimal satu kelas.');
+      return;
+    }
+    if (selectedSubjectIds.length === 0) {
+      toastStore.error('Pilih minimal satu mata pelajaran.');
+      return;
+    }
+    if (preferredDays.length === 0) {
+      toastStore.error('Pilih minimal satu hari.');
       return;
     }
 
-    const selectedEnr = enrollments.find((e) => e.id === studentEnrollmentId);
-    const studentUser = selectedEnr ? $dbStore.users.find((u) => u.id === selectedEnr.studentId) : null;
-    const selectedPkg = $dbStore.packages.find((p) => p.id === packageId);
+    const firstStudentId = selectedStudentIds[0];
+    const selectedEnr = enrollments.find((e) => e.studentId === firstStudentId);
+    const studentUser = selectedEnr ? $dbStore.users.find((u) => u.id === firstStudentId) : null;
 
     const payload: Partial<JobPost> = {
       id: editingJob ? editingJob.id : undefined,
       title: title.trim(),
-      jobType: jobType as JobType,
       jobMode: mode as JobMode,
       mode: mode as JobMode,
-      classId,
-      subjectId,
+      classId: selectedClassIds[0],
+      subjectId: selectedSubjectIds[0],
       packageId,
-      studentId: selectedEnr?.studentId || null,
-      enrollmentId: studentEnrollmentId,
+      studentId: firstStudentId,
+      enrollmentId: selectedEnr?.id || null,
       studentName: studentUser?.fullName || 'Murid',
       scheduleDays: preferredDays,
-      scheduleTime: preferredTime,
-      schedulePreference: `${preferredDays.join(' & ')} ${preferredTime} WIB`,
-      tentorFee: selectedPkg ? selectedPkg.tentorFee : 100000,
-      sessionDurationMinutes: 90,
-      studentCount: selectedPkg?.mode === 'KELOMPOK' ? selectedPkg.maxStudents : 1,
+      scheduleTime: startTime,
+      schedulePreference: `${preferredDays.join(', ')} ${startTime}–${endTime} WIB`,
+      tentorFee: selectedPackage ? selectedPackage.tentorFee : 100000,
+      sessionDurationMinutes: calculateDuration(startTime, endTime),
+      studentCount: isGroupMode ? selectedStudentIds.length : 1,
       location: selectedEnr?.address || 'Lokasi Les',
-      latitude: mode === 'ONLINE' ? null : Number(latitude),
-      longitude: mode === 'ONLINE' ? null : Number(longitude),
-      notes: additionalNotes.trim(),
-      additionalNotes: additionalNotes.trim()
-    };
+      latitude: mode === 'ONLINE' ? null : latitude,
+      longitude: mode === 'ONLINE' ? null : longitude,
+      notes: description.trim(),
+      additionalNotes: description.trim()
+    } as any;
+
+    // Add multi-select fields
+    (payload as any).classIds = selectedClassIds;
+    (payload as any).subjectIds = selectedSubjectIds;
+    (payload as any).studentIds = selectedStudentIds;
+    (payload as any).transportAllowance = transportAllowance;
+    (payload as any).scheduleEndTime = endTime;
 
     const response = dbStore.saveJobPost(payload as any);
     if (!response.error) {
@@ -129,31 +181,17 @@
       toastStore.error(response.message);
     }
   }
+
+  function calculateDuration(start: string, end: string): number {
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    return (eh * 60 + em) - (sh * 60 + sm);
+  }
 </script>
 
-<Modal {open} {onClose} title={editingJob ? 'Ubah Lowongan' : 'Buat Lowongan Les'} icon="add_circle" maxWidth="640px">
-  {#if mode !== 'ONLINE'}
-    <div id="job-gps-box" style="margin-bottom:14px">
-      <div class="quick-actions" style="margin-bottom:8px">
-        <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" on:click={handleTakeFromStudent} icon="home_pin">
-          Ambil Lokasi dari Murid
-        </Button>
-      </div>
-      <div id="job-gps-status">
-        {#if latitude && longitude}
-          <span class="gps-pill gps-ok">
-            <Icon name="verified" size="xs" /> Lokasi les terpasang: {latitude}, {longitude}
-          </span>
-        {:else}
-          <span class="gps-pill gps-warn">
-            <Icon name="warning" size="xs" /> Koordinat GPS lokasi les wajib diisi
-          </span>
-        {/if}
-      </div>
-    </div>
-  {/if}
-
+<Modal {open} {onClose} title={editingJob ? 'Ubah Lowongan' : 'Buat Lowongan Les'} icon="add_circle" maxWidth="680px">
   <form id="form-job" on:submit|preventDefault={handleSubmit}>
+    <!-- 1. Judul -->
     <div class="field">
       <label for="f_title">Judul Lowongan <i class="req">*</i></label>
       <Input
@@ -165,161 +203,155 @@
       />
     </div>
 
-    <div class="form-grid">
-      <div class="field">
-        <label for="f_jobType">Tipe Lowongan <i class="req">*</i></label>
-        <SelectSearch
-          id="f_jobType"
-          required
-          bind:value={jobType}
-          options={[
-            { value: 'REGULAR', label: 'Reguler' },
-            { value: 'TEMPORARY_REPLACEMENT', label: 'Pengganti Sementara' }
-          ]}
-        />
-      </div>
-
-      <div class="field">
-        <label for="f_mode">Mode Les <i class="req">*</i></label>
-        <SelectSearch
-          id="f_mode"
-          required
-          bind:value={mode}
-          options={[
-            { value: 'OFFLINE', label: 'Offline (tatap muka langsung)' },
-            { value: 'ONLINE', label: 'Online (daring / video call)' }
-          ]}
-        />
-      </div>
-    </div>
-
+    <!-- 2. Paket Les -->
     <div class="field">
-      <label for="f_studentEnrollmentId">Murid <i class="req">*</i></label>
-      <SelectSearch
-        id="f_studentEnrollmentId"
-        required
-        bind:value={studentEnrollmentId}
-        options={[
-          { value: '', label: '— Pilih murid SentraEdu —' },
-          ...enrollments.map(e => ({ value: e.id, label: getEnrollmentLabel(e) }))
-        ]}
-      />
-      <div class="help">Private — satu murid per lowongan.</div>
-    </div>
-
-    <div class="form-grid">
-      <div class="field">
-        <label for="f_classId">Kelas <i class="req">*</i></label>
-        <SelectSearch
-          id="f_classId"
-          required
-          bind:value={classId}
-          options={[
-            { value: '', label: '— Pilih kelas —' },
-            ...$dbStore.classes.filter((c) => c.deletedAt === null).map(c => ({ value: c.id, label: c.className }))
-          ]}
-        />
-      </div>
-
-      <div class="field">
-        <label for="f_subjectId">Mata Pelajaran <i class="req">*</i></label>
-        <SelectSearch
-          id="f_subjectId"
-          required
-          bind:value={subjectId}
-          options={[
-            { value: '', label: '— Pilih mapel —' },
-            ...$dbStore.subjects.filter((s) => s.deletedAt === null).map(s => ({ value: s.id, label: s.name }))
-          ]}
-        />
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="f_packageId">Paket Les (mode & harga SPP) <i class="req">*</i></label>
+      <label for="f_packageId">Paket Les <i class="req">*</i></label>
       <SelectSearch
         id="f_packageId"
         required
         bind:value={packageId}
         options={[
           { value: '', label: '— Pilih paket les —' },
-          ...$dbStore.packages.filter((p) => p.deletedAt === null && p.active).map(p => ({ value: p.id, label: `${p.name} (${p.mode} · Rp ${p.price.toLocaleString('id-ID')})` }))
+          ...$dbStore.packages.filter((p) => p.deletedAt === null && p.active).map(p => ({
+            value: p.id,
+            label: `${p.name} (${p.mode} · Rp ${p.price.toLocaleString('id-ID')})`
+          }))
         ]}
       />
     </div>
 
+    <!-- 3. Mode Les -->
     <div class="field">
-      <div style="font-size:.82rem;font-weight:600;margin-bottom:5px">
-        Hari Preferensi (boleh pilih beberapa) <i class="req">*</i>
-      </div>
-      <div class="multi-group">
-        {#each dayOptions as d}
-          <label class="multi-opt">
-            <input
-              type="checkbox"
-              value={d}
-              checked={preferredDays.includes(d)}
-              on:change={() => handleToggleDay(d)}
-            /> {d}
-          </label>
-        {/each}
-      </div>
+      <label for="f_mode">Mode Les <i class="req">*</i></label>
+      <SelectSearch
+        id="f_mode"
+        required
+        bind:value={mode}
+        options={[
+          { value: 'OFFLINE', label: 'Offline (tatap muka langsung)' },
+          { value: 'ONLINE', label: 'Online (daring / video call)' }
+        ]}
+      />
     </div>
 
+    <!-- 4. Siswa -->
+    <div class="field">
+      <label for="f_students">
+        Siswa <i class="req">*</i>
+        {#if isGroupMode}
+          <span class="help-inline">(mode kelompok — bisa pilih beberapa)</span>
+        {:else}
+          <span class="help-inline">(mode private — pilih satu)</span>
+        {/if}
+      </label>
+      <SelectSearch
+        id="f_students"
+        required
+        multiple={isGroupMode}
+        bind:value={selectedStudentIds}
+        placeholder={isGroupMode ? '— Pilih satu atau lebih siswa —' : '— Pilih satu siswa —'}
+        searchable={true}
+        options={studentOptions}
+      />
+    </div>
+
+    <!-- 5. Kelas (multiple) -->
+    <div class="field">
+      <label for="f_classes">Kelas <i class="req">*</i></label>
+      <SelectSearch
+        id="f_classes"
+        required
+        multiple={true}
+        bind:value={selectedClassIds}
+        placeholder="— Pilih kelas —"
+        searchable={true}
+        options={classOptions}
+      />
+    </div>
+
+    <!-- 6. Mata Pelajaran (multiple) -->
+    <div class="field">
+      <label for="f_subjects">Mata Pelajaran <i class="req">*</i></label>
+      <SelectSearch
+        id="f_subjects"
+        required
+        multiple={true}
+        bind:value={selectedSubjectIds}
+        placeholder="— Pilih mata pelajaran —"
+        searchable={true}
+        options={subjectOptions}
+      />
+    </div>
+
+    <!-- 7. Hari (multiple dropdown) -->
+    <div class="field">
+      <label for="f_days">Hari <i class="req">*</i></label>
+      <SelectSearch
+        id="f_days"
+        required
+        multiple={true}
+        bind:value={preferredDays}
+        placeholder="— Pilih hari —"
+        options={daySelectOptions}
+      />
+    </div>
+
+    <!-- 8. Jam Mulai & Jam Berakhir -->
     <div class="form-grid">
       <div class="field">
-        <label for="f_preferredTime">Jam Mulai <i class="req">*</i></label>
+        <label for="f_startTime">Jam Mulai <i class="req">*</i></label>
         <Input
-          id="f_preferredTime"
-          type="text"
-          placeholder="16:00"
+          id="f_startTime"
+          type="time"
           required
-          bind:value={preferredTime}
+          bind:value={startTime}
         />
       </div>
 
       <div class="field">
-        <label for="f_transportAllowance">Tunjangan Transport (Rp/sesi)</label>
-        <CurrencyInput
-          id="f_transportAllowance"
-          bind:value={transportAllowance}
+        <label for="f_endTime">Jam Berakhir <i class="req">*</i></label>
+        <Input
+          id="f_endTime"
+          type="time"
+          required
+          bind:value={endTime}
         />
       </div>
     </div>
 
-    {#if mode !== 'ONLINE'}
-      <div class="form-grid">
-        <div class="field">
-          <label for="f_latitude">Latitude — Lokasi Les (GPS) <i class="req">*</i></label>
-          <Input
-            id="f_latitude"
-            type="number"
-            step="0.000001"
-            required
-            bind:value={latitude}
-          />
-        </div>
+    <!-- 9. Tunjangan Transport -->
+    <div class="field">
+      <label for="f_transport">Tunjangan Transport (Rp/sesi)</label>
+      <CurrencyInput
+        id="f_transport"
+        bind:value={transportAllowance}
+      />
+    </div>
 
-        <div class="field">
-          <label for="f_longitude">Longitude — Lokasi Les (GPS) <i class="req">*</i></label>
-          <Input
-            id="f_longitude"
-            type="number"
-            step="0.000001"
-            required
-            bind:value={longitude}
-          />
+    <!-- 10. Lokasi (Leaflet) -->
+    {#if mode !== 'ONLINE'}
+      <div class="field">
+        <label for="f_map">Lokasi Les <i class="req">*</i></label>
+        <div class="quick-actions" style="margin-bottom:8px">
+          <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" on:click={handleTakeFromStudent} icon="home_pin">
+            Ambil Lokasi dari Murid
+          </Button>
+        </div>
+        <LeafletMap bind:latitude bind:longitude height="280px" />
+        <div class="help" style="margin-top:6px">
+          Koordinat: {latitude}, {longitude}
         </div>
       </div>
     {/if}
 
+    <!-- 11. Deskripsi -->
     <div class="field">
-      <label for="f_additionalNotes">Catatan Tambahan</label>
+      <label for="f_description">Deskripsi</label>
       <textarea
-        id="f_additionalNotes"
-        rows="2"
-        placeholder="cth: Guru ramah, sabar, fokus UTBK"
-        bind:value={additionalNotes}
+        id="f_description"
+        rows="3"
+        placeholder="cth: Guru ramah, sabar, fokus UTBK. Lokasi dekat tol."
+        bind:value={description}
       ></textarea>
     </div>
   </form>
@@ -333,3 +365,12 @@
     </Button>
   </svelte:fragment>
 </Modal>
+
+<style>
+  .help-inline {
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--color-fg-muted);
+    margin-left: 4px;
+  }
+</style>
