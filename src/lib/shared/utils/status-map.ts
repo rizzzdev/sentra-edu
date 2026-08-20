@@ -186,7 +186,7 @@ export function getDayLabel(day: string): string {
 export function getScheduleDaysList(days: string[] | undefined | null): string[] {
   if (!days || !Array.isArray(days) || days.length === 0) return ['—'];
   const mapped = days
-    .map((d) => (typeof d === 'string' ? (DAY_LABEL[d] ?? d) : ''))
+    .map((dayKey) => (typeof dayKey === 'string' ? (DAY_LABEL[dayKey] ?? dayKey) : ''))
     .filter(Boolean);
   return mapped.length > 0 ? mapped : ['—'];
 }

@@ -32,42 +32,42 @@
   let description: string = '';
 
   // Derived data
-  $: enrollments = $dbStore.enrollments.filter((e) => e.deletedAt === null);
-  $: selectedPackage = $dbStore.packages.find((p) => p.id === packageId);
+  $: enrollments = $dbStore.enrollments.filter((enrollmentItem) => enrollmentItem.deletedAt === null);
+  $: selectedPackage = $dbStore.packages.find((packageItem) => packageItem.id === packageId);
   $: isGroupMode = selectedPackage?.mode === 'KELOMPOK';
 
   // Package options
   $: packageOptions = [
     { value: '', label: '— Pilih paket les —' },
     ...$dbStore.packages
-      .filter((p) => p.deletedAt === null && p.active !== false)
-      .map((p) => ({
-        value: p.id,
-        label: `${p.name} (${p.mode === 'PRIVATE' ? 'Privat' : 'Kelompok'} · Rp ${p.price.toLocaleString('id-ID')})`
+      .filter((packageItem) => packageItem.deletedAt === null && packageItem.active !== false)
+      .map((packageItem) => ({
+        value: packageItem.id,
+        label: `${packageItem.name} (${packageItem.mode === 'PRIVATE' ? 'Privat' : 'Kelompok'} · Rp ${packageItem.price.toLocaleString('id-ID')})`
       }))
   ];
 
   // Student options (from all active students in database)
   $: studentOptions = $dbStore.users
-    .filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.isActive !== false)
-    .map((u) => {
-      const studentEnrollment = enrollments.find((e) => e.studentId === u.id);
-      const cls = studentEnrollment ? $dbStore.classes.find((c) => c.id === studentEnrollment.classId) : null;
-      const sub = studentEnrollment ? $dbStore.subjects.find((s) => s.id === studentEnrollment.subjectId) : null;
-      const extra = cls && sub ? ` — ${cls.className} (${sub.name})` : u.school ? ` — ${u.school}` : u.email ? ` — ${u.email}` : '';
+    .filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.isActive !== false)
+    .map((userItem) => {
+      const studentEnrollment = enrollments.find((enrollmentItem) => enrollmentItem.studentId === userItem.id);
+      const cls = studentEnrollment ? $dbStore.classes.find((classItem) => classItem.id === studentEnrollment.classId) : null;
+      const sub = studentEnrollment ? $dbStore.subjects.find((subjectItem) => subjectItem.id === studentEnrollment.subjectId) : null;
+      const extra = cls && sub ? ` — ${cls.className} (${sub.name})` : userItem.school ? ` — ${userItem.school}` : userItem.email ? ` — ${userItem.email}` : '';
       return {
-        value: u.id,
-        label: `${u.fullName}${extra}`
+        value: userItem.id,
+        label: `${userItem.fullName}${extra}`
       };
     });
 
   $: classOptions = $dbStore.classes
-    .filter((c) => c.deletedAt === null)
-    .map((c) => ({ value: c.id, label: c.className }));
+    .filter((classItem) => classItem.deletedAt === null)
+    .map((classItem) => ({ value: classItem.id, label: classItem.className }));
 
   $: subjectOptions = $dbStore.subjects
-    .filter((s) => s.deletedAt === null)
-    .map((s) => ({ value: s.id, label: s.name }));
+    .filter((subjectItem) => subjectItem.deletedAt === null)
+    .map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }));
 
   let previousOpen = false;
   let previousJobId: string | null = null;
@@ -369,7 +369,7 @@
     {#if mode !== 'ONLINE'}
       <div class="field">
         <label for="f_map">Lokasi Les <i class="req">*</i></label>
-        <div class="quick-actions" style="margin-bottom:8px">
+        <div class="quick-actions mb-2">
           <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" on:click={handleTakeFromStudent} icon="home_pin">
             Ambil Lokasi dari Murid
           </Button>
@@ -384,7 +384,7 @@
             bind:value={location}
           />
         </div>
-        <div class="help" style="margin-top:6px">
+        <div class="help mt-1.5">
           Koordinat: {latitude}, {longitude}
         </div>
       </div>
@@ -411,12 +411,3 @@
     </Button>
   </svelte:fragment>
 </Modal>
-
-<style>
-  .help-inline {
-    font-weight: 400;
-    font-size: 0.78rem;
-    color: var(--color-fg-muted);
-    margin-left: 4px;
-  }
-</style>

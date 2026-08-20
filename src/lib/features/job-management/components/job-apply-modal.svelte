@@ -46,6 +46,13 @@
           <span class="text-xs text-emerald-600 font-normal ml-1">(+ {formatCurrencyIDR(job.transportAllowance)} transport)</span>
         {/if}
       </dd>
+      {#if job.location}
+        <dt>Lokasi Les</dt>
+        <dd class="text-xs font-medium text-fg flex items-start gap-1">
+          <Icon name="location_on" size="xs" className="text-rose-500 mt-0.5 flex-shrink-0" />
+          <span>{job.location}</span>
+        </dd>
+      {/if}
     </div>
 
     <div class="field">

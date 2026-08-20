@@ -26,11 +26,11 @@
     const seenIds = new Set<string>();
 
     const directEnrollments = $dbStore.enrollments.filter(
-      (e) => e.deletedAt === null && e.tentorId === tentorId && e.status === 'ACTIVE'
+      (enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.tentorId === tentorId && enrollmentItem.status === 'ACTIVE'
     );
     for (const enr of directEnrollments) {
       seenIds.add(enr.id);
-      const student = $dbStore.users.find((u) => u.id === enr.studentId);
+      const student = $dbStore.users.find((userItem) => userItem.id === enr.studentId);
       list.push({
         id: enr.id,
         studentName: student?.fullName || 'Murid',
@@ -42,7 +42,7 @@
     }
 
     const assignedJobs = $dbStore.jobs.filter(
-      (j) => j.deletedAt === null && j.assignedTentorId === tentorId && j.status === 'ASSIGNED'
+      (jobItem) => jobItem.deletedAt === null && jobItem.assignedTentorId === tentorId && jobItem.status === 'ASSIGNED'
     );
     for (const job of assignedJobs) {
       if (job.enrollmentId && seenIds.has(job.enrollmentId)) continue;
@@ -50,13 +50,13 @@
 
       const studentNames = Array.isArray(job.studentNames) && job.studentNames.length > 0
         ? job.studentNames.join(', ')
-        : (job.studentName || (job.studentId ? $dbStore.users.find((u) => u.id === job.studentId)?.fullName : 'Murid'));
+        : (job.studentName || (job.studentId ? $dbStore.users.find((userItem) => userItem.id === job.studentId)?.fullName : 'Murid'));
 
       const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
-      const subjectNames = $dbStore.subjects.filter((s) => subjectIds.includes(s.id)).map((s) => s.name).join(', ') || 'Mapel';
+      const subjectNames = $dbStore.subjects.filter((subjectItem) => subjectIds.includes(subjectItem.id)).map((subjectItem) => subjectItem.name).join(', ') || 'Mapel';
 
       const classIds = Array.isArray(job.classIds) && job.classIds.length > 0 ? job.classIds : (job.classId ? [job.classId] : []);
-      const classNames = $dbStore.classes.filter((c) => classIds.includes(c.id)).map((c) => c.className).join(', ') || 'Kelas';
+      const classNames = $dbStore.classes.filter((classItem) => classIds.includes(classItem.id)).map((classItem) => classItem.className).join(', ') || 'Kelas';
 
       const isGroup = (job.studentCount && job.studentCount > 1) || (Array.isArray(job.studentIds) && job.studentIds.length > 1);
 
@@ -75,34 +75,34 @@
 
   // My attendance records
   $: myAttendances = $dbStore.attendances.filter(
-    (a) => a.deletedAt === null && a.tentorId === tentorId
+    (attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.tentorId === tentorId
   );
-  $: approvedAttendances = myAttendances.filter((a) => a.status === 'APPROVED');
-  $: pendingAttendances = myAttendances.filter((a) => a.status === 'SUBMITTED');
+  $: approvedAttendances = myAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED');
+  $: pendingAttendances = myAttendances.filter((attendanceItem) => attendanceItem.status === 'SUBMITTED');
 
   // My payroll claims
   $: myClaims = $dbStore.payrollClaims.filter(
-    (c) => c.deletedAt === null && c.tentorId === tentorId
+    (claimItem) => claimItem.deletedAt === null && claimItem.tentorId === tentorId
   );
-  $: paidClaims = myClaims.filter((c) => c.status === 'PAID');
-  $: totalPaid = paidClaims.reduce((sum, c) => sum + c.totalAmount, 0);
+  $: paidClaims = myClaims.filter((claimItem) => claimItem.status === 'PAID');
+  $: totalPaid = paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
 
   // Available jobs (open for application)
   $: openJobs = $dbStore.jobs.filter(
-    (j) => j.deletedAt === null && j.status === 'AVAILABLE'
+    (jobItem) => jobItem.deletedAt === null && jobItem.status === 'AVAILABLE'
   );
 
   // My applications
   $: myApps = $dbStore.applications.filter(
-    (a) => a.deletedAt === null && a.tentorId === tentorId
+    (appItem) => appItem.deletedAt === null && appItem.tentorId === tentorId
   );
 
   function getSubjectName(subjectId: string): string {
-    return $dbStore.subjects.find((s) => s.id === subjectId)?.name || '—';
+    return $dbStore.subjects.find((subjectItem) => subjectItem.id === subjectId)?.name || '—';
   }
 
   function getClassName(classId: string): string {
-    return $dbStore.classes.find((c) => c.id === classId)?.className || '—';
+    return $dbStore.classes.find((classItem) => classItem.id === classId)?.className || '—';
   }
 
   function formatDate(dateStr: string): string {
@@ -155,7 +155,7 @@
   </div>
 
   <!-- QUICK ACTIONS -->
-  <div class="quick-actions" style="margin-bottom:20px">
+  <div class="quick-actions mb-5">
     <Button variant="primary" icon="school" on:click={() => goto('/tutor/classes')}>
       Program Les Aktif
     </Button>
@@ -241,13 +241,13 @@
                 </tr>
               </thead>
               <tbody>
-                {#each myAttendances.slice(0, 5) as att (att.id)}
+                {#each myAttendances.slice(0, 5) as attendanceItem (attendanceItem.id)}
                   <tr>
-                    <td class="sub">{formatDate(att.sessionDate)}</td>
-                    <td>{att.topic}</td>
+                    <td class="sub">{formatDate(attendanceItem.sessionDate)}</td>
+                    <td>{attendanceItem.topic}</td>
                     <td>
-                      <span class="badge {getStatusBadgeClass(att.status)}">
-                        {getStatusLabel(att.status, ATTENDANCE_STATUS_LABEL)}
+                      <span class="badge {getStatusBadgeClass(attendanceItem.status)}">
+                        {getStatusLabel(attendanceItem.status, ATTENDANCE_STATUS_LABEL)}
                       </span>
                     </td>
                   </tr>
@@ -278,7 +278,7 @@
             </thead>
             <tbody>
               {#each myApps as app (app.id)}
-                {@const job = $dbStore.jobs.find((j) => j.id === app.jobId)}
+                {@const job = $dbStore.jobs.find((jobItem) => jobItem.id === app.jobId)}
                 <tr>
                   <td><strong>{job?.title || '—'}</strong></td>
                   <td class="sub">{formatDate(app.appliedAt)}</td>

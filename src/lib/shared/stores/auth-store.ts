@@ -1,4 +1,4 @@
-import { writable, derived } from 'svelte/store';
+import { writable } from 'svelte/store';
 import type { User, UserRole } from '$lib/shared/types/common.types';
 import { dbStore } from '$lib/shared/stores/db-store';
 import { goto } from '$app/navigation';
@@ -17,10 +17,10 @@ export function getRoleDefaultPath(role?: UserRole | null): string {
 
 function readSessionCookie(): { id: string; email: string; fullName: string; role: UserRole } | null {
   if (typeof window === 'undefined') return null;
-  const match = document.cookie.split('; ').find((c) => c.startsWith('session_user='));
-  if (!match) return null;
+  const cookieMatch = document.cookie.split('; ').find((cookieItem) => cookieItem.startsWith('session_user='));
+  if (!cookieMatch) return null;
   try {
-    return JSON.parse(decodeURIComponent(match.split('=').slice(1).join('=')));
+    return JSON.parse(decodeURIComponent(cookieMatch.split('=').slice(1).join('=')));
   } catch {
     return null;
   }
@@ -36,17 +36,17 @@ function createAuthStore() {
       // Use partial session data first to prevent premature login redirects
       currentUser.set(session as User);
       
-      const db = dbStore.getSnapshot();
-      const user = db.users.find((u) => u.id === session.id && u.deletedAt === null);
+      const dbSnapshot = dbStore.getSnapshot();
+      const user = dbSnapshot.users.find((userItem) => userItem.id === session.id && userItem.deletedAt === null);
       if (user) currentUser.set(user);
     }
   }
 
   // Re-derive user from db-store when it updates
-  dbStore.subscribe((db) => {
+  dbStore.subscribe((databaseSnapshot) => {
     const session = readSessionCookie();
     if (session?.id) {
-      const user = db.users.find((u) => u.id === session.id && u.deletedAt === null);
+      const user = databaseSnapshot.users.find((userItem) => userItem.id === session.id && userItem.deletedAt === null);
       currentUser.set(user || (session as User));
     }
   });
@@ -56,28 +56,29 @@ function createAuthStore() {
 
     login: async (emailInput: string, passwordInput: string) => {
       try {
-        const res = await fetch('/api/auth/login', {
+        const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: emailInput.trim(), password: passwordInput })
         });
-        const json = await res.json();
+        const result = await response.json();
 
-        if (json.error) {
-          return { error: true, statusCode: json.statusCode, message: json.message, data: null };
+        if (result.error) {
+          return { error: true, statusCode: result.statusCode, message: result.message, data: null };
         }
 
         // Set current user
-        currentUser.set(json.data);
+        currentUser.set(result.data);
 
         return {
           error: false,
           statusCode: 200,
-          message: `Selamat datang kembali, ${json.data.fullName}!`,
-          data: json.data
+          message: `Selamat datang kembali, ${result.data.fullName}!`,
+          data: result.data
         };
-      } catch (err_raw) { const err = err_raw as Error;
-        return { error: true, statusCode: 500, message: err.message, data: null };
+      } catch (errorRaw) {
+        const error = errorRaw as Error;
+        return { error: true, statusCode: 500, message: error.message, data: null };
       }
     },
 
@@ -94,8 +95,8 @@ function createAuthStore() {
     refreshFromCookie: () => {
       const session = readSessionCookie();
       if (session?.id) {
-        const db = dbStore.getSnapshot();
-        const user = db.users.find((u) => u.id === session.id && u.deletedAt === null);
+        const dbSnapshot = dbStore.getSnapshot();
+        const user = dbSnapshot.users.find((userItem) => userItem.id === session.id && userItem.deletedAt === null);
         currentUser.set(user || (session as User));
       } else {
         currentUser.set(null);

@@ -13,19 +13,20 @@
   // Wali Master Modal State
   let waliModalOpen: boolean = false;
   let editingWali: User | null = null;
+  let deleteWaliDialogOpen: boolean = false;
   let deleteWaliId: string | null = null;
 
-  $: allStudents = $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT');
-  $: allWali = $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'WALI_MURID');
+  $: allStudents = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT');
+  $: allWali = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'WALI_MURID');
 
-  $: filteredWali = allWali.filter((w) => {
-    const q = searchQuery.toLowerCase();
-    if (!q) return true;
+  $: filteredWali = allWali.filter((waliUser) => {
+    const query = searchQuery.toLowerCase();
+    if (!query) return true;
     return (
-      w.fullName.toLowerCase().includes(q) ||
-      w.email.toLowerCase().includes(q) ||
-      (w.phone || '').toLowerCase().includes(q) ||
-      (w.occupation || '').toLowerCase().includes(q)
+      waliUser.fullName.toLowerCase().includes(query) ||
+      waliUser.email.toLowerCase().includes(query) ||
+      (waliUser.phone || '').toLowerCase().includes(query) ||
+      (waliUser.occupation || '').toLowerCase().includes(query)
     );
   });
 
@@ -33,15 +34,16 @@
   $: totalPagesWali = Math.max(1, Math.ceil(filteredWali.length / itemsPerPage));
 
   function getChildrenOfWali(waliId: string): User[] {
-    return allStudents.filter((s) => s.waliUserId === waliId);
+    return allStudents.filter((studentUser) => studentUser.waliUserId === waliId);
   }
 
   function handleConfirmDeleteWali() {
     if (!deleteWaliId) return;
-    const res = dbStore.deleteWaliMaster(deleteWaliId);
+    const response = dbStore.deleteWaliMaster(deleteWaliId);
+    deleteWaliDialogOpen = false;
     deleteWaliId = null;
-    if (!res.error) toastStore.success(res.message);
-    else toastStore.error(res.message);
+    if (!response.error) toastStore.success(response.message);
+    else toastStore.error(response.message);
   }
 </script>
 
@@ -74,7 +76,7 @@
   <div class="stat">
     <div class="s-icon tone-sky"><Icon name="groups" size="lg" /></div>
     <div>
-      <div class="s-val">{allStudents.filter(s => !!s.waliUserId).length}</div>
+      <div class="s-val">{allStudents.filter((studentUser) => Boolean(studentUser.waliUserId)).length}</div>
       <div class="s-lbl">Anak Terhubung Wali</div>
     </div>
   </div>
@@ -103,7 +105,7 @@
             <th>Kontak</th>
             <th>Pekerjaan</th>
             <th>Anak Terhubung</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -114,25 +116,25 @@
               </td>
             </tr>
           {:else}
-            {#each paginatedWali as w (w.id)}
-              {@const children = getChildrenOfWali(w.id)}
+            {#each paginatedWali as wali (wali.id)}
+              {@const children = getChildrenOfWali(wali.id)}
               <tr>
                 <td>
-                  <strong>{w.fullName}</strong>
-                  <div class="sub">ID: {w.id}</div>
+                  <strong>{wali.fullName}</strong>
+                  <div class="sub">ID: {wali.id}</div>
                 </td>
                 <td>
-                  {w.email}
-                  <div class="sub">{w.phone || '—'}</div>
+                  {wali.email}
+                  <div class="sub">{wali.phone || '—'}</div>
                 </td>
-                <td>{w.occupation || '—'}</td>
+                <td>{wali.occupation || '—'}</td>
                 <td>
                   {#if children.length === 0}
                     <span class="sub">— Belum ada —</span>
                   {:else}
                     <div class="flex flex-col gap-0.5">
-                      {#each children as c}
-                        <span class="text-xs font-semibold text-primary">· {c.fullName}</span>
+                      {#each children as child}
+                        <span class="text-xs font-semibold text-primary">· {child.fullName}</span>
                       {/each}
                     </div>
                   {/if}
@@ -143,7 +145,7 @@
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => { editingWali = w; waliModalOpen = true; }}
+                      on:click={() => { editingWali = wali; waliModalOpen = true; }}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -151,7 +153,7 @@
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deleteWaliId = w.id; }}
+                      on:click={() => { deleteWaliId = wali.id; deleteWaliDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -171,8 +173,8 @@
         </div>
         <div class="page-btns">
           <button type="button" class="page-btn" disabled={currentPage <= 1} on:click={() => currentPage--}>&laquo;</button>
-          {#each Array.from({ length: totalPagesWali }, (_, i) => i + 1) as p}
-            <button type="button" class="page-btn {currentPage === p ? 'active' : ''}" on:click={() => { currentPage = p; }}>{p}</button>
+          {#each Array.from({ length: totalPagesWali }, (_, index) => index + 1) as pageNumber}
+            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" on:click={() => { currentPage = pageNumber; }}>{pageNumber}</button>
           {/each}
           <button type="button" class="page-btn" disabled={currentPage >= totalPagesWali} on:click={() => currentPage++}>&raquo;</button>
         </div>
@@ -189,11 +191,11 @@
 />
 
 <ConfirmationDialog
-  open={!!deleteWaliId}
+  open={deleteWaliDialogOpen}
   title="Hapus Master Data Wali Murid"
   message="Apakah Anda yakin ingin menghapus data master wali murid ini?"
   confirmText="Hapus"
   confirmVariant="danger"
   onConfirm={handleConfirmDeleteWali}
-  onCancel={() => { deleteWaliId = null; }}
+  onCancel={() => { deleteWaliDialogOpen = false; deleteWaliId = null; }}
 />

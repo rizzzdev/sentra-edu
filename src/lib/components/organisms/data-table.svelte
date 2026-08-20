@@ -29,8 +29,8 @@
     const endRange = Math.min(max - 1, current + 2);
 
     if (startRange > 2) pageItems.push('…');
-    for (let i = startRange; i <= endRange; i++) {
-      pageItems.push(i);
+    for (let pageNumber = startRange; pageNumber <= endRange; pageNumber++) {
+      pageItems.push(pageNumber);
     }
     if (endRange < max - 1) pageItems.push('…');
     pageItems.push(max);
@@ -38,7 +38,7 @@
   }
 </script>
 
-<div class="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] overflow-hidden">
+<div class="w-full bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
   <!-- 4-State UI: 1. Loading State -->
   {#if loading}
     <div class="p-6 space-y-4">
@@ -64,11 +64,11 @@
   <!-- 4-State UI: 3. Empty State -->
   {:else if totalItems === 0}
     <div class="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div class="flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-surface-hover)] text-[var(--color-fg-muted)] mb-3">
+      <div class="flex items-center justify-center w-16 h-16 rounded-full bg-muted text-muted-fg mb-3">
         <Icon name={emptyIcon} size="xl" />
       </div>
-      <h4 class="font-bold text-base text-[var(--color-fg)] mb-1">{emptyMessage}</h4>
-      <p class="text-xs text-[var(--color-fg-muted)] max-w-sm mb-4">
+      <h4 class="font-bold text-base text-fg mb-1">{emptyMessage}</h4>
+      <p class="text-xs text-muted-fg max-w-sm mb-4">
         Tidak ada catatan yang ditemukan untuk kriteria atau filter saat ini.
       </p>
       {#if emptyActionText && onEmptyAction}
@@ -82,19 +82,19 @@
   {:else}
     <div class="overflow-x-auto">
       <table class="w-full text-left text-sm border-collapse">
-        <thead class="bg-[var(--color-surface-hover)] border-b border-[var(--color-border)] text-xs font-bold uppercase tracking-wider text-[var(--color-fg-muted)]">
+        <thead class="bg-muted border-b border-border text-xs font-bold uppercase tracking-wider text-muted-fg">
           <slot name="header" />
         </thead>
-        <tbody class="divide-y divide-[var(--color-border)]">
+        <tbody class="divide-y divide-border">
           <slot name="body" />
         </tbody>
       </table>
     </div>
 
     <!-- Pagination Footer -->
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-[var(--color-border)] bg-[var(--color-surface)] text-xs text-[var(--color-fg-muted)]">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border bg-surface text-xs text-muted-fg">
       <div>
-        Menampilkan <span class="font-bold text-[var(--color-fg)]">{startItem}–{endItem}</span> dari <span class="font-bold text-[var(--color-fg)]">{totalItems}</span> data
+        Menampilkan <span class="font-bold text-fg">{startItem}–{endItem}</span> dari <span class="font-bold text-fg">{totalItems}</span> data
       </div>
       <div class="flex items-center gap-1.5">
         <Button
@@ -113,7 +113,7 @@
           {:else}
             <button
               type="button"
-              class="w-8 h-8 rounded-[var(--radius-xs)] font-semibold text-xs border transition-colors duration-150 cursor-pointer {currentPage === pageNum ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-[var(--color-surface)] text-[var(--color-fg)] border-[var(--color-border)] hover:bg-[var(--color-surface-hover)]'}"
+              class="w-8 h-8 rounded-lg font-semibold text-xs border transition-colors duration-150 cursor-pointer {currentPage === pageNum ? 'bg-primary text-white border-primary' : 'bg-surface text-fg border-border hover:bg-muted'}"
               on:click={() => onPageChange(Number(pageNum))}
             >
               {pageNum}

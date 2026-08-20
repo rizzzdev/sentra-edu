@@ -40,7 +40,7 @@ function normalizeDay(day: string): string {
   return DAY_CONVERSION[clean] || day.trim().toUpperCase();
 }
 
-function normalizeDayArray(days: unknown): string[] {
+function normalizeDayArray(days: string | string[] | null | undefined): string[] {
   if (!days) return ['MONDAY'];
   if (Array.isArray(days)) {
     return days.map((d) => normalizeDay(String(d))).filter(Boolean);

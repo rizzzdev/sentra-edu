@@ -21,52 +21,52 @@
 
   $: currentUser = $authStore;
 
-  $: allAttendances = $dbStore.attendances.filter((a) => {
-    if (a.deletedAt !== null) return false;
+  $: allAttendances = $dbStore.attendances.filter((attendanceItem) => {
+    if (attendanceItem.deletedAt !== null) return false;
     if (!currentUser) return false;
 
     if (currentUser.role === 'SUPER_ADMIN') return true;
-    if (currentUser.role === 'TENTOR') return a.tentorId === currentUser.id;
+    if (currentUser.role === 'TENTOR') return attendanceItem.tentorId === currentUser.id;
 
     // Student or Wali
-    const enr = $dbStore.enrollments.find((e) => e.id === a.enrollmentId);
-    if (!enr) return false;
-    return enr.studentId === currentUser.id || enr.waliUserId === currentUser.id;
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
+    if (!enrollmentItem) return false;
+    return enrollmentItem.studentId === currentUser.id || enrollmentItem.waliUserId === currentUser.id;
   });
 
-  $: nSubmitted = allAttendances.filter((a) => a.status === 'SUBMITTED').length;
-  $: nApproved = allAttendances.filter((a) => a.status === 'APPROVED').length;
-  $: nRejected = allAttendances.filter((a) => a.status === 'REJECTED').length;
+  $: nSubmitted = allAttendances.filter((attendanceItem) => attendanceItem.status === 'SUBMITTED').length;
+  $: nApproved = allAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length;
+  $: nRejected = allAttendances.filter((attendanceItem) => attendanceItem.status === 'REJECTED').length;
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
-    return $dbStore.users.find((u) => u.id === userId)?.fullName || '—';
+    return $dbStore.users.find((userItem) => userItem.id === userId)?.fullName || '—';
   }
 
   function getStudentOf(enrollmentId: string): string {
-    const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    if (!enr) return '—';
-    return $dbStore.users.find((u) => u.id === enr.studentId)?.fullName || '—';
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    if (!enrollmentItem) return '—';
+    return $dbStore.users.find((userItem) => userItem.id === enrollmentItem.studentId)?.fullName || '—';
   }
 
   function getSubjectName(enrollmentId: string): string {
-    const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    if (!enr) return '—';
-    return $dbStore.subjects.find((s) => s.id === enr.subjectId)?.name || '—';
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    if (!enrollmentItem) return '—';
+    return $dbStore.subjects.find((subjectItem) => subjectItem.id === enrollmentItem.subjectId)?.name || '—';
   }
 
   $: filteredAttendances = allAttendances
-    .filter((att) => {
-      const q = searchQuery.toLowerCase();
+    .filter((attendanceItem) => {
+      const query = searchQuery.toLowerCase();
       const matchesSearch =
-        !q ||
-        att.topic.toLowerCase().includes(q) ||
-        getStudentOf(att.enrollmentId).toLowerCase().includes(q) ||
-        getUserName(att.tentorId).toLowerCase().includes(q);
-      const matchesStatus = !statusFilter || att.status === statusFilter;
+        !query ||
+        attendanceItem.topic.toLowerCase().includes(query) ||
+        getStudentOf(attendanceItem.enrollmentId).toLowerCase().includes(query) ||
+        getUserName(attendanceItem.tentorId).toLowerCase().includes(query);
+      const matchesStatus = !statusFilter || attendanceItem.status === statusFilter;
       return matchesSearch && matchesStatus;
     })
-    .sort((a, b) => (a.sessionDate < b.sessionDate ? 1 : -1));
+    .sort((firstItem, secondItem) => (firstItem.sessionDate < secondItem.sessionDate ? 1 : -1));
 
   $: paginatedAttendances = filteredAttendances.slice(
     (currentPage - 1) * itemsPerPage,
@@ -74,26 +74,26 @@
   );
   $: totalPages = Math.max(1, Math.ceil(filteredAttendances.length / itemsPerPage));
 
-  function handleOpenDetail(att: AttendanceRecord) {
-    selectedAttendance = att;
+  function handleOpenDetail(attendanceItem: AttendanceRecord) {
+    selectedAttendance = attendanceItem;
     verifyModalOpen = true;
   }
 
-  function handleApprove(att: AttendanceRecord) {
-    const res = dbStore.verifyAttendance(att.id, 'APPROVED');
-    if (!res.error) {
+  function handleApprove(attendanceItem: AttendanceRecord) {
+    const response = dbStore.verifyAttendance(attendanceItem.id, 'APPROVED');
+    if (!response.error) {
       toastStore.success('Presensi disetujui.');
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 
-  function handleReject(att: AttendanceRecord) {
-    const res = dbStore.verifyAttendance(att.id, 'REJECTED', 'Ditolak oleh admin.');
-    if (!res.error) {
+  function handleReject(attendanceItem: AttendanceRecord) {
+    const response = dbStore.verifyAttendance(attendanceItem.id, 'REJECTED', 'Ditolak oleh admin.');
+    if (!response.error) {
       toastStore.success('Presensi ditolak.');
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 </script>
@@ -136,7 +136,7 @@
       placeholder="Semua Status"
       options={[
         { value: '', label: 'Semua Status' },
-        ...Object.entries(ATTENDANCE_STATUS_LABEL).map(([v, l]) => ({ value: v, label: l }))
+        ...Object.entries(ATTENDANCE_STATUS_LABEL).map(([statusKey, statusLabel]) => ({ value: statusKey, label: statusLabel }))
       ]}
       className="max-w-48"
     />
@@ -153,7 +153,7 @@
               <th>Siswa</th>
               <th>Mode · Topik</th>
               <th>Status</th>
-              <th style="text-align:right">Aksi</th>
+              <th class="text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -162,19 +162,20 @@
                 <td colspan="6" class="empty">Tidak ada presensi untuk filter ini.</td>
               </tr>
             {:else}
-              {#each paginatedAttendances as a (a.id)}
+              {#each paginatedAttendances as attendanceItem (attendanceItem.id)}
                 <tr>
-                  <td>{formatDateIndonesian(a.sessionDate)}</td>
-                  <td>{getUserName(a.tentorId)}</td>
-                  <td>{getStudentOf(a.enrollmentId)}</td>
+                  <td>{formatDateIndonesian(attendanceItem.sessionDate)}</td>
+                  <td>{getUserName(attendanceItem.tentorId)}</td>
+                  <td>{getStudentOf(attendanceItem.enrollmentId)}</td>
                   <td>
-                    {a.topic}
-                    {#if !a.isRadiusValid}
-                      <div class="sub" style="color:var(--warn)">⚠ di luar radius</div>
+                    {attendanceItem.topic}
+                    {#if !attendanceItem.isRadiusValid}
+                      <div class="sub text-warn">⚠ di luar radius</div>
                     {/if}
                   </td>
-                  <td>                     <span class="badge {getStatusBadgeClass(a.status)}">
-                       {getStatusLabel(a.status, ATTENDANCE_STATUS_LABEL)}
+                  <td>
+                    <span class="badge {getStatusBadgeClass(attendanceItem.status)}">
+                      {getStatusLabel(attendanceItem.status, ATTENDANCE_STATUS_LABEL)}
                     </span>
                   </td>
                   <td>
@@ -183,16 +184,16 @@
                         type="button"
                         class="btn-icon"
                         data-tip="Periksa"
-                        on:click={() => handleOpenDetail(a)}
+                        on:click={() => handleOpenDetail(attendanceItem)}
                       >
                         <Icon name="visibility" size="sm" />
                       </button>
-                      {#if a.status === 'SUBMITTED'}
+                      {#if attendanceItem.status === 'SUBMITTED'}
                         <button
                           type="button"
                           class="btn-icon"
                           data-tip="Setujui"
-                          on:click={() => handleApprove(a)}
+                          on:click={() => handleApprove(attendanceItem)}
                         >
                           <Icon name="check" size="sm" />
                         </button>
@@ -200,7 +201,7 @@
                           type="button"
                           class="btn-icon btn-icon-danger"
                           data-tip="Tolak"
-                          on:click={() => handleReject(a)}
+                          on:click={() => handleReject(attendanceItem)}
                         >
                           <Icon name="close" size="sm" />
                         </button>
@@ -228,13 +229,13 @@
             >
               &laquo;
             </button>
-            {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+            {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
               <button
                 type="button"
-                class="page-btn {currentPage === p ? 'active' : ''}"
-                on:click={() => { currentPage = p; }}
+                class="page-btn {currentPage === pageNumber ? 'active' : ''}"
+                on:click={() => { currentPage = pageNumber; }}
               >
-                {p}
+                {pageNumber}
               </button>
             {/each}
             <button
@@ -273,7 +274,7 @@
               <th>Topik</th>
               <th>Catatan</th>
               <th>Status</th>
-              <th style="text-align:right">Aksi</th>
+              <th class="text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -282,14 +283,15 @@
                 <td colspan="6" class="empty">Belum ada catatan presensi. Klik "Check-in Presensi".</td>
               </tr>
             {:else}
-              {#each paginatedAttendances as a (a.id)}
+              {#each paginatedAttendances as attendanceItem (attendanceItem.id)}
                 <tr>
-                  <td>{formatDateIndonesian(a.sessionDate)}</td>
-                  <td>{getStudentOf(a.enrollmentId)}</td>
-                  <td>{a.topic}</td>
-                  <td>{a.studentNotes || '—'}</td>
-                  <td>                     <span class="badge {getStatusBadgeClass(a.status)}">
-                       {getStatusLabel(a.status, ATTENDANCE_STATUS_LABEL)}
+                  <td>{formatDateIndonesian(attendanceItem.sessionDate)}</td>
+                  <td>{getStudentOf(attendanceItem.enrollmentId)}</td>
+                  <td>{attendanceItem.topic}</td>
+                  <td>{attendanceItem.studentNotes || '—'}</td>
+                  <td>
+                    <span class="badge {getStatusBadgeClass(attendanceItem.status)}">
+                      {getStatusLabel(attendanceItem.status, ATTENDANCE_STATUS_LABEL)}
                     </span>
                   </td>
                   <td>
@@ -298,7 +300,7 @@
                         type="button"
                         class="btn-icon"
                         data-tip="Periksa"
-                        on:click={() => handleOpenDetail(a)}
+                        on:click={() => handleOpenDetail(attendanceItem)}
                       >
                         <Icon name="visibility" size="sm" />
                       </button>
@@ -325,13 +327,13 @@
             >
               &laquo;
             </button>
-            {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+            {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
               <button
                 type="button"
-                class="page-btn {currentPage === p ? 'active' : ''}"
-                on:click={() => { currentPage = p; }}
+                class="page-btn {currentPage === pageNumber ? 'active' : ''}"
+                on:click={() => { currentPage = pageNumber; }}
               >
-                {p}
+                {pageNumber}
               </button>
             {/each}
             <button
@@ -384,15 +386,16 @@
                 <td colspan="6" class="empty">Belum ada riwayat presensi.</td>
               </tr>
             {:else}
-              {#each paginatedAttendances as a (a.id)}
+              {#each paginatedAttendances as attendanceItem (attendanceItem.id)}
                 <tr>
-                  <td>{formatDateIndonesian(a.sessionDate)}</td>
-                  <td>{getUserName(a.tentorId)}</td>
-                  <td>{getSubjectName(a.enrollmentId)}</td>
-                  <td>{a.topic}</td>
-                  <td>{a.studentNotes || '—'}</td>
-                  <td>                     <span class="badge {getStatusBadgeClass(a.status)}">
-                       {getStatusLabel(a.status, ATTENDANCE_STATUS_LABEL)}
+                  <td>{formatDateIndonesian(attendanceItem.sessionDate)}</td>
+                  <td>{getUserName(attendanceItem.tentorId)}</td>
+                  <td>{getSubjectName(attendanceItem.enrollmentId)}</td>
+                  <td>{attendanceItem.topic}</td>
+                  <td>{attendanceItem.studentNotes || '—'}</td>
+                  <td>
+                    <span class="badge {getStatusBadgeClass(attendanceItem.status)}">
+                      {getStatusLabel(attendanceItem.status, ATTENDANCE_STATUS_LABEL)}
                     </span>
                   </td>
                 </tr>
@@ -416,13 +419,13 @@
             >
               &laquo;
             </button>
-            {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+            {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
               <button
                 type="button"
-                class="page-btn {currentPage === p ? 'active' : ''}"
-                on:click={() => { currentPage = p; }}
+                class="page-btn {currentPage === pageNumber ? 'active' : ''}"
+                on:click={() => { currentPage = pageNumber; }}
               >
-                {p}
+                {pageNumber}
               </button>
             {/each}
             <button

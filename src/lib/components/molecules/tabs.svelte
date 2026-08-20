@@ -30,7 +30,7 @@
         type="button"
         role="tab"
         aria-selected={isActive}
-        class="inline-flex items-center gap-2.5 px-5 py-2.5 text-sm sm:text-[0.93rem] rounded-xl transition-all cursor-pointer border whitespace-nowrap {isActive ? 'bg-surface text-primary border-primary/20 shadow-sm font-extrabold ring-1 ring-primary/10' : 'bg-transparent text-muted-fg border-transparent font-semibold hover:bg-surface/70 hover:text-fg'}"
+        class="inline-flex items-center gap-2.5 px-5 py-2.5 text-sm rounded-xl transition-all cursor-pointer border whitespace-nowrap {isActive ? 'bg-surface text-primary border-primary/20 shadow-sm font-extrabold ring-1 ring-primary/10' : 'bg-transparent text-muted-fg border-transparent font-semibold hover:bg-surface/70 hover:text-fg'}"
         on:click={() => handleClick(item.id)}
       >
         {#if item.icon}
@@ -54,7 +54,7 @@
         type="button"
         role="tab"
         aria-selected={isActive}
-        class="inline-flex items-center gap-2.5 px-5 py-3.5 text-base transition-all cursor-pointer whitespace-nowrap border-b-3 -mb-[2px] {isActive ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted-fg font-semibold hover:text-fg hover:border-border'}"
+        class="inline-flex items-center gap-2.5 px-5 py-3.5 text-base transition-all cursor-pointer whitespace-nowrap border-b-2 -mb-0.5 {isActive ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted-fg font-semibold hover:text-fg hover:border-border'}"
         on:click={() => handleClick(item.id)}
       >
         {#if item.icon}

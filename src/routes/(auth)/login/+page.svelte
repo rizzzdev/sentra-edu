@@ -33,32 +33,32 @@
       }
       toastStore.success(response.message || 'Berhasil login.');
       goto(getRoleDefaultPath(response.data.role));
-    } catch (err_raw) { const err = err_raw as Error;
-      errorMessage = err.message || 'Gagal login.';
+    } catch (errorRaw) {
+      const error = errorRaw as Error;
+      errorMessage = error.message || 'Gagal login.';
       toastStore.error(errorMessage || 'Gagal login.');
       isSubmitting = false;
     }
   }
 </script>
 
-<div class="auth-page" style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:2rem 1.5rem">
-  <div class="auth-card" style="width:100%;max-width:460px;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-md);padding:2.2rem">
+<div class="flex min-h-screen items-center justify-center p-6 sm:p-8 bg-bg">
+  <div class="w-full max-w-md bg-surface border border-border rounded-2xl shadow-md p-8">
     <!-- Brand Header -->
-    <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;margin-bottom:16px">
+    <div class="flex items-center gap-2.5 font-extrabold text-lg mb-4">
       <img
-        class="logo"
+        class="w-9 h-9 rounded-xl object-cover"
         src="/logo-sentraedu.jpg"
         alt="SentraEdu"
-        style="width:36px;height:36px;border-radius:11px;object-fit:cover"
       />
-      <span class="brand-name">
-        <span style="color:var(--primary)">Sentra</span><span style="color:var(--accent)">Edu</span>
+      <span class="brand-name font-extrabold">
+        <span class="text-primary">Sentra</span><span class="text-accent">Edu</span>
       </span>
     </div>
 
     <!-- Title & Theme Toggle -->
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <h1 style="font-size:1.4rem;display:flex;align-items:center;gap:10px">
+    <div class="flex items-center justify-between gap-3">
+      <h1 class="text-xl font-bold flex items-center gap-2.5">
         <Icon name="lock" filled={true} /> Masuk
       </h1>
       <Button
@@ -71,8 +71,8 @@
       />
     </div>
 
-    <p style="color:var(--muted-fg);font-size:.9rem;margin:6px 0 18px">
-Masuk ke dashboard SentraEdu menggunakan akun Anda.
+    <p class="text-muted-fg text-sm my-2 mb-4.5">
+      Masuk ke dashboard SentraEdu menggunakan akun Anda.
     </p>
 
     <!-- Login Form -->
@@ -104,7 +104,7 @@ Masuk ke dashboard SentraEdu menggunakan akun Anda.
       </div>
 
       {#if errorMessage}
-        <div class="form-error" id="login-error" style="display:block">
+        <div class="form-error block" id="login-error">
           {errorMessage}
         </div>
       {/if}
@@ -113,7 +113,5 @@ Masuk ke dashboard SentraEdu menggunakan akun Anda.
         {isSubmitting ? 'Memproses...' : 'Masuk'}
       </Button>
     </form>
-
-
   </div>
 </div>

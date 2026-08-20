@@ -24,31 +24,31 @@
 
   $: currentUser = $authStore;
 
-  $: allInvoices = $dbStore.invoices.filter((inv) => {
-    if (inv.deletedAt !== null) return false;
+  $: allInvoices = $dbStore.invoices.filter((invoiceItem) => {
+    if (invoiceItem.deletedAt !== null) return false;
     if (!currentUser) return false;
     if (currentUser.role === 'SUPER_ADMIN') return true;
 
-    const enr = $dbStore.enrollments.find((e) => e.id === inv.enrollmentId);
-    if (!enr) return false;
-    return enr.studentId === currentUser.id || enr.waliUserId === currentUser.id;
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === invoiceItem.enrollmentId);
+    if (!enrollmentItem) return false;
+    return enrollmentItem.studentId === currentUser.id || enrollmentItem.waliUserId === currentUser.id;
   });
 
-  $: unpaidInvoices = allInvoices.filter((i) => i.status === 'UNPAID');
-  $: unpaidTotal = unpaidInvoices.reduce((s, i) => s + i.amount, 0);
-  $: paidInvoices = allInvoices.filter((i) => i.status === 'PAID');
-  $: paidTotal = paidInvoices.reduce((s, i) => s + i.amount, 0);
+  $: unpaidInvoices = allInvoices.filter((invoiceItem) => invoiceItem.status === 'UNPAID');
+  $: unpaidTotal = unpaidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
+  $: paidInvoices = allInvoices.filter((invoiceItem) => invoiceItem.status === 'PAID');
+  $: paidTotal = paidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
 
   function getStudentName(enrollmentId: string): string {
-    const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    if (!enr) return '—';
-    return $dbStore.users.find((u) => u.id === enr.studentId)?.fullName || '—';
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    if (!enrollmentItem) return '—';
+    return $dbStore.users.find((userItem) => userItem.id === enrollmentItem.studentId)?.fullName || '—';
   }
 
   function getPackageName(enrollmentId: string): string {
-    const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    if (!enr) return '—';
-    return $dbStore.packages.find((p) => p.id === enr.packageId)?.name || '—';
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    if (!enrollmentItem) return '—';
+    return $dbStore.packages.find((packageItem) => packageItem.id === enrollmentItem.packageId)?.name || '—';
   }
 
   function getMonthLabel(month?: number, year?: number): string {
@@ -57,104 +57,91 @@
     return `${months[month - 1] || month} ${year}`;
   }
 
-  $: filteredInvoices = allInvoices.filter((i) => {
-    const q = searchQuery.toLowerCase();
-    const stuName = getStudentName(i.enrollmentId).toLowerCase();
-    const pkgName = getPackageName(i.enrollmentId).toLowerCase();
+  $: filteredInvoices = allInvoices.filter((invoiceItem) => {
+    const query = searchQuery.toLowerCase();
+    const studentName = getStudentName(invoiceItem.enrollmentId).toLowerCase();
+    const packageName = getPackageName(invoiceItem.enrollmentId).toLowerCase();
     const matchesSearch =
-      !q ||
-      i.invoiceNumber.toLowerCase().includes(q) ||
-      stuName.includes(q) ||
-      pkgName.includes(q);
-    const matchesStatus = !statusFilter || i.status === statusFilter;
+      !query ||
+      invoiceItem.invoiceNumber.toLowerCase().includes(query) ||
+      studentName.includes(query) ||
+      packageName.includes(query);
+    const matchesStatus = !statusFilter || invoiceItem.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   $: paginatedInvoices = filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   $: totalPages = Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage));
 
-  function handleOpenPay(inv: InvoiceRecord) {
-    selectedInvoice = inv;
+  function handleOpenPay(invoiceItem: InvoiceRecord) {
+    selectedInvoice = invoiceItem;
     paymentModalOpen = true;
   }
 
   function handleConfirmDelete() {
     if (!deletingInvoiceId) return;
-    const res = dbStore.deleteInvoice(deletingInvoiceId);
+    const response = dbStore.deleteInvoice(deletingInvoiceId);
     deleteDialogOpen = false;
     deletingInvoiceId = null;
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success('Tagihan dihapus.');
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 </script>
 
 <div class="page-head">
   <div>
-    <h3><Icon name="receipt_long" size="lg" /> Tagihan SPP</h3>
-    <div class="desc">
-      {#if currentUser?.role === 'SUPER_ADMIN'}
-        Invoice tagihan les murid. Paket BULANAN ditagih flat, paket HARIAN per sesi.
-      {:else}
-        Daftar tagihan bimbingan belajar dan konfirmasi pelunasan SPP.
-      {/if}
-    </div>
+    <h3><Icon name="receipt" size="lg" /> {currentUser?.role === 'SUPER_ADMIN' ? 'Manajemen Tagihan SPP' : 'Tagihan & Pembayaran SPP'}</h3>
+    <div class="desc">{currentUser?.role === 'SUPER_ADMIN' ? 'Kelola dan buat tagihan SPP bulanan siswa.' : 'Riwayat tagihan biaya les bimbingan belajar anak Anda.'}</div>
   </div>
   {#if currentUser?.role === 'SUPER_ADMIN'}
     <button type="button" class="btn btn-primary" on:click={() => { invoiceModalOpen = true; }}>
-      <Icon name="receipt_long" size="sm" /> Generate Tagihan
+      <Icon name="add" size="sm" /> Buat Tagihan
     </button>
   {/if}
 </div>
 
-{#if currentUser?.role === 'SUPER_ADMIN'}
-  <div class="stat-grid">
-    <div class="stat">
-      <div class="s-icon tone-amber"><Icon name="schedule" size="lg" /></div>
-      <div>
-        <div class="s-val">{unpaidInvoices.length} tagihan</div>
-        <div class="s-lbl">Piutang</div>
-      </div>
-    </div>
-    <div class="stat">
-      <div class="s-icon tone-rose"><Icon name="payments" size="lg" /></div>
-      <div>
-        <div class="s-val">{formatCurrencyIDR(unpaidTotal)}</div>
-        <div class="s-lbl">Total Piutang</div>
-      </div>
-    </div>
-    <div class="stat">
-      <div class="s-icon tone-emerald"><Icon name="verified" size="lg" /></div>
-      <div>
-        <div class="s-val">{paidInvoices.length} tagihan</div>
-        <div class="s-lbl">Lunas</div>
-      </div>
-    </div>
-    <div class="stat">
-      <div class="s-icon tone-violet"><Icon name="account_balance_wallet" size="lg" /></div>
-      <div>
-        <div class="s-val">{formatCurrencyIDR(paidTotal)}</div>
-        <div class="s-lbl">Total Lunas</div>
-      </div>
+<!-- STATS -->
+<div class="stat-grid">
+  <div class="stat">
+    <div class="s-icon tone-amber"><Icon name="pending" size="lg" /></div>
+    <div>
+      <div class="s-val">{formatCurrencyIDR(unpaidTotal)}</div>
+      <div class="s-lbl">Belum Dibayar ({unpaidInvoices.length})</div>
     </div>
   </div>
-{/if}
+  <div class="stat">
+    <div class="s-icon tone-emerald"><Icon name="check_circle" size="lg" /></div>
+    <div>
+      <div class="s-val">{formatCurrencyIDR(paidTotal)}</div>
+      <div class="s-lbl">Sudah Dibayar ({paidInvoices.length})</div>
+    </div>
+  </div>
+  <div class="stat">
+    <div class="s-icon tone-sky"><Icon name="receipt_long" size="lg" /></div>
+    <div>
+      <div class="s-val">{allInvoices.length}</div>
+      <div class="s-lbl">Total Tagihan</div>
+    </div>
+  </div>
+</div>
 
 <div class="filter-bar">
   <div class="filter-search">
     <Icon name="search" size="sm" />
-    <input type="text" placeholder="Cari no. invoice / murid / paket..." bind:value={searchQuery} />
+    <input type="text" placeholder="Cari no. tagihan / siswa / paket..." bind:value={searchQuery} />
   </div>
+
   <SelectSearch
     bind:value={statusFilter}
     placeholder="Semua Status"
     options={[
       { value: '', label: 'Semua Status' },
-      ...Object.entries(INVOICE_STATUS_LABEL).map(([v, l]) => ({ value: v, label: l }))
+      ...Object.entries(INVOICE_STATUS_LABEL).map(([value, label]) => ({ value, label }))
     ]}
-    className="max-w-48"
+    className="max-w-44"
   />
 </div>
 
@@ -164,41 +151,48 @@
       <table class="tbl">
         <thead>
           <tr>
-            <th>No. Invoice</th>
-            <th>Siswa</th>
+            <th>No. Tagihan</th>
+            <th>Siswa & Paket</th>
             <th>Periode</th>
-            <th>Paket</th>
-            <th class="num">Total</th>
+            <th>Jatuh Tempo</th>
+            <th>Jumlah</th>
             <th>Status</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
           {#if paginatedInvoices.length === 0}
             <tr>
-              <td colspan="7" class="empty">Tidak ada tagihan untuk filter ini.</td>
+              <td colspan="7" class="empty">Tidak ada data tagihan.</td>
             </tr>
           {:else}
-            {#each paginatedInvoices as inv (inv.id)}
+            {#each paginatedInvoices as invoiceItem (invoiceItem.id)}
               <tr>
-                <td>{inv.invoiceNumber}</td>
-                <td>{getStudentName(inv.enrollmentId)}</td>
-                <td>{getMonthLabel(inv.periodMonth, inv.periodYear)}</td>
-                <td>{getPackageName(inv.enrollmentId)}</td>
-                <td class="num"><strong>{formatCurrencyIDR(inv.amount)}</strong></td>
                 <td>
-                  <span class="badge {getStatusBadgeClass(inv.status)}">
-                    {getStatusLabel(inv.status, INVOICE_STATUS_LABEL)}
+                  <strong>{invoiceItem.invoiceNumber}</strong>
+                </td>
+                <td>
+                  <strong>{getStudentName(invoiceItem.enrollmentId)}</strong>
+                  <div class="sub">{getPackageName(invoiceItem.enrollmentId)}</div>
+                </td>
+                <td>{getMonthLabel(invoiceItem.periodMonth, invoiceItem.periodYear)}</td>
+                <td class="sub">{invoiceItem.dueDate}</td>
+                <td>
+                  <strong>{formatCurrencyIDR(invoiceItem.amount)}</strong>
+                </td>
+                <td>
+                  <span class="badge {getStatusBadgeClass(invoiceItem.status)}">
+                    {getStatusLabel(invoiceItem.status, INVOICE_STATUS_LABEL)}
                   </span>
                 </td>
                 <td>
                   <div class="actions">
-                    {#if inv.status !== 'PAID'}
+                    {#if invoiceItem.status === 'UNPAID' || invoiceItem.status === 'OVERDUE'}
                       <button
                         type="button"
                         class="btn-icon"
                         data-tip={currentUser?.role === 'SUPER_ADMIN' ? 'Konfirmasi Bayar' : 'Bayar Sekarang'}
-                        on:click={() => handleOpenPay(inv)}
+                        on:click={() => handleOpenPay(invoiceItem)}
                       >
                         <Icon name="payments" size="sm" />
                       </button>
@@ -208,16 +202,16 @@
                           class="btn-icon btn-icon-danger"
                           data-tip="Hapus"
                           on:click={() => {
-                            deletingInvoiceId = inv.id;
+                            deletingInvoiceId = invoiceItem.id;
                             deleteDialogOpen = true;
                           }}
                         >
                           <Icon name="delete" size="sm" />
                         </button>
                       {/if}
-                    {:else if inv.paymentProofUrl}
+                    {:else if invoiceItem.paymentProofUrl}
                       <a
-                        href={inv.paymentProofUrl}
+                        href={invoiceItem.paymentProofUrl}
                         target="_blank"
                         rel="noreferrer"
                         class="btn-icon"
@@ -251,13 +245,13 @@
           >
             &laquo;
           </button>
-          {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+          {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
             <button
               type="button"
-              class="page-btn {currentPage === p ? 'active' : ''}"
-              on:click={() => { currentPage = p; }}
+              class="page-btn {currentPage === pageNumber ? 'active' : ''}"
+              on:click={() => { currentPage = pageNumber; }}
             >
-              {p}
+              {pageNumber}
             </button>
           {/each}
           <button

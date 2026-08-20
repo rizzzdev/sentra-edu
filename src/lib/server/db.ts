@@ -69,11 +69,11 @@ if (useLocalPg) {
 		const params: SqlParam[] = [];
 		let paramIndex = 1;
 
-		for (let i = 0; i < strings.length; i++) {
-			query += strings[i];
-			if (i < values.length) {
+		for (let stringIndex = 0; stringIndex < strings.length; stringIndex++) {
+			query += strings[stringIndex];
+			if (stringIndex < values.length) {
 				query += `$${paramIndex}`;
-				params.push(values[i]);
+				params.push(values[stringIndex]);
 				paramIndex++;
 			}
 		}
@@ -88,7 +88,14 @@ if (useLocalPg) {
 	sql = localSql;
 } else {
 	console.log('[DB] Using Neon PostgreSQL (HTTP driver)');
-	sql = neon(DATABASE_URL) as unknown as typeof sql;
+	const neonClient = neon(DATABASE_URL);
+	const remoteSql = function remoteSql(strings: TemplateStringsArray, ...values: SqlParam[]): Promise<QueryResultRow[]> {
+		return neonClient(strings, ...values) as Promise<QueryResultRow[]>;
+	};
+	remoteSql.query = function query(text: string, values?: SqlParam[]): Promise<QueryResultRow[]> {
+		return neonClient.query(text, values) as Promise<QueryResultRow[]>;
+	};
+	sql = remoteSql;
 }
 
 // ── Schema initialization ────────────────────────────────

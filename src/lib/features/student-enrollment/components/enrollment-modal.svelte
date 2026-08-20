@@ -23,7 +23,7 @@
   let latitude: number = -6.2;
   let longitude: number = 106.8;
 
-  $: students = $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT');
+  $: students = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT');
 
   let previousOpen = false;
   let previousEnrollmentId: string | null = null;
@@ -41,9 +41,9 @@
       longitude = editingEnrollment.longitude || 106.8;
     } else {
       studentId = students[0]?.id || '';
-      classId = $dbStore.classes.filter((c) => c.deletedAt === null)[0]?.id || '';
-      subjectId = $dbStore.subjects.filter((s) => s.deletedAt === null)[0]?.id || '';
-      packageId = $dbStore.packages.filter((p) => p.deletedAt === null && p.active !== false)[0]?.id || '';
+      classId = $dbStore.classes.filter((classItem) => classItem.deletedAt === null)[0]?.id || '';
+      subjectId = $dbStore.subjects.filter((subjectItem) => subjectItem.deletedAt === null)[0]?.id || '';
+      packageId = $dbStore.packages.filter((packageItem) => packageItem.deletedAt === null && packageItem.active !== false)[0]?.id || '';
       parentName = '';
       parentPhone = '';
       fullAddress = '';
@@ -93,7 +93,7 @@
         bind:value={studentId}
         options={[
           { value: '', label: '— Pilih akun murid —' },
-          ...students.map(u => ({ value: u.id, label: `${u.fullName} (${u.email})` }))
+          ...students.map((userItem) => ({ value: userItem.id, label: `${userItem.fullName} (${userItem.email})` }))
         ]}
       />
     </div>
@@ -107,7 +107,7 @@
           bind:value={classId}
           options={[
             { value: '', label: '— Pilih kelas —' },
-            ...$dbStore.classes.filter((c) => c.deletedAt === null).map(c => ({ value: c.id, label: c.className }))
+            ...$dbStore.classes.filter((classItem) => classItem.deletedAt === null).map((classItem) => ({ value: classItem.id, label: classItem.className }))
           ]}
         />
       </div>
@@ -120,7 +120,7 @@
           bind:value={subjectId}
           options={[
             { value: '', label: '— Pilih mapel —' },
-            ...$dbStore.subjects.filter((s) => s.deletedAt === null).map(s => ({ value: s.id, label: s.name }))
+            ...$dbStore.subjects.filter((subjectItem) => subjectItem.deletedAt === null).map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))
           ]}
         />
       </div>
@@ -134,7 +134,7 @@
         bind:value={packageId}
         options={[
           { value: '', label: '— Pilih paket les —' },
-          ...$dbStore.packages.filter((p) => p.deletedAt === null && p.active).map(p => ({ value: p.id, label: `${p.name} (${p.mode} · Rp ${p.price.toLocaleString('id-ID')})` }))
+          ...$dbStore.packages.filter((packageItem) => packageItem.deletedAt === null && packageItem.active).map((packageItem) => ({ value: packageItem.id, label: `${packageItem.name} (${packageItem.mode} · Rp ${packageItem.price.toLocaleString('id-ID')})` }))
         ]}
       />
     </div>

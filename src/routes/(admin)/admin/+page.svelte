@@ -68,30 +68,30 @@
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
-    const user = $dbStore.users.find((u) => u.id === userId);
+    const user = $dbStore.users.find((userItem) => userItem.id === userId);
     return user ? user.fullName : '—';
   }
 
   function getStudentOf(enrollmentId: string): string {
-    const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
+    const enr = $dbStore.enrollments.find((enrollmentItem) => enrollmentItem.id === enrollmentId);
     if (!enr) return '—';
-    const stu = $dbStore.users.find((u) => u.id === enr.studentId);
+    const stu = $dbStore.users.find((userItem) => userItem.id === enr.studentId);
     return stu ? stu.fullName : '—';
   }
 
   function getClassName(classId: string): string {
-    const cls = $dbStore.classes.find((c) => c.id === classId);
+    const cls = $dbStore.classes.find((classItem) => classItem.id === classId);
     return cls ? cls.className : '—';
   }
 
   function getSubjectName(subjectId: string): string {
-    const sub = $dbStore.subjects.find((s) => s.id === subjectId);
+    const sub = $dbStore.subjects.find((subjectItem) => subjectItem.id === subjectId);
     return sub ? sub.name : '—';
   }
 
   function getPackageName(packageId?: string): string {
     if (!packageId) return '—';
-    const pkg = $dbStore.packages.find((p) => p.id === packageId);
+    const pkg = $dbStore.packages.find((packageItem) => packageItem.id === packageId);
     return pkg ? pkg.name : '—';
   }
 
@@ -168,7 +168,7 @@
               <th>Tentor</th>
               <th>Siswa</th>
               <th>Topik</th>
-              <th style="text-align:right">Aksi</th>
+              <th class="text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -191,7 +191,7 @@
             {:else if adminPaginatedAtt.length === 0}
               <tr>
                 <td colspan="5" class="empty py-8 text-center text-muted-fg">
-                  <Icon name="check_circle" size="lg" className="opacity-50 mb-2 block mx-auto text-4xl text-[var(--color-success)]" />
+                  <Icon name="check_circle" size="lg" className="opacity-50 mb-2 block mx-auto text-4xl text-success" />
                   <div class="font-medium">Tidak ada presensi menunggu verifikasi. 👍</div>
                 </td>
               </tr>

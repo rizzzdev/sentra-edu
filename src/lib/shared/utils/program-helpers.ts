@@ -46,13 +46,13 @@ export function getStudentPrograms(
   const studentNameLower = (studentFullName || '').trim().toLowerCase();
 
   // 1. Check Jobs (Lowongan Les)
-  const matchingJobs = database.jobs.filter((job) => {
-    if (job.deletedAt !== null) return false;
-    const matchesId = job.studentId === studentId || (Array.isArray(job.studentIds) && job.studentIds.includes(studentId));
+  const matchingJobs = database.jobs.filter((jobItem) => {
+    if (jobItem.deletedAt !== null) return false;
+    const matchesId = jobItem.studentId === studentId || (Array.isArray(jobItem.studentIds) && jobItem.studentIds.includes(studentId));
     const matchesName = Boolean(
       studentNameLower &&
-      ((job.studentName && job.studentName.toLowerCase() === studentNameLower) ||
-        (Array.isArray(job.studentNames) && job.studentNames.some((name) => name.toLowerCase() === studentNameLower)))
+      ((jobItem.studentName && jobItem.studentName.toLowerCase() === studentNameLower) ||
+        (Array.isArray(jobItem.studentNames) && jobItem.studentNames.some((name) => name.toLowerCase() === studentNameLower)))
     );
     return matchesId || matchesName;
   });
@@ -63,20 +63,20 @@ export function getStudentPrograms(
       processedEnrollmentIds.add(job.enrollmentId);
     }
 
-    const pkg = database.packages.find((p) => p.id === job.packageId);
-    const tentor = job.assignedTentorId ? database.users.find((u) => u.id === job.assignedTentorId) : null;
+    const packagePlan = database.packages.find((packageItem) => packageItem.id === job.packageId);
+    const assignedTentor = job.assignedTentorId ? database.users.find((userItem) => userItem.id === job.assignedTentorId) : null;
 
     // Resolve class names
     const classIds = Array.isArray(job.classIds) && job.classIds.length > 0 ? job.classIds : (job.classId ? [job.classId] : []);
     const classNames = classIds
-      .map((id) => database.classes.find((c) => c.id === id)?.className)
+      .map((classIdentifier) => database.classes.find((classItem) => classItem.id === classIdentifier)?.className)
       .filter((name): name is string => Boolean(name));
     if (classNames.length === 0) classNames.push('Semua Kelas');
 
     // Resolve subject names
     const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
     const subjectNames = subjectIds
-      .map((id) => database.subjects.find((s) => s.id === id)?.name)
+      .map((subjectIdentifier) => database.subjects.find((subjectItem) => subjectItem.id === subjectIdentifier)?.name)
       .filter((name): name is string => Boolean(name));
     if (subjectNames.length === 0) subjectNames.push('Semua Mapel');
 
@@ -85,14 +85,14 @@ export function getStudentPrograms(
     let studentNames = Array.isArray(job.studentNames) && job.studentNames.length > 0 ? job.studentNames : [];
     if (studentNames.length === 0) {
       studentNames = studentIds
-        .map((id) => database.users.find((u) => u.id === id)?.fullName)
+        .map((studentIdentifier) => database.users.find((userItem) => userItem.id === studentIdentifier)?.fullName)
         .filter((name): name is string => Boolean(name));
     }
     if (studentNames.length === 0 && studentFullName) {
       studentNames = [studentFullName];
     }
 
-    const rawMode = (pkg?.mode || job.mode || job.jobMode || 'PRIVATE').toUpperCase();
+    const rawMode = (packagePlan?.mode || job.mode || job.jobMode || 'PRIVATE').toUpperCase();
     const isGroup = rawMode.includes('GROUP') || rawMode.includes('KELOMPOK') || (job.studentCount && job.studentCount > 1) || studentIds.length > 1;
 
     let statusLabel = 'Tersedia';
@@ -117,12 +117,12 @@ export function getStudentPrograms(
       title: job.title || `${classNames.join(', ')} · ${subjectNames.join(', ')}`,
       classNames,
       subjectNames,
-      packageName: pkg?.name || (isGroup ? 'Paket Kelompok' : 'Paket Privat'),
+      packageName: packagePlan?.name || (isGroup ? 'Paket Kelompok' : 'Paket Privat'),
       packageMode: isGroup ? 'KELOMPOK' : 'PRIVAT',
       jobMode: (job.jobMode || job.mode || 'OFFLINE').toUpperCase() === 'ONLINE' ? 'ONLINE' : 'OFFLINE',
       tentorId: job.assignedTentorId,
-      tentorName: tentor?.fullName || '',
-      tentorPhone: tentor?.phone || '',
+      tentorName: assignedTentor?.fullName || '',
+      tentorPhone: assignedTentor?.phone || '',
       studentId: job.studentId,
       studentIds,
       studentNames,
@@ -144,24 +144,24 @@ export function getStudentPrograms(
   }
 
   // 2. Check Enrollments (Direct Enrollments)
-  const matchingEnrollments = database.enrollments.filter((enroll) => {
-    if (enroll.deletedAt !== null) return false;
-    if (processedEnrollmentIds.has(enroll.id)) return false;
-    return enroll.studentId === studentId;
+  const matchingEnrollments = database.enrollments.filter((enrollItem) => {
+    if (enrollItem.deletedAt !== null) return false;
+    if (processedEnrollmentIds.has(enrollItem.id)) return false;
+    return enrollItem.studentId === studentId;
   });
 
   for (const enroll of matchingEnrollments) {
-    const pkg = database.packages.find((p) => p.id === enroll.packageId);
-    const cls = database.classes.find((c) => c.id === enroll.classId);
-    const sub = database.subjects.find((s) => s.id === enroll.subjectId);
-    const tentor = enroll.tentorId ? database.users.find((u) => u.id === enroll.tentorId) : null;
-    const student = database.users.find((u) => u.id === enroll.studentId);
+    const packagePlan = database.packages.find((packageItem) => packageItem.id === enroll.packageId);
+    const classLevel = database.classes.find((classItem) => classItem.id === enroll.classId);
+    const subjectItem = database.subjects.find((subjectEntry) => subjectEntry.id === enroll.subjectId);
+    const assignedTentor = enroll.tentorId ? database.users.find((userItem) => userItem.id === enroll.tentorId) : null;
+    const studentUser = database.users.find((userItem) => userItem.id === enroll.studentId);
 
-    const classNames = cls ? [cls.className] : ['Semua Kelas'];
-    const subjectNames = sub ? [sub.name] : ['Semua Mapel'];
-    const studentNames = student ? [student.fullName] : (studentFullName ? [studentFullName] : ['Siswa']);
+    const classNames = classLevel ? [classLevel.className] : ['Semua Kelas'];
+    const subjectNames = subjectItem ? [subjectItem.name] : ['Semua Mapel'];
+    const studentNames = studentUser ? [studentUser.fullName] : (studentFullName ? [studentFullName] : ['Siswa']);
 
-    const rawMode = (pkg?.mode || 'PRIVATE').toUpperCase();
+    const rawMode = (packagePlan?.mode || 'PRIVATE').toUpperCase();
     const isGroup = rawMode.includes('GROUP') || rawMode.includes('KELOMPOK');
 
     let statusLabel = 'Aktif';
@@ -183,12 +183,12 @@ export function getStudentPrograms(
       title: `${classNames.join(', ')} · ${subjectNames.join(', ')}`,
       classNames,
       subjectNames,
-      packageName: pkg?.name || (isGroup ? 'Paket Kelompok' : 'Paket Privat'),
+      packageName: packagePlan?.name || (isGroup ? 'Paket Kelompok' : 'Paket Privat'),
       packageMode: isGroup ? 'KELOMPOK' : 'PRIVAT',
       jobMode: 'OFFLINE',
       tentorId: enroll.tentorId,
-      tentorName: tentor?.fullName || '',
-      tentorPhone: tentor?.phone || '',
+      tentorName: assignedTentor?.fullName || '',
+      tentorPhone: assignedTentor?.phone || '',
       studentId: enroll.studentId,
       studentIds: [enroll.studentId],
       studentNames,
@@ -214,30 +214,30 @@ export function getStudentPrograms(
  * Returns all active tutoring programs for a parent's children
  */
 export function getParentPrograms(database: DatabaseSchema, parentId: string): UnifiedProgram[] {
-  const children = database.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.waliUserId === parentId);
+  const children = database.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.waliUserId === parentId);
   const allPrograms: UnifiedProgram[] = [];
   const processedProgramIds = new Set<string>();
 
   for (const child of children) {
     const childPrograms = getStudentPrograms(database, child.id, child.fullName);
-    for (const prog of childPrograms) {
-      if (!processedProgramIds.has(prog.id)) {
-        processedProgramIds.add(prog.id);
-        allPrograms.push(prog);
+    for (const programItem of childPrograms) {
+      if (!processedProgramIds.has(programItem.id)) {
+        processedProgramIds.add(programItem.id);
+        allPrograms.push(programItem);
       }
     }
   }
 
   // Also check enrollments directly tagged with waliUserId
-  const directWaliEnrollments = database.enrollments.filter((e) => e.deletedAt === null && e.waliUserId === parentId);
+  const directWaliEnrollments = database.enrollments.filter((enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.waliUserId === parentId);
   for (const enroll of directWaliEnrollments) {
     if (!processedProgramIds.has(enroll.id)) {
-      const student = database.users.find((u) => u.id === enroll.studentId);
-      const studentPrograms = getStudentPrograms(database, enroll.studentId, student?.fullName);
-      for (const prog of studentPrograms) {
-        if (!processedProgramIds.has(prog.id)) {
-          processedProgramIds.add(prog.id);
-          allPrograms.push(prog);
+      const studentUser = database.users.find((userItem) => userItem.id === enroll.studentId);
+      const studentPrograms = getStudentPrograms(database, enroll.studentId, studentUser?.fullName);
+      for (const programItem of studentPrograms) {
+        if (!processedProgramIds.has(programItem.id)) {
+          processedProgramIds.add(programItem.id);
+          allPrograms.push(programItem);
         }
       }
     }
@@ -256,7 +256,7 @@ export function getTutorPrograms(database: DatabaseSchema, tutorId: string): Uni
 
   // 1. Check Jobs assigned to this tutor
   const assignedJobs = database.jobs.filter(
-    (j) => j.deletedAt === null && j.assignedTentorId === tutorId && (j.status === 'ASSIGNED' || j.status === 'AVAILABLE' || j.status === 'NEGOTIATING')
+    (jobItem) => jobItem.deletedAt === null && jobItem.assignedTentorId === tutorId && (jobItem.status === 'ASSIGNED' || jobItem.status === 'AVAILABLE' || jobItem.status === 'NEGOTIATING')
   );
 
   for (const job of assignedJobs) {
@@ -265,20 +265,20 @@ export function getTutorPrograms(database: DatabaseSchema, tutorId: string): Uni
       processedEnrollmentIds.add(job.enrollmentId);
     }
 
-    const pkg = database.packages.find((p) => p.id === job.packageId);
-    const tentor = database.users.find((u) => u.id === tutorId);
+    const packagePlan = database.packages.find((packageItem) => packageItem.id === job.packageId);
+    const assignedTentor = database.users.find((userItem) => userItem.id === tutorId);
 
     // Resolve class names
     const classIds = Array.isArray(job.classIds) && job.classIds.length > 0 ? job.classIds : (job.classId ? [job.classId] : []);
     const classNames = classIds
-      .map((id) => database.classes.find((c) => c.id === id)?.className)
+      .map((classIdentifier) => database.classes.find((classItem) => classItem.id === classIdentifier)?.className)
       .filter((name): name is string => Boolean(name));
     if (classNames.length === 0) classNames.push('Semua Kelas');
 
     // Resolve subject names
     const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
     const subjectNames = subjectIds
-      .map((id) => database.subjects.find((s) => s.id === id)?.name)
+      .map((subjectIdentifier) => database.subjects.find((subjectItem) => subjectItem.id === subjectIdentifier)?.name)
       .filter((name): name is string => Boolean(name));
     if (subjectNames.length === 0) subjectNames.push('Semua Mapel');
 
@@ -287,7 +287,7 @@ export function getTutorPrograms(database: DatabaseSchema, tutorId: string): Uni
     let studentNames = Array.isArray(job.studentNames) && job.studentNames.length > 0 ? job.studentNames : [];
     if (studentNames.length === 0) {
       studentNames = studentIds
-        .map((id) => database.users.find((u) => u.id === id)?.fullName)
+        .map((studentIdentifier) => database.users.find((userItem) => userItem.id === studentIdentifier)?.fullName)
         .filter((name): name is string => Boolean(name));
     }
     if (studentNames.length === 0 && job.studentName) {
@@ -297,7 +297,7 @@ export function getTutorPrograms(database: DatabaseSchema, tutorId: string): Uni
       studentNames = ['Siswa SentraEdu'];
     }
 
-    const rawMode = (pkg?.mode || job.mode || job.jobMode || 'PRIVATE').toUpperCase();
+    const rawMode = (packagePlan?.mode || job.mode || job.jobMode || 'PRIVATE').toUpperCase();
     const isGroup = rawMode.includes('GROUP') || rawMode.includes('KELOMPOK') || (job.studentCount && job.studentCount > 1) || studentIds.length > 1;
 
     let statusLabel = 'Aktif Berjalan';
@@ -316,12 +316,12 @@ export function getTutorPrograms(database: DatabaseSchema, tutorId: string): Uni
       title: job.title || `${classNames.join(', ')} · ${subjectNames.join(', ')}`,
       classNames,
       subjectNames,
-      packageName: pkg?.name || (isGroup ? 'Paket Kelompok' : 'Paket Privat'),
+      packageName: packagePlan?.name || (isGroup ? 'Paket Kelompok' : 'Paket Privat'),
       packageMode: isGroup ? 'KELOMPOK' : 'PRIVAT',
       jobMode: (job.jobMode || job.mode || 'OFFLINE').toUpperCase() === 'ONLINE' ? 'ONLINE' : 'OFFLINE',
       tentorId: tutorId,
-      tentorName: tentor?.fullName || '',
-      tentorPhone: tentor?.phone || '',
+      tentorName: assignedTentor?.fullName || '',
+      tentorPhone: assignedTentor?.phone || '',
       studentId: job.studentId,
       studentIds,
       studentNames,
@@ -344,23 +344,23 @@ export function getTutorPrograms(database: DatabaseSchema, tutorId: string): Uni
 
   // 2. Check Enrollments assigned to this tutor
   const directEnrollments = database.enrollments.filter(
-    (e) => e.deletedAt === null && e.tentorId === tutorId && e.status === 'ACTIVE' && !processedEnrollmentIds.has(e.id)
+    (enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.tentorId === tutorId && enrollmentItem.status === 'ACTIVE' && !processedEnrollmentIds.has(enrollmentItem.id)
   );
 
   for (const enroll of directEnrollments) {
-    const pkg = database.packages.find((p) => p.id === enroll.packageId);
-    const tentor = database.users.find((u) => u.id === tutorId);
-    const student = database.users.find((u) => u.id === enroll.studentId);
+    const packagePlan = database.packages.find((packageItem) => packageItem.id === enroll.packageId);
+    const assignedTentor = database.users.find((userItem) => userItem.id === tutorId);
+    const studentUser = database.users.find((userItem) => userItem.id === enroll.studentId);
 
-    const classLevel = database.classes.find((c) => c.id === enroll.classId);
+    const classLevel = database.classes.find((classItem) => classItem.id === enroll.classId);
     const classNames = [classLevel?.className || 'Semua Kelas'];
 
-    const subject = database.subjects.find((s) => s.id === enroll.subjectId);
-    const subjectNames = [subject?.name || 'Semua Mapel'];
+    const subjectItem = database.subjects.find((subjectEntry) => subjectEntry.id === enroll.subjectId);
+    const subjectNames = [subjectItem?.name || 'Semua Mapel'];
 
-    const studentNames = [student?.fullName || 'Murid'];
+    const studentNames = [studentUser?.fullName || 'Murid'];
 
-    const rawMode = (pkg?.mode || 'PRIVATE').toUpperCase();
+    const rawMode = (packagePlan?.mode || 'PRIVATE').toUpperCase();
     const isGroup = rawMode.includes('GROUP') || rawMode.includes('KELOMPOK');
 
     programs.push({
@@ -369,12 +369,12 @@ export function getTutorPrograms(database: DatabaseSchema, tutorId: string): Uni
       title: `${classNames.join(', ')} · ${subjectNames.join(', ')}`,
       classNames,
       subjectNames,
-      packageName: pkg?.name || (isGroup ? 'Paket Kelompok' : 'Paket Privat'),
+      packageName: packagePlan?.name || (isGroup ? 'Paket Kelompok' : 'Paket Privat'),
       packageMode: isGroup ? 'KELOMPOK' : 'PRIVAT',
       jobMode: 'OFFLINE',
       tentorId: tutorId,
-      tentorName: tentor?.fullName || '',
-      tentorPhone: tentor?.phone || '',
+      tentorName: assignedTentor?.fullName || '',
+      tentorPhone: assignedTentor?.phone || '',
       studentId: enroll.studentId,
       studentIds: [enroll.studentId],
       studentNames,

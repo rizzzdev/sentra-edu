@@ -17,9 +17,9 @@
   export let autocomplete: HTMLInputAttributes['autocomplete'] = undefined;
 
   $: variantClasses = {
-    default: 'bg-[var(--color-surface)] text-[var(--color-fg)] border border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]',
-    filled: 'bg-[var(--color-surface-hover)] text-[var(--color-fg)] border-transparent focus:bg-[var(--color-surface)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]',
-    flush: 'bg-transparent text-[var(--color-fg)] border-b border-[var(--color-border)] rounded-none px-0 focus:border-[var(--color-primary)]'
+    default: 'bg-surface text-fg border border-border focus:border-primary focus:ring-2 focus:ring-primary-soft',
+    filled: 'bg-muted text-fg border-transparent focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary-soft',
+    flush: 'bg-transparent text-fg border-b border-border rounded-none px-0 focus:border-primary'
   }[variant] || '';
 </script>
 
@@ -36,7 +36,7 @@
   {max}
   {autocomplete}
   bind:value
-  class="w-full h-10 px-3 py-2 text-sm rounded-[var(--radius-sm)] outline-none transition-colors duration-150 disabled:opacity-50 disabled:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed {variantClasses} {className}"
+  class="w-full h-10 px-3 py-2 text-sm rounded-xl outline-none transition-colors duration-150 disabled:opacity-50 disabled:bg-muted disabled:cursor-not-allowed {variantClasses} {className}"
   on:input
   on:change
   on:focus

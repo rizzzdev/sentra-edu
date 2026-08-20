@@ -25,18 +25,19 @@
   // Tentor Master Modal State
   let tentorModalOpen: boolean = false;
   let editingTentor: User | null = null;
+  let deleteTentorDialogOpen: boolean = false;
   let deleteTentorId: string | null = null;
 
-  $: allTentors = $dbStore.users.filter((user) => user.deletedAt === null && user.role === 'TENTOR');
+  $: allTentors = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'TENTOR');
 
-  $: filteredTentors = allTentors.filter((tentor) => {
-    const q = searchQuery.toLowerCase();
-    if (!q) return true;
+  $: filteredTentors = allTentors.filter((tentorUser) => {
+    const query = searchQuery.toLowerCase();
+    if (!query) return true;
     return (
-      tentor.fullName.toLowerCase().includes(q) ||
-      tentor.email.toLowerCase().includes(q) ||
-      (tentor.phone || '').toLowerCase().includes(q) ||
-      (tentor.education || '').toLowerCase().includes(q)
+      tentorUser.fullName.toLowerCase().includes(query) ||
+      tentorUser.email.toLowerCase().includes(query) ||
+      (tentorUser.phone || '').toLowerCase().includes(query) ||
+      (tentorUser.education || '').toLowerCase().includes(query)
     );
   });
 
@@ -46,17 +47,18 @@
   function getSubjectNames(subjectIds?: string[]): string {
     if (!subjectIds || subjectIds.length === 0) return '—';
     const names = subjectIds
-      .map((id) => $dbStore.subjects.find((subject) => subject.id === id)?.name)
+      .map((subjectId) => $dbStore.subjects.find((subject) => subject.id === subjectId)?.name)
       .filter(Boolean);
     return names.length > 0 ? names.join(', ') : '—';
   }
 
   function handleConfirmDeleteTentor() {
     if (!deleteTentorId) return;
-    const res = dbStore.deleteTentorMaster(deleteTentorId);
+    const response = dbStore.deleteTentorMaster(deleteTentorId);
+    deleteTentorDialogOpen = false;
     deleteTentorId = null;
-    if (!res.error) toastStore.success(res.message);
-    else toastStore.error(res.message);
+    if (!response.error) toastStore.success(response.message);
+    else toastStore.error(response.message);
   }
 </script>
 
@@ -89,7 +91,7 @@
   <div class="stat">
     <div class="s-icon tone-sky"><Icon name="menu_book" size="lg" /></div>
     <div>
-      <div class="s-val">{allTentors.filter(tentor => (tentor.subjectIds || []).length > 0).length}</div>
+      <div class="s-val">{allTentors.filter((tentorUser) => (tentorUser.subjectIds || []).length > 0).length}</div>
       <div class="s-lbl">Tentor Berkeahlian Pelajaran</div>
     </div>
   </div>
@@ -119,7 +121,7 @@
             <th>Pendidikan / Gelar</th>
             <th>Keahlian Pelajaran</th>
             <th>Tanggal Bergabung</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -186,7 +188,7 @@
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deleteTentorId = tentor.id; }}
+                      on:click={() => { deleteTentorId = tentor.id; deleteTentorDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -206,8 +208,8 @@
         </div>
         <div class="page-btns">
           <button type="button" class="page-btn" disabled={currentPage <= 1} on:click={() => currentPage--}>&laquo;</button>
-          {#each Array.from({ length: totalPagesTentors }, (_, i) => i + 1) as p}
-            <button type="button" class="page-btn {currentPage === p ? 'active' : ''}" on:click={() => { currentPage = p; }}>{p}</button>
+          {#each Array.from({ length: totalPagesTentors }, (_, index) => index + 1) as pageNumber}
+            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" on:click={() => { currentPage = pageNumber; }}>{pageNumber}</button>
           {/each}
           <button type="button" class="page-btn" disabled={currentPage >= totalPagesTentors} on:click={() => currentPage++}>&raquo;</button>
         </div>
@@ -224,11 +226,11 @@
 />
 
 <ConfirmationDialog
-  open={!!deleteTentorId}
+  open={deleteTentorDialogOpen}
   title="Hapus Master Data Tentor"
   message="Apakah Anda yakin ingin menghapus data master tentor ini?"
   confirmText="Hapus"
   confirmVariant="danger"
   onConfirm={handleConfirmDeleteTentor}
-  onCancel={() => { deleteTentorId = null; }}
+  onCancel={() => { deleteTentorDialogOpen = false; deleteTentorId = null; }}
 />

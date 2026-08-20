@@ -1,12 +1,12 @@
 import { writable } from 'svelte/store';
-import type { ComponentType } from 'svelte';
+import type { ComponentType, SvelteComponent } from 'svelte';
 
 export interface ModalConfig {
   title: string;
   icon?: string;
   width?: number;
-  component?: ComponentType<any>;
-  props?: Record<string, any>;
+  component?: ComponentType<SvelteComponent>;
+  props?: Record<string, string | number | boolean | null | undefined | object | Function>;
   onClose?: () => void;
 }
 

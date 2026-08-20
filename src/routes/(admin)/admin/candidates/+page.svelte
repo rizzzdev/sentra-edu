@@ -43,7 +43,7 @@
   let deleteDialogOpen: boolean = false;
   let deletingCandidateId: string | null = null;
 
-  $: allCandidates = $dbStore.candidates.filter((c) => c.deletedAt === null);
+  $: allCandidates = $dbStore.candidates.filter((candidateItem) => candidateItem.deletedAt === null);
 
   const PIPELINE_STATUSES: [string, string][] = [
     ['REGISTERED', 'Pendaftar Baru'],
@@ -59,28 +59,28 @@
   function getSubjectNames(subjectIds?: string[]): string {
     if (!subjectIds || subjectIds.length === 0) return '—';
     return $dbStore.subjects
-      .filter((s) => subjectIds.includes(s.id))
-      .map((s) => s.name)
+      .filter((subjectItem) => subjectIds.includes(subjectItem.id))
+      .map((subjectItem) => subjectItem.name)
       .join(', ') || '—';
   }
 
   function getLevelNames(levelIds?: string[]): string {
     if (!levelIds || levelIds.length === 0) return '—';
     return $dbStore.educationLevels
-      .filter((l) => levelIds.includes(l.id))
-      .map((l) => l.levelName)
+      .filter((levelItem) => levelIds.includes(levelItem.id))
+      .map((levelItem) => levelItem.levelName)
       .join(', ') || '—';
   }
 
-  $: filteredCandidates = allCandidates.filter((c) => {
-    const q = searchQuery.toLowerCase();
-    const subjectsStr = getSubjectNames(c.subjectIds).toLowerCase();
+  $: filteredCandidates = allCandidates.filter((candidateItem) => {
+    const query = searchQuery.toLowerCase();
+    const subjectsStr = getSubjectNames(candidateItem.subjectIds).toLowerCase();
     const matchesSearch =
-      !q ||
-      c.fullName.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q) ||
-      subjectsStr.includes(q);
-    const matchesStatus = !statusFilter || c.status === statusFilter;
+      !query ||
+      candidateItem.fullName.toLowerCase().includes(query) ||
+      candidateItem.email.toLowerCase().includes(query) ||
+      subjectsStr.includes(query);
+    const matchesStatus = !statusFilter || candidateItem.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -218,10 +218,10 @@
   <div class="card-body">
     <div class="chip-row">
       {#each PIPELINE_STATUSES as [statusKey, statusLabel]}
-        {@const count = allCandidates.filter((c) => c.status === statusKey).length}
-        <span style="display:inline-flex;align-items:center;gap:6px;margin:4px 8px 4px 0">
+        {@const count = allCandidates.filter((candidateItem) => candidateItem.status === statusKey).length}
+        <span class="inline-flex items-center gap-1.5 my-1 mr-2">
           <span class="badge {getStatusBadgeClass(statusKey)}">{statusLabel}</span>
-          <span style="font-weight:700;font-size:1.05rem">{count}</span>
+          <span class="font-bold text-base">{count}</span>
         </span>
       {/each}
     </div>
@@ -238,7 +238,7 @@
     placeholder="Semua Status"
     options={[
       { value: '', label: 'Semua Status' },
-      ...PIPELINE_STATUSES.map(([v, l]) => ({ value: v, label: l }))
+      ...PIPELINE_STATUSES.map(([statusKey, statusLabel]) => ({ value: statusKey, label: statusLabel }))
     ]}
     className="max-w-48"
   />
@@ -254,7 +254,7 @@
             <th>Mapel</th>
             <th>Sumber</th>
             <th>Tahap</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -263,16 +263,16 @@
               <td colspan="5" class="empty">Tidak ada kandidat untuk filter ini.</td>
             </tr>
           {:else}
-            {#each paginatedCandidates as c (c.id)}
+            {#each paginatedCandidates as candidateItem (candidateItem.id)}
               <tr>
                 <td>
-                  <strong>{c.fullName}</strong>
-                  <div class="sub">{c.email}</div>
+                  <strong>{candidateItem.fullName}</strong>
+                  <div class="sub">{candidateItem.email}</div>
                 </td>
-                <td>{getSubjectNames(c.subjectIds)}</td>
-                <td>{c.source || '—'}</td>
+                <td>{getSubjectNames(candidateItem.subjectIds)}</td>
+                <td>{candidateItem.source || '—'}</td>
                 <td>
-                  <span class="badge {getStatusBadgeClass(c.status)}">{getStatusLabel(c.status, CANDIDATE_STATUS_LABEL)}</span>
+                  <span class="badge {getStatusBadgeClass(candidateItem.status)}">{getStatusLabel(candidateItem.status, CANDIDATE_STATUS_LABEL)}</span>
                 </td>
                 <td>
                   <div class="actions">
@@ -281,67 +281,67 @@
                       size="sm"
                       className="btn-icon"
                       data-tip="Detail"
-                      on:click={() => { detailCandidate = c; }}
+                      on:click={() => { detailCandidate = candidateItem; }}
                       icon="visibility"
                     />
 
-                    {#if c.status === 'REGISTERED'}
+                    {#if candidateItem.status === 'REGISTERED'}
                       <Button
                         variant="outline"
                         size="sm"
                         className="btn-icon"
                         data-tip="Jadwalkan Tes"
                         on:click={() => {
-                          scheduleTestCand = c;
+                          scheduleTestCand = candidateItem;
                           testDateTime = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
                         }}
                         icon="assignment"
                       />
-                    {:else if c.status === 'TEST_SCHEDULED'}
+                    {:else if candidateItem.status === 'TEST_SCHEDULED'}
                       <Button
                         variant="outline"
                         size="sm"
                         className="btn-icon"
                         data-tip="Catat Tes"
                         on:click={() => {
-                          recordTestCand = c;
+                          recordTestCand = candidateItem;
                           testScore = 85;
                           testNotes = '';
                         }}
                         icon="fact_check"
                       />
-                    {:else if c.status === 'TESTED'}
+                    {:else if candidateItem.status === 'TESTED'}
                       <Button
                         variant="outline"
                         size="sm"
                         className="btn-icon"
                         data-tip="Jadwalkan Wawancara"
                         on:click={() => {
-                          scheduleInterviewCand = c;
+                          scheduleInterviewCand = candidateItem;
                           interviewDateTime = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
                         }}
                         icon="record_voice_over"
                       />
-                    {:else if c.status === 'INTERVIEW_SCHEDULED'}
+                    {:else if candidateItem.status === 'INTERVIEW_SCHEDULED'}
                       <Button
                         variant="outline"
                         size="sm"
                         className="btn-icon"
                         data-tip="Catat Wawancara"
                         on:click={() => {
-                          recordInterviewCand = c;
+                          recordInterviewCand = candidateItem;
                           interviewNotes = '';
                         }}
                         icon="record_voice_over"
                       />
-                    {:else if c.status === 'INTERVIEWED'}
+                    {:else if candidateItem.status === 'INTERVIEWED'}
                       <Button
                         variant="outline"
                         size="sm"
                         className="btn-icon"
                         data-tip="Terima"
                         on:click={() => {
-                          acceptCand = c;
+                          acceptCand = candidateItem;
                           initialPassword = 'tentor123';
                         }}
                         icon="how_to_reg"
@@ -352,7 +352,7 @@
                         className="btn-icon"
                         data-tip="Tolak"
                         on:click={() => {
-                          rejectCand = c;
+                          rejectCand = candidateItem;
                           rejectionReason = '';
                         }}
                         icon="close"
@@ -365,7 +365,7 @@
                       className="btn-icon"
                       data-tip="Ubah"
                       on:click={() => {
-                        editingCandidate = c;
+                        editingCandidate = candidateItem;
                         candidateModalOpen = true;
                       }}
                       icon="edit"
@@ -376,7 +376,7 @@
                       className="btn-icon"
                       data-tip="Hapus"
                       on:click={() => {
-                        deletingCandidateId = c.id;
+                        deletingCandidateId = candidateItem.id;
                         deleteDialogOpen = true;
                       }}
                       icon="delete"
@@ -404,13 +404,13 @@
           >
             &laquo;
           </Button>
-          {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+          {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
             <Button
-              variant={currentPage === p ? 'primary' : 'outline'}
+              variant={currentPage === pageNumber ? 'primary' : 'outline'}
               className="page-btn"
-              on:click={() => { currentPage = p; }}
+              on:click={() => { currentPage = pageNumber; }}
             >
-              {p}
+              {pageNumber}
             </Button>
           {/each}
           <Button
@@ -463,7 +463,7 @@
 <!-- Schedule Test Modal -->
 {#if scheduleTestCand}
   <Modal open={true} onClose={() => { scheduleTestCand = null; }} title="Jadwalkan Tes" icon="assignment" maxWidth="480px">
-    <div class="alert alert-info" style="margin-top:-4px">
+    <div class="alert alert-info -mt-1">
       <Icon name="info" size="sm" />
       <span>Tes mengajar / mapel untuk menilai penguasaan materi kandidat.</span>
     </div>
@@ -543,7 +543,7 @@
 <!-- Accept Candidate Modal -->
 {#if acceptCand}
   <Modal open={true} onClose={() => { acceptCand = null; }} title="Terima Kandidat" icon="how_to_reg" maxWidth="520px">
-    <div class="alert alert-info" style="margin-top:-4px">
+    <div class="alert alert-info -mt-1">
       <Icon name="auto_awesome" size="sm" />
       <span>Kandidat diterima &rarr; akun <strong>Tentor</strong> otomatis dibuat dengan email <strong>{acceptCand.email}</strong>. Ia bisa langsung login & melihat feed lowongan.</span>
     </div>

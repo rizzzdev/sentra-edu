@@ -15,12 +15,12 @@
   let rejectionModalOpen: boolean = false;
   let rejectionReason: string = '';
 
-  $: enrollment = attendance ? $dbStore.enrollments.find((e) => e.id === attendance?.enrollmentId) : null;
-  $: student = enrollment ? $dbStore.users.find((u) => u.id === enrollment?.studentId) : null;
-  $: tentor = attendance ? $dbStore.users.find((u) => u.id === attendance?.tentorId) : null;
-  $: subject = enrollment ? $dbStore.subjects.find((s) => s.id === enrollment?.subjectId) : null;
-  $: cls = enrollment ? $dbStore.classes.find((c) => c.id === enrollment?.classId) : null;
-  $: pkg = enrollment ? $dbStore.packages.find((p) => p.id === enrollment?.packageId) : null;
+  $: enrollment = attendance ? $dbStore.enrollments.find((enrollmentItem) => enrollmentItem.id === attendance?.enrollmentId) : null;
+  $: student = enrollment ? $dbStore.users.find((userItem) => userItem.id === enrollment?.studentId) : null;
+  $: tentor = attendance ? $dbStore.users.find((userItem) => userItem.id === attendance?.tentorId) : null;
+  $: subject = enrollment ? $dbStore.subjects.find((subjectItem) => subjectItem.id === enrollment?.subjectId) : null;
+  $: cls = enrollment ? $dbStore.classes.find((classItem) => classItem.id === enrollment?.classId) : null;
+  $: pkg = enrollment ? $dbStore.packages.find((packageItem) => packageItem.id === enrollment?.packageId) : null;
 
   function handleApprove() {
     if (!attendance) return;

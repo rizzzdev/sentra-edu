@@ -10,7 +10,10 @@ This project follows strict guidelines extracted from the Master Product Require
 - **DRY (Don't Repeat Yourself)**: Re-use atomic components, centralize Zod validation schemas, and group CSS utilities.
 - **Strict Naming Conventions**: 
   - **Files & Folders**: MUST use `kebab-case` in English (e.g., `order-management/`, `data-table.svelte`).
-  - **Variables/Functions**: MUST use Meaningful Names. DO NOT use single-letter variables (`u.id` or `e` are strictly forbidden, use `user.id` or `error`).
+  - **Variables/Functions**: MUST use Meaningful Names. DO NOT use single-letter variables (`u.id`, `e`, `j`, `p`, etc. are strictly forbidden, use `user.id`, `error`, `jobItem`, `programItem`).
+- **Strict Typing (Zero `any` & Zero `unknown`)**: 
+  - `any` and `unknown` are strictly forbidden.
+  - Every variable, prop, API response, function parameter, and return value MUST have an explicit TypeScript type or interface.
 - **Zero Build Error Standard**: Strict TypeScript must be maintained. Code must pass `svelte-check` and `tsc --noEmit` with zero warnings or errors.
 
 ## 2. Tech Stack

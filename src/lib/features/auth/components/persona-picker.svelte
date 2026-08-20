@@ -62,28 +62,28 @@
 </script>
 
 <div class="space-y-2.5">
-  <div class="flex items-center gap-3 my-4 text-xs font-bold text-[var(--color-fg-muted)] select-none">
-    <span class="flex-1 h-px bg-[var(--color-border)]"></span>
+  <div class="flex items-center gap-3 my-4 text-xs font-bold text-muted-fg select-none">
+    <span class="flex-1 h-px bg-border"></span>
     <span>ATAU MASUK CEPAT SEBAGAI</span>
-    <span class="flex-1 h-px bg-[var(--color-border)]"></span>
+    <span class="flex-1 h-px bg-border"></span>
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
     {#each personaList as persona}
       <button
         type="button"
-        class="flex flex-col items-start p-3 text-left bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-sm)] hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-soft)]/30 transition-all duration-150 cursor-pointer group"
+        class="flex flex-col items-start p-3 text-left bg-surface border border-border rounded-xl hover:border-primary hover:bg-primary-soft/30 transition-all duration-150 cursor-pointer group"
         on:click={() => handlePersonaSelect(persona.email)}
       >
         <div class="flex items-center gap-2 mb-1">
-          <div class="flex items-center justify-center w-7 h-7 rounded-[var(--radius-xs)] border {persona.toneColor}">
+          <div class="flex items-center justify-center w-7 h-7 rounded-lg border {persona.toneColor}">
             <Icon name={persona.icon} size="xs" filled={true} />
           </div>
-          <span class="font-bold text-xs text-[var(--color-fg)] group-hover:text-[var(--color-primary)] transition-colors">
+          <span class="font-bold text-xs text-fg group-hover:text-primary transition-colors">
             {persona.label}
           </span>
         </div>
-        <span class="text-[11px] text-[var(--color-fg-muted)] leading-tight line-clamp-2">
+        <span class="text-xs text-muted-fg leading-tight line-clamp-2">
           {persona.description}
         </span>
       </button>

@@ -12,9 +12,9 @@
   });
 </script>
 
-<div class="flex items-center justify-center min-h-screen bg-[var(--color-bg)]">
+<div class="flex items-center justify-center min-h-screen bg-bg">
   <div class="animate-pulse flex flex-col items-center gap-3">
-    <img src="/logo-sentraedu.jpg" alt="SentraEdu" class="w-12 h-12 rounded-[var(--radius-sm)] shadow-md" />
-    <span class="text-sm font-semibold text-[var(--color-fg-muted)]">Memuat SentraEdu...</span>
+    <img src="/logo-sentraedu.jpg" alt="SentraEdu" class="w-12 h-12 rounded-xl shadow-md object-cover" />
+    <span class="text-sm font-semibold text-muted-fg">Memuat SentraEdu...</span>
   </div>
 </div>

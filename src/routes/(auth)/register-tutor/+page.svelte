@@ -32,7 +32,7 @@
 
   function toggleSubject(id: string) {
     if (selectedSubjectIds.includes(id)) {
-      selectedSubjectIds = selectedSubjectIds.filter((s) => s !== id);
+      selectedSubjectIds = selectedSubjectIds.filter((subjectId) => subjectId !== id);
     } else {
       selectedSubjectIds = [...selectedSubjectIds, id];
     }
@@ -78,25 +78,24 @@
   }
 </script>
 
-<div class="auth-page">
-  <div class="auth-card" style="max-width:540px">
+<div class="flex min-h-screen items-center justify-center p-6 sm:p-8 bg-bg">
+  <div class="w-full max-w-lg bg-surface border border-border rounded-2xl shadow-md p-8">
 
     <!-- Brand Header -->
-    <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;margin-bottom:16px">
+    <div class="flex items-center gap-2.5 font-extrabold text-lg mb-4">
       <img
-        class="logo"
+        class="w-9 h-9 rounded-xl object-cover"
         src="/logo-sentraedu.jpg"
         alt="SentraEdu"
-        style="width:36px;height:36px;border-radius:11px;object-fit:cover"
       />
-      <span class="brand-name">
-        <span style="color:var(--primary)">Sentra</span><span style="color:var(--accent)">Edu</span>
+      <span class="brand-name font-extrabold">
+        <span class="text-primary">Sentra</span><span class="text-accent">Edu</span>
       </span>
     </div>
 
     <!-- Title & Theme Toggle -->
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <h1 style="font-size:1.25rem;display:flex;align-items:center;gap:8px">
+    <div class="flex items-center justify-between gap-3">
+      <h1 class="text-xl font-bold flex items-center gap-2">
         <Icon name="school" filled={true} />
         {tokenValidation.magicLink?.title || 'Pendaftaran Tentor / Mentor Baru'}
       </h1>
@@ -110,7 +109,7 @@
       />
     </div>
 
-    <p style="color:var(--muted-fg);font-size:.9rem;margin:6px 0 18px">
+    <p class="text-muted-fg text-sm my-2 mb-4.5">
       Lengkapi formulir 2 langkah di bawah ini untuk bergabung sebagai tentor.
     </p>
 
@@ -121,20 +120,20 @@
           <Icon name="check_circle" size="xl" />
         </div>
         <div>
-          <h2 style="font-size:1.3rem;font-weight:800">Pendaftaran Tentor Berhasil!</h2>
-          <p style="color:var(--muted-fg);font-size:.9rem;margin-top:6px">
+          <h2 class="text-xl font-extrabold">Pendaftaran Tentor Berhasil!</h2>
+          <p class="text-muted-fg text-sm mt-1.5">
             Selamat <strong>{createdTentor.fullName}</strong>! Akun Anda telah berhasil dibuat.
-            <br/><span style="color:var(--warn);font-weight:600">Akun sedang dalam proses verifikasi oleh admin. Anda akan menerima notifikasi setelah akun aktif.</span>
+            <br/><span class="text-warn font-semibold">Akun sedang dalam proses verifikasi oleh admin. Anda akan menerima notifikasi setelah akun aktif.</span>
           </p>
         </div>
 
-        <div style="width:100%;padding:14px;background:var(--primary-soft);border-radius:12px;text-align:left;margin:8px 0">
-          <div style="display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.78rem">
+        <div class="w-full p-3.5 bg-primary-soft rounded-xl text-left my-2">
+          <div class="flex items-center gap-1.5 text-primary font-bold text-xs">
             <Icon name="badge" size="sm" /> Detail Akun Tentor / Mentor
           </div>
-          <div style="font-weight:700;font-size:.88rem;margin-top:4px">{createdTentor.fullName}</div>
-          <div style="color:var(--muted-fg);font-size:.78rem;font-family:monospace">{createdTentor.email}</div>
-          <div style="color:var(--primary);font-size:.74rem;font-weight:600;margin-top:4px">Peran: TENTOR / MENTOR</div>
+          <div class="font-bold text-sm mt-1">{createdTentor.fullName}</div>
+          <div class="text-muted-fg text-xs font-mono">{createdTentor.email}</div>
+          <div class="text-primary text-xs font-semibold mt-1">Peran: TENTOR / MENTOR</div>
         </div>
 
         <Button
@@ -162,8 +161,8 @@
           <Icon name="history_toggle_off" size="xl" />
         </div>
         <div>
-          <h2 style="font-size:1.15rem;font-weight:700;color:var(--danger)">Magic Link Tentor Tidak Valid / Kadaluarsa</h2>
-          <p style="color:var(--muted-fg);font-size:.88rem;margin-top:6px">
+          <h2 class="text-lg font-bold text-danger">Magic Link Tentor Tidak Valid / Kadaluarsa</h2>
+          <p class="text-muted-fg text-sm mt-1.5">
             {tokenValidation.message}
           </p>
         </div>
@@ -178,14 +177,14 @@
 
     {:else}
       <!-- NUMBERED CIRCLE STEPPER -->
-      <div style="display:flex;align-items:center;justify-content:center;max-width:320px;margin:0 auto 28px">
-        <div style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:2px solid {currentStep >= 1 ? 'var(--primary)' : 'var(--border)'};font-weight:800;font-size:1.1rem;transition:all .15s;{currentStep >= 1 ? 'color:var(--primary);background:var(--surface);box-shadow:0 0 0 4px rgba(37,99,235,.1)' : 'color:var(--muted-fg);background:var(--muted)'}">
+      <div class="flex items-center justify-center max-w-xs mx-auto mb-7">
+        <div class="flex items-center justify-center w-11 h-11 rounded-full border-2 font-extrabold text-lg transition-all {currentStep >= 1 ? 'border-primary text-primary bg-surface shadow-sm ring-4 ring-primary/10' : 'border-border text-muted-fg bg-muted'}">
           1
         </div>
 
-        <div style="flex:1;height:2px;margin:0 12px;background:{currentStep >= 2 ? 'var(--primary)' : 'var(--border)'};transition:background .15s"></div>
+        <div class="flex-1 h-0.5 mx-3 transition-colors {currentStep >= 2 ? 'bg-primary' : 'bg-border'}"></div>
 
-        <div style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:2px solid {currentStep === 2 ? 'var(--primary)' : 'var(--border)'};font-weight:800;font-size:1.1rem;transition:all .15s;{currentStep === 2 ? 'color:var(--primary);background:var(--surface);box-shadow:0 0 0 4px rgba(37,99,235,.1)' : 'color:var(--muted-fg);background:var(--muted)'}">
+        <div class="flex items-center justify-center w-11 h-11 rounded-full border-2 font-extrabold text-lg transition-all {currentStep === 2 ? 'border-primary text-primary bg-surface shadow-sm ring-4 ring-primary/10' : 'border-border text-muted-fg bg-muted'}">
           2
         </div>
       </div>
@@ -193,9 +192,9 @@
       {#if currentStep === 1}
         <!-- STEP 1: DATA DIRI & AKUN TENTOR -->
         <form on:submit|preventDefault={handleNextToStep2} novalidate>
-          <div style="padding-bottom:8px;margin-bottom:12px;border-bottom:1px solid var(--border)">
-            <h3 style="font-size:1.05rem;font-weight:700">Langkah 1: Data Diri & Akun Tentor.</h3>
-            <p style="color:var(--muted-fg);font-size:.82rem;margin-top:2px">Isi rincian informasi calon pengajar / mentor.</p>
+          <div class="pb-2 mb-3 border-b border-border">
+            <h3 class="text-base font-bold">Langkah 1: Data Diri & Akun Tentor.</h3>
+            <p class="text-muted-fg text-xs mt-0.5">Isi rincian informasi calon pengajar / mentor.</p>
           </div>
 
           <div class="field">
@@ -254,22 +253,24 @@
           </div>
 
           {#if errorMessage}
-            <div class="form-error" style="display:block">
+            <div class="form-error block">
               {errorMessage}
             </div>
           {/if}
 
-          <Button type="submit" variant="primary" fullWidth icon="arrow_forward" style="margin-top:12px">
-            SELANJUTNYA
-          </Button>
+          <div class="mt-3">
+            <Button type="submit" variant="primary" fullWidth icon="arrow_forward">
+              SELANJUTNYA
+            </Button>
+          </div>
         </form>
 
       {:else}
         <!-- STEP 2: KEAHLIAN MENGAJAR & ALAMAT -->
         <form on:submit|preventDefault={handleRegister} novalidate>
-          <div style="padding-bottom:8px;margin-bottom:12px;border-bottom:1px solid var(--border)">
-            <h3 style="font-size:1.05rem;font-weight:700">Langkah 2: Keahlian Pelajaran & Alamat.</h3>
-            <p style="color:var(--muted-fg);font-size:.82rem;margin-top:2px">Pilih mata pelajaran yang Anda kuasai untuk mengajar.</p>
+          <div class="pb-2 mb-3 border-b border-border">
+            <h3 class="text-base font-bold">Langkah 2: Keahlian Pelajaran & Alamat.</h3>
+            <p class="text-muted-fg text-xs mt-0.5">Pilih mata pelajaran yang Anda kuasai untuk mengajar.</p>
           </div>
 
           <div class="field">
@@ -279,7 +280,7 @@
               multiple
               bind:value={selectedSubjectIds}
               placeholder="Pilih mata pelajaran yang dikuasai..."
-              options={$dbStore.subjects.map((s) => ({ value: s.id, label: s.name }))}
+              options={$dbStore.subjects.map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))}
             />
           </div>
 
@@ -294,12 +295,12 @@
           </div>
 
           {#if errorMessage}
-            <div class="form-error" style="display:block">
+            <div class="form-error block">
               {errorMessage}
             </div>
           {/if}
 
-          <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+          <div class="flex items-center gap-2.5 mt-3.5">
             <Button
               variant="outline"
               isIconOnly

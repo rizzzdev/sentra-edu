@@ -9,10 +9,10 @@
 
 <div class="flex flex-col gap-1.5 {className}">
   {#if label}
-    <label for={htmlFor} class="text-xs font-bold uppercase tracking-wider text-[var(--color-fg-muted)]">
+    <label for={htmlFor} class="text-xs font-bold uppercase tracking-wider text-muted-fg">
       {label}
       {#if required}
-        <span class="text-[var(--color-destructive)] font-bold ml-0.5">*</span>
+        <span class="text-danger font-bold ml-0.5">*</span>
       {/if}
     </label>
   {/if}
@@ -20,8 +20,8 @@
   <slot />
 
   {#if error}
-    <p class="text-xs font-medium text-[var(--color-destructive)] mt-0.5">{error}</p>
+    <p class="text-xs font-medium text-danger mt-0.5">{error}</p>
   {:else if helper}
-    <p class="text-xs text-[var(--color-fg-muted)] mt-0.5">{helper}</p>
+    <p class="text-xs text-muted-fg mt-0.5">{helper}</p>
   {/if}
 </div>

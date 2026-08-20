@@ -80,8 +80,8 @@
     currentPage * itemsPerPage
   );
 
-  $: privateCount = allPrograms.filter((p) => p.packageMode === 'PRIVAT').length;
-  $: groupCount = allPrograms.filter((p) => p.packageMode === 'KELOMPOK').length;
+  $: privateCount = allPrograms.filter((programItem) => programItem.packageMode === 'PRIVAT').length;
+  $: groupCount = allPrograms.filter((programItem) => programItem.packageMode === 'KELOMPOK').length;
   $: hasActiveFilter = Boolean(searchQuery || (modeFilter && modeFilter !== 'ALL') || (typeFilter && typeFilter !== 'ALL') || (statusFilter && statusFilter !== 'ALL'));
 
   function handleResetFilters() {
@@ -208,7 +208,7 @@
               <th>Tentor Pengajar</th>
               <th>Jadwal Belajar</th>
               <th>Status</th>
-              <th style="text-align:right">Aksi</th>
+              <th class="text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -220,7 +220,7 @@
                   <td><Skeleton width="w-28" height="h-4" /></td>
                   <td><Skeleton width="w-32" height="h-4" /></td>
                   <td><Skeleton width="w-20" height="h-6" className="rounded-full" /></td>
-                  <td style="text-align:right"><Skeleton width="w-16" height="h-8" className="ml-auto rounded-md" /></td>
+                  <td class="text-right"><Skeleton width="w-16" height="h-8" className="ml-auto rounded-md" /></td>
                 </tr>
               {/each}
             {:else if filteredPrograms.length === 0}
@@ -267,7 +267,7 @@
                         href="https://wa.me/{prog.tentorPhone.replace(/[^0-9]/g, '')}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="wa-link"
+                        class="inline-flex items-center gap-1 text-xs text-success font-semibold mt-0.5 hover:underline"
                         title="Hubungi Tentor via WhatsApp"
                       >
                         <Icon name="chat" size="xs" /> WA
@@ -344,20 +344,3 @@
     {/if}
   </div>
 </div>
-
-<style>
-  .wa-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 0.72rem;
-    color: var(--success);
-    font-weight: 600;
-    margin-top: 2px;
-    text-decoration: none;
-  }
-
-  .wa-link:hover {
-    text-decoration: underline;
-  }
-</style>

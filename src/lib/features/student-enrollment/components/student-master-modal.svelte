@@ -21,7 +21,7 @@
   let address: string = '';
   let waliUserId: string = '';
 
-  $: waliList = $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'WALI_MURID');
+  $: waliList = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'WALI_MURID');
 
   $: if (open) {
     if (editingStudent) {
@@ -64,9 +64,9 @@
       } else {
         toastStore.error(response.message);
       }
-    } catch (err) {
-      if (err instanceof ZodError) {
-        toastStore.error(err.errors[0].message);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        toastStore.error(error.errors[0].message);
       } else {
         toastStore.error('Terjadi kesalahan validasi data.');
       }
@@ -131,7 +131,7 @@
           id="sm-wali"
           bind:value={waliUserId}
           placeholder="-- Tanpa Wali / Belum Ditautkan --"
-          options={waliList.map((w) => ({ value: w.id, label: `${w.fullName} (${w.phone || w.email})` }))}
+          options={waliList.map((waliUser) => ({ value: waliUser.id, label: `${waliUser.fullName} (${waliUser.phone || waliUser.email})` }))}
         />
       </div>
     </div>
@@ -146,7 +146,7 @@
       />
     </div>
 
-    <div class="modal-foot" style="padding: 14px 0 0; border-top: none;">
+    <div class="modal-foot pt-3.5 border-t-0">
       <Button variant="outline" on:click={onClose}>
         Batal
       </Button>

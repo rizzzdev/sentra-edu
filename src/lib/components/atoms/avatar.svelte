@@ -19,7 +19,7 @@
 </script>
 
 <div
-  class="flex items-center justify-center font-bold select-none rounded-[var(--radius-sm)] bg-[var(--color-primary-soft)] text-[var(--color-primary)] border border-[var(--color-primary-soft-hover)] {sizeClassMap[size]} {className}"
+  class="flex items-center justify-center font-bold select-none rounded-xl bg-primary-soft text-primary border border-primary/20 {sizeClassMap[size]} {className}"
   title={name}
 >
   {initials}

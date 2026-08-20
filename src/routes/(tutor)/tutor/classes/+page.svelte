@@ -10,12 +10,12 @@
   import { onMount } from 'svelte';
 
   $: currentUser = $authStore;
-  let isLoading = true;
-  let searchQuery = '';
-  let statusFilter = '';
-  let modeFilter = '';
-  let currentPage = 1;
-  const itemsPerPage = 10;
+  let isLoading: boolean = true;
+  let searchQuery: string = '';
+  let statusFilter: string = '';
+  let modeFilter: string = '';
+  let currentPage: number = 1;
+  const itemsPerPage: number = 10;
 
   onMount(() => {
     setTimeout(() => { isLoading = false; }, 300);
@@ -25,22 +25,22 @@
     ? getTutorPrograms($dbStore, currentUser.id)
     : [];
 
-  $: filteredPrograms = allPrograms.filter((p) => {
+  $: filteredPrograms = allPrograms.filter((programItem) => {
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchSubject = p.subjectNames.some((s) => s.toLowerCase().includes(q));
-      const matchStudent = p.studentNames.some((st) => st.toLowerCase().includes(q));
-      const matchClass = p.classNames.some((c) => c.toLowerCase().includes(q));
-      const matchTitle = p.title.toLowerCase().includes(q);
-      const matchLocation = p.location.toLowerCase().includes(q);
+      const query = searchQuery.toLowerCase();
+      const matchSubject = programItem.subjectNames.some((subjectName) => subjectName.toLowerCase().includes(query));
+      const matchStudent = programItem.studentNames.some((studentName) => studentName.toLowerCase().includes(query));
+      const matchClass = programItem.classNames.some((className) => className.toLowerCase().includes(query));
+      const matchTitle = programItem.title.toLowerCase().includes(query);
+      const matchLocation = programItem.location.toLowerCase().includes(query);
       if (!matchSubject && !matchStudent && !matchClass && !matchTitle && !matchLocation) return false;
     }
     if (statusFilter) {
-      if (statusFilter === 'AKTIF' && p.status !== 'ASSIGNED') return false;
-      if (statusFilter === 'MENUNGGU' && p.status !== 'AVAILABLE' && p.status !== 'NEGOTIATING') return false;
+      if (statusFilter === 'AKTIF' && programItem.status !== 'ASSIGNED') return false;
+      if (statusFilter === 'MENUNGGU' && programItem.status !== 'AVAILABLE' && programItem.status !== 'NEGOTIATING') return false;
     }
     if (modeFilter) {
-      if (modeFilter !== p.packageMode) return false;
+      if (modeFilter !== programItem.packageMode) return false;
     }
     return true;
   });
@@ -101,7 +101,7 @@
             <th>Mata Pelajaran</th>
             <th>Jadwal Belajar</th>
             <th>Murid & Status</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -138,35 +138,35 @@
               </td>
             </tr>
           {:else}
-            {#each paginatedPrograms as prog (prog.id)}
+            {#each paginatedPrograms as programItem (programItem.id)}
               <tr>
                 <td>
-                  <strong>{prog.title}</strong>
+                  <strong>{programItem.title}</strong>
                   <div class="sub">
-                    <span class="badge {prog.jobMode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
-                      {prog.jobMode === 'ONLINE' ? 'Online' : 'Offline'}
+                    <span class="badge {programItem.jobMode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
+                      {programItem.jobMode === 'ONLINE' ? 'Online' : 'Offline'}
                     </span>
-                    <span class="badge {prog.packageMode === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
-                      {prog.packageMode === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
+                    <span class="badge {programItem.packageMode === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
+                      {programItem.packageMode === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
                     </span>
                   </div>
                 </td>
                 <td>
                   <div class="flex flex-col gap-1 items-start">
-                    {#each prog.classNames as cls}
+                    {#each programItem.classNames as className}
                       <span class="badge b-neutral text-xs">
                         <Icon name="stairs" size="xs" />
-                        {cls}
+                        {className}
                       </span>
                     {/each}
                   </div>
                 </td>
                 <td>
                   <div class="flex flex-col gap-1 items-start">
-                    {#each prog.subjectNames as sub}
+                    {#each programItem.subjectNames as subjectName}
                       <span class="badge b-sky text-xs">
                         <Icon name="menu_book" size="xs" />
-                        {sub}
+                        {subjectName}
                       </span>
                     {/each}
                   </div>
@@ -174,42 +174,40 @@
                 <td>
                   <div class="flex flex-col gap-1.5 items-start">
                     <div class="flex items-center gap-1 flex-wrap">
-                      {#each getScheduleDaysList(prog.scheduleDays) as day}
+                      {#each getScheduleDaysList(programItem.scheduleDays) as day}
                         <span class="badge b-neutral text-xs font-semibold">
                           <Icon name="calendar_today" size="xs" />
                           {day}
                         </span>
                       {/each}
                     </div>
-                    <div class="sub">{prog.scheduleTime || '—'}{#if prog.scheduleEndTime} – {prog.scheduleEndTime}{/if} WIB</div>
+                    <div class="sub">{programItem.scheduleTime || '—'}{#if programItem.scheduleEndTime} – {programItem.scheduleEndTime}{/if} WIB</div>
                   </div>
                 </td>
                 <td>
-                  <div class="flex flex-col gap-1 items-start">
-                    <span class="badge {prog.statusBadgeClass}">
-                      {#if prog.status === 'ASSIGNED'}
-                        <Icon name="check_circle" size="xs" />
-                      {:else if prog.status === 'AVAILABLE'}
-                        <Icon name="event_available" size="xs" />
-                      {:else if prog.status === 'NEGOTIATING'}
-                        <Icon name="handshake" size="xs" />
-                      {:else if prog.status === 'CANCELLED'}
-                        <Icon name="cancel" size="xs" />
-                      {/if}
-                      {prog.statusLabel}
-                    </span>
-                    {#if prog.studentNames.length > 0}
-                      <div class="text-xs font-medium text-fg flex items-center gap-1 mt-0.5">
-                        <Icon name="person" size="xs" />
-                        <span>{prog.studentNames.join(', ')}</span>
-                      </div>
+                  <span class="badge {programItem.statusBadgeClass}">
+                    {#if programItem.status === 'ASSIGNED'}
+                      <Icon name="check_circle" size="xs" />
+                    {:else if programItem.status === 'AVAILABLE'}
+                      <Icon name="event_available" size="xs" />
+                    {:else if programItem.status === 'NEGOTIATING'}
+                      <Icon name="handshake" size="xs" />
+                    {:else if programItem.status === 'CANCELLED'}
+                      <Icon name="cancel" size="xs" />
                     {/if}
-                  </div>
+                    {programItem.statusLabel}
+                  </span>
+                  {#if programItem.studentNames.length > 0}
+                    <div class="text-xs font-medium text-fg flex items-center gap-1 mt-0.5">
+                      <Icon name="person" size="xs" />
+                      <span>{programItem.studentNames.join(', ')}</span>
+                    </div>
+                  {/if}
                 </td>
                 <td>
                   <div class="actions">
                     <a
-                      href="/tutor/classes/{prog.id}"
+                      href="/tutor/classes/{programItem.id}"
                       class="btn-icon"
                       data-tip="Detail"
                     >
@@ -228,7 +226,7 @@
       {currentPage}
       totalItems={filteredPrograms.length}
       {itemsPerPage}
-      onPageChange={(p) => { currentPage = p; }}
+      onPageChange={(pageNumber) => { currentPage = pageNumber; }}
     />
   </div>
 </div>

@@ -35,7 +35,7 @@
   <div class="flex items-center justify-center min-h-screen bg-bg">
     <div class="flex flex-col items-center gap-4 text-muted-fg">
       <Icon name="progress_activity" size="lg" className="animate-spin" />
-      <span class="text-[0.88rem]">Memuat data dari server...</span>
+      <span class="text-sm">Memuat data dari server...</span>
     </div>
   </div>
 {:else if $authStore}
@@ -50,7 +50,7 @@
   <div class="flex items-center justify-center min-h-screen bg-bg">
     <div class="flex flex-col items-center gap-4 text-muted-fg">
       <Icon name="progress_activity" size="lg" className="animate-spin" />
-      <span class="text-[0.88rem]">Mengalihkan ke halaman masuk...</span>
+      <span class="text-sm">Mengalihkan ke halaman masuk...</span>
     </div>
   </div>
 {/if}

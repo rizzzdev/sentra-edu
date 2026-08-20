@@ -205,7 +205,7 @@
             <th>Kontak & Telepon</th>
             <th>Peran</th>
             <th>Status Akun</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>

@@ -17,23 +17,23 @@
   let deleteDialogOpen: boolean = false;
   let deletingClassId: string | null = null;
 
-  $: allLevels = $dbStore.educationLevels.filter((l) => l.deletedAt === null);
+  $: allLevels = $dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null);
 
   $: levelFilterOptions = [
     { value: '', label: 'Semua Jenjang' },
-    ...allLevels.map((l) => ({ value: l.id, label: l.levelName }))
+    ...allLevels.map((levelItem) => ({ value: levelItem.id, label: levelItem.levelName }))
   ];
 
-  $: allClasses = $dbStore.classes.filter((c) => c.deletedAt === null);
+  $: allClasses = $dbStore.classes.filter((classItem) => classItem.deletedAt === null);
 
-  $: filteredClasses = allClasses.filter((c) => {
-    if (levelFilter && c.educationLevelId !== levelFilter) return false;
+  $: filteredClasses = allClasses.filter((classItem) => {
+    if (levelFilter && classItem.educationLevelId !== levelFilter) return false;
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase();
       return (
-        c.className.toLowerCase().includes(q) ||
-        (c.description || '').toLowerCase().includes(q) ||
-        getLevelName(c.educationLevelId).toLowerCase().includes(q)
+        classItem.className.toLowerCase().includes(query) ||
+        (classItem.description || '').toLowerCase().includes(query) ||
+        getLevelName(classItem.educationLevelId).toLowerCase().includes(query)
       );
     }
     return true;
@@ -46,7 +46,7 @@
   $: totalPages = Math.max(1, Math.ceil(filteredClasses.length / itemsPerPage));
 
   function getLevelName(levelId: string): string {
-    return $dbStore.educationLevels.find((l) => l.id === levelId)?.levelName || '—';
+    return $dbStore.educationLevels.find((levelItem) => levelItem.id === levelId)?.levelName || '—';
   }
 
   function formatCurrency(amount: number): string {
@@ -54,7 +54,7 @@
   }
 
   function getStudentCount(classId: string): number {
-    return $dbStore.enrollments.filter((e) => e.deletedAt === null && e.classId === classId).length;
+    return $dbStore.enrollments.filter((enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.classId === classId).length;
   }
 
   function handleOpenCreate() {
@@ -62,8 +62,8 @@
     classModalOpen = true;
   }
 
-  function handleOpenEdit(cls: ClassLevel) {
-    editingClass = cls;
+  function handleOpenEdit(classItem: ClassLevel) {
+    editingClass = classItem;
     classModalOpen = true;
   }
 
@@ -114,7 +114,7 @@
             <th class="num">Tarif/90min</th>
             <th class="num">Siswa Aktif</th>
             <th>Deskripsi</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -125,22 +125,22 @@
               </td>
             </tr>
           {:else}
-            {#each paginatedClasses as cls (cls.id)}
+            {#each paginatedClasses as classItem (classItem.id)}
               <tr>
-                <td><strong>{cls.className}</strong></td>
+                <td><strong>{classItem.className}</strong></td>
                 <td>
-                  <span class="badge b-neutral">{getLevelName(cls.educationLevelId)}</span>
+                  <span class="badge b-neutral">{getLevelName(classItem.educationLevelId)}</span>
                 </td>
-                <td class="num">{formatCurrency(cls.baseRatePer90Min)}</td>
-                <td class="num">{getStudentCount(cls.id)} siswa</td>
-                <td>{cls.description || '—'}</td>
+                <td class="num">{formatCurrency(classItem.baseRatePer90Min)}</td>
+                <td class="num">{getStudentCount(classItem.id)} siswa</td>
+                <td>{classItem.description || '—'}</td>
                 <td>
                   <div class="actions">
                     <button
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEdit(cls)}
+                      on:click={() => handleOpenEdit(classItem)}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -149,7 +149,7 @@
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
                       on:click={() => {
-                        deletingClassId = cls.id;
+                        deletingClassId = classItem.id;
                         deleteDialogOpen = true;
                       }}
                     >
@@ -178,13 +178,13 @@
           >
             &laquo;
           </button>
-          {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+          {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
             <button
               type="button"
-              class="page-btn {currentPage === p ? 'active' : ''}"
-              on:click={() => { currentPage = p; }}
+              class="page-btn {currentPage === pageNumber ? 'active' : ''}"
+              on:click={() => { currentPage = pageNumber; }}
             >
-              {p}
+              {pageNumber}
             </button>
           {/each}
           <button

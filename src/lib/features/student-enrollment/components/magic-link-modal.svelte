@@ -50,9 +50,9 @@
       } else {
         toastStore.error(response.message);
       }
-    } catch (err) {
-      if (err instanceof ZodError) {
-        toastStore.error(err.errors[0].message);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        toastStore.error(error.errors[0].message);
       } else {
         toastStore.error('Terjadi kesalahan validasi data.');
       }
@@ -97,8 +97,8 @@
         <Icon name="check_circle" size="xl" />
       </div>
       <div>
-        <h4 class="font-bold text-[1.1rem]">Magic Link {targetRole === 'TENTOR' ? 'Tentor' : 'Murid'} Berhasil Dibuat!</h4>
-        <p class="text-muted-fg text-[0.88rem] mt-1">
+        <h4 class="font-bold text-lg">Magic Link {targetRole === 'TENTOR' ? 'Tentor' : 'Murid'} Berhasil Dibuat!</h4>
+        <p class="text-muted-fg text-sm mt-1">
           Bagikan link berikut ke calon {targetRole === 'TENTOR' ? 'tentor/mentor' : 'murid/parent murid'}. Link berlaku selama <strong>{generatedLink.daysValid} hari</strong> (kadaluarsa: {new Date(generatedLink.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}).
         </p>
       </div>
@@ -162,13 +162,13 @@
           <span class="text-sm font-semibold text-fg">Hari</span>
         </div>
         <div class="flex flex-wrap gap-2 mt-2">
-          {#each [1, 3, 7, 14, 30] as d}
+          {#each [1, 3, 7, 14, 30] as dayOption}
             <Button
-              variant={daysValid === d ? 'primary' : 'outline'}
+              variant={daysValid === dayOption ? 'primary' : 'outline'}
               className="rounded-xl px-3 py-1.5 text-xs h-auto shadow-2xs"
-              on:click={() => { daysValid = d; }}
+              on:click={() => { daysValid = dayOption; }}
             >
-              {d} Hari
+              {dayOption} Hari
             </Button>
           {/each}
         </div>
@@ -183,7 +183,7 @@
               bind:value={selectedClassId}
               options={[
                 { value: '', label: '-- Semua Kelas (Terbuka) --' },
-                ...$dbStore.classes.map(c => ({ value: c.id, label: c.className }))
+                ...$dbStore.classes.map((classItem) => ({ value: classItem.id, label: classItem.className }))
               ]}
             />
           </div>
@@ -195,14 +195,14 @@
               bind:value={selectedPackageId}
               options={[
                 { value: '', label: '-- Tanpa Preset Paket --' },
-                ...$dbStore.packages.map(p => ({ value: p.id, label: `${p.name} (${p.mode})` }))
+                ...$dbStore.packages.map((packageItem) => ({ value: packageItem.id, label: `${packageItem.name} (${packageItem.mode})` }))
               ]}
             />
           </div>
         </div>
       {/if}
 
-      <div class="modal-foot" style="padding: 14px 0 0; border-top: none;">
+      <div class="modal-foot pt-3.5 border-t-0">
         <Button variant="outline" on:click={handleCloseModal}>
           Batal
         </Button>

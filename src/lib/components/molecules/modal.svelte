@@ -3,7 +3,7 @@
 
   export let title: string = '';
   export let icon: string = 'edit_note';
-  export let maxWidth: string = '560px';
+  export let maxWidth: string = 'max-w-lg';
   export let open: boolean = true;
   export let onClose: () => void = () => {};
 
@@ -19,11 +19,18 @@
     }
   }
 
-  $: computedStyle = maxWidth.includes('px')
-    ? `max-width: ${maxWidth}`
-    : maxWidth.includes('max-w-')
-      ? `max-width: ${maxWidth === 'max-w-md' ? '480px' : maxWidth === 'max-w-xl' ? '640px' : maxWidth === 'max-w-2xl' ? '720px' : '560px'}`
-      : `max-width: ${maxWidth}`;
+  function getMaxWidthClass(width: string): string {
+    if (width.startsWith('max-w-')) return width;
+    const num = parseInt(width, 10);
+    if (isNaN(num)) return 'max-w-lg';
+    if (num <= 480) return 'max-w-md';
+    if (num <= 560) return 'max-w-lg';
+    if (num <= 640) return 'max-w-xl';
+    if (num <= 720) return 'max-w-2xl';
+    return 'max-w-3xl';
+  }
+
+  $: maxWidthClass = getMaxWidthClass(maxWidth);
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -37,8 +44,7 @@
     tabindex="-1"
   >
     <div
-      class="modal"
-      style={computedStyle}
+      class="modal {maxWidthClass}"
       role="dialog"
       aria-modal="true"
       tabindex="0"
@@ -64,10 +70,12 @@
         <slot />
       </div>
 
-      <!-- Footer -->
-      <div class="modal-foot">
-        <slot name="footer" />
-      </div>
+      <!-- Footer (optional slot) -->
+      {#if $$slots.footer}
+        <div class="modal-foot">
+          <slot name="footer" />
+        </div>
+      {/if}
     </div>
   </div>
 {/if}

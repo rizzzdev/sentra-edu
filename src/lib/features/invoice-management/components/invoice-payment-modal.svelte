@@ -15,9 +15,9 @@
 
   let paymentProofUrl: string = '';
 
-  $: enrollment = invoice ? $dbStore.enrollments.find((e) => e.id === invoice?.enrollmentId) : null;
-  $: student = enrollment ? $dbStore.users.find((u) => u.id === enrollment?.studentId) : null;
-  $: subject = enrollment ? $dbStore.subjects.find((s) => s.id === enrollment?.subjectId) : null;
+  $: enrollment = invoice ? $dbStore.enrollments.find((enrollmentItem) => enrollmentItem.id === invoice?.enrollmentId) : null;
+  $: student = enrollment ? $dbStore.users.find((userItem) => userItem.id === enrollment?.studentId) : null;
+  $: subject = enrollment ? $dbStore.subjects.find((subjectItem) => subjectItem.id === enrollment?.subjectId) : null;
 
   function handleConfirmPayment() {
     if (!invoice) return;

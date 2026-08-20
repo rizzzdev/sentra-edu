@@ -11,14 +11,15 @@
 
   // Magic Link Modal & State
   let magicLinkModalOpen: boolean = false;
+  let deleteMagicLinkDialogOpen: boolean = false;
   let deleteMagicLinkId: string | null = null;
 
-  $: allMagicLinks = ($dbStore.magicLinks || []).filter((l) => l.deletedAt === null);
+  $: allMagicLinks = ($dbStore.magicLinks || []).filter((magicLinkItem) => magicLinkItem.deletedAt === null);
 
-  $: filteredMagicLinks = allMagicLinks.filter((l) => {
-    const q = searchQuery.toLowerCase();
-    if (!q) return true;
-    return l.title.toLowerCase().includes(q) || l.token.toLowerCase().includes(q);
+  $: filteredMagicLinks = allMagicLinks.filter((magicLinkItem) => {
+    const query = searchQuery.toLowerCase();
+    if (!query) return true;
+    return magicLinkItem.title.toLowerCase().includes(query) || magicLinkItem.token.toLowerCase().includes(query);
   });
 
   $: paginatedMagicLinks = filteredMagicLinks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -43,10 +44,11 @@
 
   function handleConfirmDeleteMagicLink() {
     if (!deleteMagicLinkId) return;
-    const res = dbStore.deleteMagicLink(deleteMagicLinkId);
+    const response = dbStore.deleteMagicLink(deleteMagicLinkId);
+    deleteMagicLinkDialogOpen = false;
     deleteMagicLinkId = null;
-    if (!res.error) toastStore.success(res.message);
-    else toastStore.error(res.message);
+    if (!response.error) toastStore.success(response.message);
+    else toastStore.error(response.message);
   }
 </script>
 
@@ -79,7 +81,7 @@
   <div class="stat">
     <div class="s-icon tone-emerald"><Icon name="check_circle" size="lg" /></div>
     <div>
-      <div class="s-val">{allMagicLinks.filter(l => l.active && !isLinkExpired(l.expiresAt)).length}</div>
+      <div class="s-val">{allMagicLinks.filter((magicLinkItem) => magicLinkItem.active && !isLinkExpired(magicLinkItem.expiresAt)).length}</div>
       <div class="s-lbl">Link Aktif Berlaku</div>
     </div>
   </div>
@@ -87,7 +89,7 @@
   <div class="stat">
     <div class="s-icon tone-sky"><Icon name="how_to_reg" size="lg" /></div>
     <div>
-      <div class="s-val">{allMagicLinks.reduce((sum, l) => sum + l.usedCount, 0)}</div>
+      <div class="s-val">{allMagicLinks.reduce((sum, magicLinkItem) => sum + magicLinkItem.usedCount, 0)}</div>
       <div class="s-lbl">Pendaftaran via Link</div>
     </div>
   </div>
@@ -116,7 +118,7 @@
             <th>Kadaluarsa (Expired)</th>
             <th>Status</th>
             <th class="num">Pemakaian</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -127,30 +129,30 @@
               </td>
             </tr>
           {:else}
-            {#each paginatedMagicLinks as ml (ml.id)}
-              {@const expired = isLinkExpired(ml.expiresAt)}
+            {#each paginatedMagicLinks as magicLinkItem (magicLinkItem.id)}
+              {@const expired = isLinkExpired(magicLinkItem.expiresAt)}
               <tr>
                 <td>
-                  <strong>{ml.title}</strong>
-                  <div class="sub font-mono text-[0.74rem] text-primary">{ml.token}</div>
+                  <strong>{magicLinkItem.title}</strong>
+                  <div class="sub font-mono text-xs text-primary">{magicLinkItem.token}</div>
                 </td>
                 <td>
-                  <span class="font-bold text-xs">{ml.daysValid} Hari</span>
+                  <span class="font-bold text-xs">{magicLinkItem.daysValid} Hari</span>
                   <div class="sub">
-                    Expired: {new Date(ml.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    Expired: {new Date(magicLinkItem.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </td>
                 <td>
                   {#if expired}
                     <span class="badge b-rejected">Expired</span>
-                  {:else if ml.active}
+                  {:else if magicLinkItem.active}
                     <span class="badge b-available">Aktif</span>
                   {:else}
                     <span class="badge b-neutral">Nonaktif</span>
                   {/if}
                 </td>
                 <td class="num">
-                  <strong>{ml.usedCount}</strong> Murid
+                  <strong>{magicLinkItem.usedCount}</strong> Murid
                 </td>
                 <td>
                   <div class="actions">
@@ -158,26 +160,26 @@
                       type="button"
                       class="btn-icon"
                       data-tip="Salin Link"
-                      on:click={() => handleCopyMagicLink(ml.token)}
+                      on:click={() => handleCopyMagicLink(magicLinkItem.token)}
                     >
                       <Icon name="content_copy" size="sm" />
                     </button>
                     <button
                       type="button"
                       class="btn-icon"
-                      data-tip={ml.active ? 'Nonaktifkan' : 'Aktifkan'}
+                      data-tip={magicLinkItem.active ? 'Nonaktifkan' : 'Aktifkan'}
                       on:click={() => {
-                        const res = dbStore.toggleMagicLinkStatus(ml.id);
-                        if (!res.error) toastStore.success(res.message);
+                        const toggleResponse = dbStore.toggleMagicLinkStatus(magicLinkItem.id);
+                        if (!toggleResponse.error) toastStore.success(toggleResponse.message);
                       }}
                     >
-                      <Icon name={ml.active ? 'toggle_on' : 'toggle_off'} size="sm" />
+                      <Icon name={magicLinkItem.active ? 'toggle_on' : 'toggle_off'} size="sm" />
                     </button>
                     <button
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deleteMagicLinkId = ml.id; }}
+                      on:click={() => { deleteMagicLinkId = magicLinkItem.id; deleteMagicLinkDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -197,8 +199,8 @@
         </div>
         <div class="page-btns">
           <button type="button" class="page-btn" disabled={currentPage <= 1} on:click={() => currentPage--}>&laquo;</button>
-          {#each Array.from({ length: totalPagesMagicLinks }, (_, i) => i + 1) as p}
-            <button type="button" class="page-btn {currentPage === p ? 'active' : ''}" on:click={() => { currentPage = p; }}>{p}</button>
+          {#each Array.from({ length: totalPagesMagicLinks }, (_, index) => index + 1) as pageNumber}
+            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" on:click={() => { currentPage = pageNumber; }}>{pageNumber}</button>
           {/each}
           <button type="button" class="page-btn" disabled={currentPage >= totalPagesMagicLinks} on:click={() => currentPage++}>&raquo;</button>
         </div>
@@ -214,11 +216,11 @@
 />
 
 <ConfirmationDialog
-  open={!!deleteMagicLinkId}
+  open={deleteMagicLinkDialogOpen}
   title="Hapus Magic Link Pendaftaran"
   message="Apakah Anda yakin ingin menghapus Magic Link pendaftaran ini?"
   confirmText="Hapus"
   confirmVariant="danger"
   onConfirm={handleConfirmDeleteMagicLink}
-  onCancel={() => { deleteMagicLinkId = null; }}
+  onCancel={() => { deleteMagicLinkDialogOpen = false; deleteMagicLinkId = null; }}
 />

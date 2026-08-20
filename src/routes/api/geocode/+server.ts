@@ -67,8 +67,8 @@ export const GET: RequestHandler = async ({ url }) => {
           }
         });
       }
-    } catch (err) {
-      console.warn('Reverse geocoding error:', err);
+    } catch (error) {
+      console.warn('Reverse geocoding error:', error);
     }
   }
 

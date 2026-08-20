@@ -12,23 +12,23 @@
 
   const variantMap: Record<string, { bg: string; text: string; iconDefault: string }> = {
     destructive: {
-      bg: 'bg-[var(--color-destructive-soft)] border-[var(--color-destructive)]',
-      text: 'text-[var(--color-destructive)]',
+      bg: 'bg-danger-soft border-danger',
+      text: 'text-danger',
       iconDefault: 'error'
     },
     warning: {
-      bg: 'bg-[var(--color-warning-soft)] border-[var(--color-warning)]',
-      text: 'text-[var(--color-warning)]',
+      bg: 'bg-warn-soft border-warn',
+      text: 'text-warn',
       iconDefault: 'warning'
     },
     info: {
-      bg: 'bg-[var(--color-info-soft)] border-[var(--color-info)]',
-      text: 'text-[var(--color-info)]',
+      bg: 'bg-primary-soft border-primary',
+      text: 'text-primary',
       iconDefault: 'info'
     },
     success: {
-      bg: 'bg-[var(--color-success-soft)] border-[var(--color-success)]',
-      text: 'text-[var(--color-success)]',
+      bg: 'bg-success-soft border-success',
+      text: 'text-success',
       iconDefault: 'check_circle'
     }
   };
@@ -37,7 +37,7 @@
 </script>
 
 <div
-  class="flex items-start gap-3 p-4 rounded-[var(--radius-sm)] border {currentVariant.bg} {currentVariant.text} {className}"
+  class="flex items-start gap-3 p-4 rounded-xl border {currentVariant.bg} {currentVariant.text} {className}"
   role="alert"
 >
   <div class="flex-none mt-0.5">

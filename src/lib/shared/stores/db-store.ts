@@ -46,18 +46,25 @@ function getEmptyDatabase(): DatabaseSchema {
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<{ error: boolean; data: T | null; message?: string }> {
   try {
-    const res = await fetch(path, {
+    const response = await fetch(path, {
       ...options,
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', ...options?.headers }
     });
-    return await res.json();
-  } catch (err_raw) { const err = err_raw as Error;
-    return { error: true, data: null, message: err.message };
+    return await response.json();
+  } catch (errorRaw) {
+    const error = errorRaw as Error;
+    return { error: true, data: null, message: error.message };
   }
 }
 
-async function apiPost<T>(path: string, body: Record<string, string | number | boolean | string[] | null | undefined> | Partial<BaseEntity> | Record<string, unknown>): Promise<{ error: boolean; data: T | null; message?: string }> {
+async function apiPost<T>(
+  path: string,
+  body:
+    | Record<string, string | number | boolean | string[] | null | undefined>
+    | Partial<BaseEntity>
+    | Record<string, string | number | boolean | string[] | null | undefined | object>
+): Promise<{ error: boolean; data: T | null; message?: string }> {
   return apiFetch<T>(path, { method: 'POST', body: JSON.stringify(body) });
 }
 
@@ -88,7 +95,7 @@ async function loadDatabaseFromApi(): Promise<DatabaseSchema> {
 function createDatabaseStore() {
   const store = writable<DatabaseSchema>(getEmptyDatabase());
 
-  // Async init: load from Neon
+  // Async init: load from backend
   if (typeof window !== 'undefined') {
     loadDatabaseFromApi().then((data) => {
       store.set(data);
@@ -128,7 +135,9 @@ function createDatabaseStore() {
       const newNotification: NotificationItem = {
         id: generateEntityId('notif'),
         userId: targetUserId,
-        title, message, icon,
+        title,
+        message,
+        icon,
         read: false,
         createdAt: new Date().toISOString()
       };
@@ -156,24 +165,22 @@ function createDatabaseStore() {
     // ── MASTER DATA: SUBJECTS ──
     saveSubject: (payload: { id?: string; name: string; description: string }): ApiResponse<Subject> => {
       if (!payload.name.trim()) return { error: true, statusCode: 400, message: 'Nama mata pelajaran wajib diisi.', data: null };
-      // Delegate to API, reload store after
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (payload.id) {
         let updatedSubject: Subject | null = null;
-        const updatedSubjects = currentDb.subjects.map((sub) => {
-          if (sub.id === payload.id) {
-            updatedSubject = { ...sub, name: payload.name.trim(), description: payload.description.trim(), updatedAt: now };
+        const updatedSubjects = currentDb.subjects.map((subjectItem) => {
+          if (subjectItem.id === payload.id) {
+            updatedSubject = { ...subjectItem, name: payload.name.trim(), description: payload.description.trim(), updatedAt: now };
             return updatedSubject;
           }
-          return sub;
+          return subjectItem;
         });
         persistDatabase({ ...currentDb, subjects: updatedSubjects });
-        // Fire-and-forget API call
         apiPost('/api/subjects', { id: payload.id, name: payload.name.trim(), description: payload.description.trim() });
         return { error: false, statusCode: 200, message: 'Mata pelajaran berhasil diperbarui.', data: updatedSubject };
       } else {
-        const isDuplicate = currentDb.subjects.some((sub) => sub.deletedAt === null && sub.name.toLowerCase() === payload.name.trim().toLowerCase());
+        const isDuplicate = currentDb.subjects.some((subjectItem) => subjectItem.deletedAt === null && subjectItem.name.toLowerCase() === payload.name.trim().toLowerCase());
         if (isDuplicate) return { error: true, statusCode: 409, message: 'Nama mata pelajaran sudah terdaftar.', data: null };
         const newSubject: Subject = { id: generateEntityId('sj'), name: payload.name.trim(), description: payload.description.trim(), createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, subjects: [...currentDb.subjects, newSubject] });
@@ -184,12 +191,12 @@ function createDatabaseStore() {
 
     deleteSubject: (subjectId: string): ApiResponse<null> => {
       const currentDb = get(store);
-      if (currentDb.jobs.some((j) => j.deletedAt === null && j.subjectId === subjectId))
+      if (currentDb.jobs.some((jobItem) => jobItem.deletedAt === null && jobItem.subjectId === subjectId))
         return { error: true, statusCode: 400, message: 'Mata pelajaran masih digunakan pada lowongan.', data: null };
-      if (currentDb.enrollments.some((e) => e.deletedAt === null && e.subjectId === subjectId))
+      if (currentDb.enrollments.some((enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.subjectId === subjectId))
         return { error: true, statusCode: 400, message: 'Mata pelajaran masih terdaftar pada siswa aktif.', data: null };
       const now = new Date().toISOString();
-      const updated = currentDb.subjects.map((s) => s.id === subjectId ? { ...s, deletedAt: now, updatedAt: now } : s);
+      const updated = currentDb.subjects.map((subjectItem) => subjectItem.id === subjectId ? { ...subjectItem, deletedAt: now, updatedAt: now } : subjectItem);
       persistDatabase({ ...currentDb, subjects: updated });
       apiDelete('/api/subjects', subjectId);
       return { error: false, statusCode: 200, message: 'Mata pelajaran berhasil dihapus.', data: null };
@@ -201,11 +208,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (payload.id) {
-        let updated: EducationLevel | null = null;
-        const list = currentDb.educationLevels.map((i) => { if (i.id === payload.id) { updated = { ...i, levelName: payload.levelName.trim(), description: payload.description.trim(), updatedAt: now }; return updated; } return i; });
+        let updatedLevel: EducationLevel | null = null;
+        const list = currentDb.educationLevels.map((levelItem) => {
+          if (levelItem.id === payload.id) {
+            updatedLevel = { ...levelItem, levelName: payload.levelName.trim(), description: payload.description.trim(), updatedAt: now };
+            return updatedLevel;
+          }
+          return levelItem;
+        });
         persistDatabase({ ...currentDb, educationLevels: list });
         apiPost('/api/education-levels', { id: payload.id, levelName: payload.levelName.trim(), description: payload.description.trim() });
-        return { error: false, statusCode: 200, message: 'Jenjang berhasil diperbarui.', data: updated };
+        return { error: false, statusCode: 200, message: 'Jenjang berhasil diperbarui.', data: updatedLevel };
       } else {
         const newLevel: EducationLevel = { id: generateEntityId('lv'), levelName: payload.levelName.trim(), description: payload.description.trim(), createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, educationLevels: [...currentDb.educationLevels, newLevel] });
@@ -219,11 +232,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (payload.id) {
-        let updated: ClassLevel | null = null;
-        const list = currentDb.classes.map((i) => { if (i.id === payload.id) { updated = { ...i, className: payload.className.trim(), educationLevelId: payload.educationLevelId, baseRatePer90Min: Number(payload.baseRatePer90Min) || 0, description: payload.description.trim(), updatedAt: now }; return updated; } return i; });
+        let updatedClass: ClassLevel | null = null;
+        const list = currentDb.classes.map((classItem) => {
+          if (classItem.id === payload.id) {
+            updatedClass = { ...classItem, className: payload.className.trim(), educationLevelId: payload.educationLevelId, baseRatePer90Min: Number(payload.baseRatePer90Min) || 0, description: payload.description.trim(), updatedAt: now };
+            return updatedClass;
+          }
+          return classItem;
+        });
         persistDatabase({ ...currentDb, classes: list });
         apiPost('/api/classes', payload);
-        return { error: false, statusCode: 200, message: 'Kelas berhasil diperbarui.', data: updated };
+        return { error: false, statusCode: 200, message: 'Kelas berhasil diperbarui.', data: updatedClass };
       } else {
         const newClass: ClassLevel = { id: generateEntityId('cl'), className: payload.className.trim(), educationLevelId: payload.educationLevelId, baseRatePer90Min: Number(payload.baseRatePer90Min) || 0, description: payload.description.trim(), createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, classes: [...currentDb.classes, newClass] });
@@ -234,20 +253,20 @@ function createDatabaseStore() {
 
     deleteClassLevel: (classId: string): ApiResponse<null> => {
       const currentDb = get(store);
-      if (currentDb.jobs.some((j) => j.deletedAt === null && j.classId === classId))
+      if (currentDb.jobs.some((jobItem) => jobItem.deletedAt === null && jobItem.classId === classId))
         return { error: true, statusCode: 400, message: 'Kelas masih digunakan pada lowongan.', data: null };
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, classes: currentDb.classes.map((c) => c.id === classId ? { ...c, deletedAt: now, updatedAt: now } : c) });
+      persistDatabase({ ...currentDb, classes: currentDb.classes.map((classItem) => classItem.id === classId ? { ...classItem, deletedAt: now, updatedAt: now } : classItem) });
       apiDelete('/api/classes', classId);
       return { error: false, statusCode: 200, message: 'Kelas berhasil dihapus.', data: null };
     },
 
     deleteEducationLevel: (levelId: string): ApiResponse<null> => {
       const currentDb = get(store);
-      if (currentDb.classes.some((c) => c.deletedAt === null && c.educationLevelId === levelId))
+      if (currentDb.classes.some((classItem) => classItem.deletedAt === null && classItem.educationLevelId === levelId))
         return { error: true, statusCode: 400, message: 'Jenjang masih digunakan pada kelas.', data: null };
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, educationLevels: currentDb.educationLevels.map((l) => l.id === levelId ? { ...l, deletedAt: now, updatedAt: now } : l) });
+      persistDatabase({ ...currentDb, educationLevels: currentDb.educationLevels.map((levelItem) => levelItem.id === levelId ? { ...levelItem, deletedAt: now, updatedAt: now } : levelItem) });
       apiDelete('/api/education-levels', levelId);
       return { error: false, statusCode: 200, message: 'Jenjang berhasil dihapus.', data: null };
     },
@@ -258,11 +277,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (payload.id) {
-        let updated: PackagePlan | null = null;
-        const list = currentDb.packages.map((p) => { if (p.id === payload.id) { updated = { ...p, ...payload, updatedAt: now } as PackagePlan; return updated; } return p; });
+        let updatedPackage: PackagePlan | null = null;
+        const list = currentDb.packages.map((packageItem) => {
+          if (packageItem.id === payload.id) {
+            updatedPackage = { ...packageItem, ...payload, updatedAt: now } as PackagePlan;
+            return updatedPackage;
+          }
+          return packageItem;
+        });
         persistDatabase({ ...currentDb, packages: list });
         apiPost('/api/packages', payload);
-        return { error: false, statusCode: 200, message: 'Paket les berhasil diperbarui.', data: updated };
+        return { error: false, statusCode: 200, message: 'Paket les berhasil diperbarui.', data: updatedPackage };
       } else {
         const newPkg: PackagePlan = { id: generateEntityId('pkg'), ...payload, price: Number(payload.price) || 0, sessionsPerPeriod: Number(payload.sessionsPerPeriod) || 1, maxStudents: Number(payload.maxStudents) || 1, tentorFee: Number(payload.tentorFee) || 0, createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, packages: [...currentDb.packages, newPkg] });
@@ -274,17 +299,23 @@ function createDatabaseStore() {
     savePackage: (pkg: Partial<PackagePlan> & { id: string }): ApiResponse<PackagePlan> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      let updated: PackagePlan | null = null;
-      const list = currentDb.packages.map((p) => { if (p.id === pkg.id) { updated = { ...p, ...pkg, updatedAt: now } as PackagePlan; return updated; } return p; });
+      let updatedPackage: PackagePlan | null = null;
+      const list = currentDb.packages.map((packageItem) => {
+        if (packageItem.id === pkg.id) {
+          updatedPackage = { ...packageItem, ...pkg, updatedAt: now } as PackagePlan;
+          return updatedPackage;
+        }
+        return packageItem;
+      });
       persistDatabase({ ...currentDb, packages: list });
       apiPost('/api/packages', pkg);
-      return { error: false, statusCode: 200, message: 'Paket les berhasil diperbarui.', data: updated };
+      return { error: false, statusCode: 200, message: 'Paket les berhasil diperbarui.', data: updatedPackage };
     },
 
     deletePackage: (packageId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, packages: currentDb.packages.map((p) => p.id === packageId ? { ...p, deletedAt: now, updatedAt: now } : p) });
+      persistDatabase({ ...currentDb, packages: currentDb.packages.map((packageItem) => packageItem.id === packageId ? { ...packageItem, deletedAt: now, updatedAt: now } : packageItem) });
       apiDelete('/api/packages', packageId);
       return { error: false, statusCode: 200, message: 'Paket les berhasil dihapus.', data: null };
     },
@@ -297,7 +328,13 @@ function createDatabaseStore() {
       const now = new Date().toISOString();
       if (userPayload.id) {
         let updatedUser: User | null = null;
-        const updatedUsers = currentDb.users.map((user) => { if (user.id === userPayload.id) { updatedUser = { ...user, ...userPayload, updatedAt: now } as User; return updatedUser; } return user; });
+        const updatedUsers = currentDb.users.map((user) => {
+          if (user.id === userPayload.id) {
+            updatedUser = { ...user, ...userPayload, updatedAt: now } as User;
+            return updatedUser;
+          }
+          return user;
+        });
         persistDatabase({ ...currentDb, users: updatedUsers });
         apiPost('/api/users', userPayload);
         return { error: false, statusCode: 200, message: 'Data pengguna berhasil diperbarui.', data: updatedUser };
@@ -361,11 +398,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (jobPayload.id) {
-        let updated: JobPost | null = null;
-        const list = currentDb.jobs.map((j) => { if (j.id === jobPayload.id) { updated = { ...j, ...jobPayload, updatedAt: now } as JobPost; return updated; } return j; });
+        let updatedJob: JobPost | null = null;
+        const list = currentDb.jobs.map((jobItem) => {
+          if (jobItem.id === jobPayload.id) {
+            updatedJob = { ...jobItem, ...jobPayload, updatedAt: now } as JobPost;
+            return updatedJob;
+          }
+          return jobItem;
+        });
         persistDatabase({ ...currentDb, jobs: list });
-        apiPost('/api/jobs', updated || jobPayload);
-        return { error: false, statusCode: 200, message: 'Lowongan diperbarui.', data: updated };
+        apiPost('/api/jobs', updatedJob || jobPayload);
+        return { error: false, statusCode: 200, message: 'Lowongan diperbarui.', data: updatedJob };
       } else {
         const newJob: JobPost = {
           id: generateEntityId('job'),
@@ -411,10 +454,20 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       let targetJob: JobPost | null = null;
-      const updatedJobs = currentDb.jobs.map((j) => { if (j.id === jobId) { targetJob = { ...j, assignedTentorId: tentorId, status: 'ASSIGNED', updatedAt: now }; return targetJob; } return j; });
+      const updatedJobs = currentDb.jobs.map((jobItem) => {
+        if (jobItem.id === jobId) {
+          targetJob = { ...jobItem, assignedTentorId: tentorId, status: 'ASSIGNED', updatedAt: now };
+          return targetJob;
+        }
+        return jobItem;
+      });
       let updatedEnrollments = currentDb.enrollments;
       if (targetJob && (targetJob as JobPost).enrollmentId) {
-        updatedEnrollments = currentDb.enrollments.map((e) => e.id === (targetJob as JobPost).enrollmentId ? { ...e, tentorId, status: 'ACTIVE', updatedAt: now } : e);
+        updatedEnrollments = currentDb.enrollments.map((enrollmentItem) =>
+          enrollmentItem.id === (targetJob as JobPost).enrollmentId
+            ? { ...enrollmentItem, tentorId, status: 'ACTIVE', updatedAt: now }
+            : enrollmentItem
+        );
       }
       persistDatabase({ ...currentDb, jobs: updatedJobs, enrollments: updatedEnrollments });
       apiPost('/api/jobs', targetJob || { id: jobId, assignedTentorId: tentorId, status: 'ASSIGNED' });
@@ -424,7 +477,7 @@ function createDatabaseStore() {
     applyToJob: (jobId: string, tentorId: string, notes?: string): ApiResponse<JobApplication> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      if (currentDb.applications.some((a) => a.deletedAt === null && a.jobId === jobId && a.tentorId === tentorId))
+      if (currentDb.applications.some((appItem) => appItem.deletedAt === null && appItem.jobId === jobId && appItem.tentorId === tentorId))
         return { error: true, statusCode: 409, message: 'Anda sudah pernah melamar.', data: null };
       const newApp: JobApplication = { id: generateEntityId('app'), jobId, tentorId, status: 'PENDING', appliedAt: now, notes: notes || '', createdAt: now, updatedAt: now, deletedAt: null };
       persistDatabase({ ...currentDb, applications: [newApp, ...currentDb.applications] });
@@ -435,7 +488,7 @@ function createDatabaseStore() {
     deleteJob: (jobId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, jobs: currentDb.jobs.map((j) => j.id === jobId ? { ...j, deletedAt: now, updatedAt: now } : j) });
+      persistDatabase({ ...currentDb, jobs: currentDb.jobs.map((jobItem) => jobItem.id === jobId ? { ...jobItem, deletedAt: now, updatedAt: now } : jobItem) });
       apiDelete('/api/jobs', jobId);
       return { error: false, statusCode: 200, message: 'Lowongan berhasil dihapus.', data: null };
     },
@@ -445,11 +498,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (payload.id) {
-        let updated: Enrollment | null = null;
-        const list = currentDb.enrollments.map((e) => { if (e.id === payload.id) { updated = { ...e, ...payload, updatedAt: now } as Enrollment; return updated; } return e; });
+        let updatedEnrollment: Enrollment | null = null;
+        const list = currentDb.enrollments.map((enrollmentItem) => {
+          if (enrollmentItem.id === payload.id) {
+            updatedEnrollment = { ...enrollmentItem, ...payload, updatedAt: now } as Enrollment;
+            return updatedEnrollment;
+          }
+          return enrollmentItem;
+        });
         persistDatabase({ ...currentDb, enrollments: list });
         apiPost('/api/enrollments', payload);
-        return { error: false, statusCode: 200, message: 'Pendaftaran diperbarui.', data: updated };
+        return { error: false, statusCode: 200, message: 'Pendaftaran diperbarui.', data: updatedEnrollment };
       } else {
         const newEnr: Enrollment = { id: generateEntityId('enr'), studentId: payload.studentId, subjectId: payload.subjectId, classId: payload.classId, packageId: payload.packageId, tentorId: payload.tentorId || null, scheduleDay: payload.scheduleDay || 'Senin, Rabu', scheduleTime: payload.scheduleTime || '16:00 - 17:30', status: 'ACTIVE', address: payload.address, latitude: payload.latitude, longitude: payload.longitude, waliUserId: payload.waliUserId, createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, enrollments: [newEnr, ...currentDb.enrollments] });
@@ -461,7 +520,7 @@ function createDatabaseStore() {
     deleteEnrollment: (enrollmentId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, enrollments: currentDb.enrollments.map((e) => e.id === enrollmentId ? { ...e, deletedAt: now, updatedAt: now } : e) });
+      persistDatabase({ ...currentDb, enrollments: currentDb.enrollments.map((enrollmentItem) => enrollmentItem.id === enrollmentId ? { ...enrollmentItem, deletedAt: now, updatedAt: now } : enrollmentItem) });
       apiDelete('/api/enrollments', enrollmentId);
       return { error: false, statusCode: 200, message: 'Pendaftaran berhasil dihapus.', data: null };
     },
@@ -480,11 +539,17 @@ function createDatabaseStore() {
     verifyAttendance: (attendanceId: string, newStatus: 'APPROVED' | 'REJECTED', reviewNotes?: string): ApiResponse<AttendanceRecord> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      let target: AttendanceRecord | null = null;
-      const list = currentDb.attendances.map((a) => { if (a.id === attendanceId) { target = { ...a, status: newStatus, reviewNotes: reviewNotes || '', updatedAt: now }; return target; } return a; });
+      let targetAttendance: AttendanceRecord | null = null;
+      const list = currentDb.attendances.map((attendanceItem) => {
+        if (attendanceItem.id === attendanceId) {
+          targetAttendance = { ...attendanceItem, status: newStatus, reviewNotes: reviewNotes || '', updatedAt: now };
+          return targetAttendance;
+        }
+        return attendanceItem;
+      });
       persistDatabase({ ...currentDb, attendances: list });
       apiPost('/api/attendances', { id: attendanceId, status: newStatus, reviewNotes });
-      return { error: false, statusCode: 200, message: newStatus === 'APPROVED' ? 'Presensi disetujui.' : 'Presensi ditolak.', data: target };
+      return { error: false, statusCode: 200, message: newStatus === 'APPROVED' ? 'Presensi disetujui.' : 'Presensi ditolak.', data: targetAttendance };
     },
 
     // ── INVOICES ──
@@ -500,27 +565,39 @@ function createDatabaseStore() {
     confirmInvoicePayment: (invoiceId: string, proofUrl?: string): ApiResponse<InvoiceRecord> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      let target: InvoiceRecord | null = null;
-      const list = currentDb.invoices.map((i) => { if (i.id === invoiceId) { target = { ...i, status: 'PAID', paidAt: now, paymentProofUrl: proofUrl || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&q=80', updatedAt: now }; return target; } return i; });
+      let targetInvoice: InvoiceRecord | null = null;
+      const list = currentDb.invoices.map((invoiceItem) => {
+        if (invoiceItem.id === invoiceId) {
+          targetInvoice = { ...invoiceItem, status: 'PAID', paidAt: now, paymentProofUrl: proofUrl || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&q=80', updatedAt: now };
+          return targetInvoice;
+        }
+        return invoiceItem;
+      });
       persistDatabase({ ...currentDb, invoices: list });
       apiPost('/api/invoices', { id: invoiceId, status: 'PAID', paidAt: now, paymentProofUrl: proofUrl });
-      return { error: false, statusCode: 200, message: 'Pembayaran berhasil dikonfirmasi.', data: target };
+      return { error: false, statusCode: 200, message: 'Pembayaran berhasil dikonfirmasi.', data: targetInvoice };
     },
 
     saveInvoice: (inv: Partial<InvoiceRecord> & { id: string }): ApiResponse<InvoiceRecord> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      let updated: InvoiceRecord | null = null;
-      const list = currentDb.invoices.map((i) => { if (i.id === inv.id) { updated = { ...i, ...inv, updatedAt: now } as InvoiceRecord; return updated; } return i; });
+      let updatedInvoice: InvoiceRecord | null = null;
+      const list = currentDb.invoices.map((invoiceItem) => {
+        if (invoiceItem.id === inv.id) {
+          updatedInvoice = { ...invoiceItem, ...inv, updatedAt: now } as InvoiceRecord;
+          return updatedInvoice;
+        }
+        return invoiceItem;
+      });
       persistDatabase({ ...currentDb, invoices: list });
       apiPost('/api/invoices', inv);
-      return { error: false, statusCode: 200, message: 'Invoice diperbarui.', data: updated };
+      return { error: false, statusCode: 200, message: 'Invoice diperbarui.', data: updatedInvoice };
     },
 
     deleteInvoice: (invoiceId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, invoices: currentDb.invoices.map((i) => i.id === invoiceId ? { ...i, deletedAt: now, updatedAt: now } : i) });
+      persistDatabase({ ...currentDb, invoices: currentDb.invoices.map((invoiceItem) => invoiceItem.id === invoiceId ? { ...invoiceItem, deletedAt: now, updatedAt: now } : invoiceItem) });
       apiDelete('/api/invoices', invoiceId);
       return { error: false, statusCode: 200, message: 'Invoice dihapus.', data: null };
     },
@@ -538,21 +615,33 @@ function createDatabaseStore() {
     processPayrollPayment: (claimId: string, transferProofUrl?: string): ApiResponse<PayrollClaim> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      let target: PayrollClaim | null = null;
-      const list = currentDb.payrollClaims.map((c) => { if (c.id === claimId) { target = { ...c, status: 'PAID', paidAt: now, transferProofUrl: transferProofUrl || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&q=80', updatedAt: now }; return target; } return c; });
+      let targetClaim: PayrollClaim | null = null;
+      const list = currentDb.payrollClaims.map((claimItem) => {
+        if (claimItem.id === claimId) {
+          targetClaim = { ...claimItem, status: 'PAID', paidAt: now, transferProofUrl: transferProofUrl || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&q=80', updatedAt: now };
+          return targetClaim;
+        }
+        return claimItem;
+      });
       persistDatabase({ ...currentDb, payrollClaims: list });
       apiPost('/api/payroll', { id: claimId, status: 'PAID', paidAt: now, transferProofUrl });
-      return { error: false, statusCode: 200, message: 'Honor berhasil ditransfer.', data: target };
+      return { error: false, statusCode: 200, message: 'Honor berhasil ditransfer.', data: targetClaim };
     },
 
     savePayrollClaim: (claim: Partial<PayrollClaim> & { id: string }): ApiResponse<PayrollClaim> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      let updated: PayrollClaim | null = null;
-      const list = currentDb.payrollClaims.map((c) => { if (c.id === claim.id) { updated = { ...c, ...claim, updatedAt: now } as PayrollClaim; return updated; } return c; });
+      let updatedClaim: PayrollClaim | null = null;
+      const list = currentDb.payrollClaims.map((claimItem) => {
+        if (claimItem.id === claim.id) {
+          updatedClaim = { ...claimItem, ...claim, updatedAt: now } as PayrollClaim;
+          return updatedClaim;
+        }
+        return claimItem;
+      });
       persistDatabase({ ...currentDb, payrollClaims: list });
       apiPost('/api/payroll', claim);
-      return { error: false, statusCode: 200, message: 'Klaim diperbarui.', data: updated };
+      return { error: false, statusCode: 200, message: 'Klaim diperbarui.', data: updatedClaim };
     },
 
     // ── CANDIDATES ──
@@ -561,11 +650,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (payload.id) {
-        let updated: RecruitmentCandidate | null = null;
-        const list = currentDb.candidates.map((c) => { if (c.id === payload.id) { updated = { ...c, ...payload, updatedAt: now } as RecruitmentCandidate; return updated; } return c; });
+        let updatedCandidate: RecruitmentCandidate | null = null;
+        const list = currentDb.candidates.map((candidateItem) => {
+          if (candidateItem.id === payload.id) {
+            updatedCandidate = { ...candidateItem, ...payload, updatedAt: now } as RecruitmentCandidate;
+            return updatedCandidate;
+          }
+          return candidateItem;
+        });
         persistDatabase({ ...currentDb, candidates: list });
         apiPost('/api/candidates', payload);
-        return { error: false, statusCode: 200, message: 'Kandidat diperbarui.', data: updated };
+        return { error: false, statusCode: 200, message: 'Kandidat diperbarui.', data: updatedCandidate };
       } else {
         const newCand: RecruitmentCandidate = { id: generateEntityId('cand'), fullName: payload.fullName.trim(), email: payload.email.trim(), phone: payload.phone.trim(), education: payload.education || 'S1 Pendidikan', experienceYears: Number(payload.experienceYears) || 0, subjectIds: payload.subjectIds || [], levelIds: payload.levelIds || [], cvUrl: payload.cvUrl || '', status: payload.status || 'REGISTERED', notes: payload.notes || '', interviewDate: payload.interviewDate, createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, candidates: [newCand, ...currentDb.candidates] });
@@ -576,11 +671,11 @@ function createDatabaseStore() {
 
     convertCandidateToTentorUser: (candidateId: string): ApiResponse<User> => {
       const currentDb = get(store);
-      const cand = currentDb.candidates.find((c) => c.id === candidateId);
+      const cand = currentDb.candidates.find((candidateItem) => candidateItem.id === candidateId);
       if (!cand) return { error: true, statusCode: 404, message: 'Kandidat tidak ditemukan.', data: null };
       const now = new Date().toISOString();
       const newTentor: User = { id: generateEntityId('u-tentor'), email: cand.email, password: 'tentor123', fullName: cand.fullName, phone: cand.phone, role: 'TENTOR', education: cand.education, experienceYears: cand.experienceYears, subjectIds: cand.subjectIds, levelIds: cand.levelIds, createdAt: now, updatedAt: now, deletedAt: null };
-      persistDatabase({ ...currentDb, users: [...currentDb.users, newTentor], candidates: currentDb.candidates.map((c) => c.id === candidateId ? { ...c, status: 'ACCEPTED' as const, updatedAt: now } : c) });
+      persistDatabase({ ...currentDb, users: [...currentDb.users, newTentor], candidates: currentDb.candidates.map((candidateItem) => candidateItem.id === candidateId ? { ...candidateItem, status: 'ACCEPTED' as const, updatedAt: now } : candidateItem) });
       apiPost('/api/users', { email: cand.email, password: 'tentor123', fullName: cand.fullName, phone: cand.phone, role: 'TENTOR', education: cand.education, experienceYears: cand.experienceYears, subjectIds: cand.subjectIds, levelIds: cand.levelIds });
       return { error: false, statusCode: 201, message: `Kandidat berhasil diterima sebagai tentor.`, data: newTentor };
     },
@@ -588,7 +683,7 @@ function createDatabaseStore() {
     deleteCandidate: (candidateId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, candidates: currentDb.candidates.map((cand) => cand.id === candidateId ? { ...cand, deletedAt: now, updatedAt: now } : cand) });
+      persistDatabase({ ...currentDb, candidates: currentDb.candidates.map((candidateItem) => candidateItem.id === candidateId ? { ...candidateItem, deletedAt: now, updatedAt: now } : candidateItem) });
       apiDelete('/api/candidates', candidateId);
       return { error: false, statusCode: 200, message: 'Kandidat berhasil dihapus.', data: null };
     },
@@ -608,10 +703,10 @@ function createDatabaseStore() {
     toggleMagicLinkStatus: (id: string): ApiResponse<MagicLinkRegistration> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      const existing = (currentDb.magicLinks || []).find((l) => l.id === id);
+      const existing = (currentDb.magicLinks || []).find((magicLinkItem) => magicLinkItem.id === id);
       if (!existing) return { error: true, statusCode: 404, message: 'Magic link tidak ditemukan.', data: null };
       const updated: MagicLinkRegistration = { ...existing, active: !existing.active, updatedAt: now };
-      const links = (currentDb.magicLinks || []).map((l) => l.id === id ? updated : l);
+      const links = (currentDb.magicLinks || []).map((magicLinkItem) => magicLinkItem.id === id ? updated : magicLinkItem);
       persistDatabase({ ...currentDb, magicLinks: links });
       apiPost('/api/magic-links', { id, active: updated.active });
       return { error: false, statusCode: 200, message: updated.active ? 'Magic link diaktifkan.' : 'Magic link dinonaktifkan.', data: updated };
@@ -620,7 +715,7 @@ function createDatabaseStore() {
     deleteMagicLink: (id: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, magicLinks: (currentDb.magicLinks || []).map((l) => l.id === id ? { ...l, deletedAt: now, updatedAt: now } : l) });
+      persistDatabase({ ...currentDb, magicLinks: (currentDb.magicLinks || []).map((magicLinkItem) => magicLinkItem.id === id ? { ...magicLinkItem, deletedAt: now, updatedAt: now } : magicLinkItem) });
       apiDelete('/api/magic-links', id);
       return { error: false, statusCode: 200, message: 'Magic link berhasil dihapus.', data: null };
     },
@@ -630,7 +725,7 @@ function createDatabaseStore() {
       if (!currentDb.isLoaded && (currentDb.magicLinks || []).length === 0) {
         return { valid: false, message: 'Memuat data pendaftaran...', magicLink: null, isLoading: true };
       }
-      const link = (currentDb.magicLinks || []).find((l) => l.token === token && l.deletedAt === null);
+      const link = (currentDb.magicLinks || []).find((magicLinkItem) => magicLinkItem.token === token && magicLinkItem.deletedAt === null);
       if (!link) return { valid: false, message: 'Tautan pendaftaran (Magic Link) tidak ditemukan.', magicLink: null, isLoading: false };
       if (!link.active) return { valid: false, message: 'Tautan pendaftaran telah dinonaktifkan oleh admin.', magicLink: link, isLoading: false };
       if (link.expiresAt && new Date() > new Date(link.expiresAt)) return { valid: false, message: 'Tautan pendaftaran telah melewati batas waktu kadaluarsa.', magicLink: link, isLoading: false };
@@ -643,15 +738,15 @@ function createDatabaseStore() {
       const stuEmail = payload.studentEmail.trim().toLowerCase();
       const waliEmail = payload.waliEmail.trim().toLowerCase();
       if (stuEmail === waliEmail) return { error: true, statusCode: 400, message: 'Email siswa dan wali harus berbeda.', data: null };
-      if (currentDb.users.some((u) => u.deletedAt === null && u.email.toLowerCase() === stuEmail))
+      if (currentDb.users.some((userItem) => userItem.deletedAt === null && userItem.email.toLowerCase() === stuEmail))
         return { error: true, statusCode: 400, message: `Email siswa sudah terdaftar.`, data: null };
       let targetWali: User | null = null;
       let isNewWali = false;
       if (payload.isExistingWali) {
-        targetWali = currentDb.users.find((u) => u.deletedAt === null && u.role === 'WALI_MURID' && u.email.toLowerCase() === waliEmail) || null;
+        targetWali = currentDb.users.find((userItem) => userItem.deletedAt === null && userItem.role === 'WALI_MURID' && userItem.email.toLowerCase() === waliEmail) || null;
         if (!targetWali) return { error: true, statusCode: 404, message: `Akun Wali Murid tidak ditemukan.`, data: null };
       } else {
-        if (currentDb.users.some((u) => u.deletedAt === null && u.email.toLowerCase() === waliEmail))
+        if (currentDb.users.some((userItem) => userItem.deletedAt === null && userItem.email.toLowerCase() === waliEmail))
           return { error: true, statusCode: 400, message: `Email wali sudah terdaftar.`, data: null };
         targetWali = { id: generateEntityId('u-wali'), fullName: (payload.waliFullName || 'Wali Murid').trim(), email: waliEmail, password: payload.waliPassword || 'password123', phone: payload.waliPhone || '', occupation: payload.waliOccupation || '', address: payload.address || '', role: 'WALI_MURID', isActive: false, createdAt: now, updatedAt: now, deletedAt: null };
         isNewWali = true;
@@ -660,7 +755,7 @@ function createDatabaseStore() {
       const newStudent: User = { id: studentId, fullName: payload.studentFullName.trim(), email: stuEmail, password: payload.studentPassword || 'password123', phone: payload.studentPhone || '', role: 'STUDENT', school: payload.school || '', address: payload.address || '', waliUserId: targetWali.id, isActive: false, createdAt: now, updatedAt: now, deletedAt: null };
       const updatedUsers = [...currentDb.users, newStudent];
       if (isNewWali && targetWali) updatedUsers.push(targetWali);
-      const updatedLinks = (currentDb.magicLinks || []).map((l) => l.token === payload.token ? { ...l, usedCount: l.usedCount + 1, updatedAt: now } : l);
+      const updatedLinks = (currentDb.magicLinks || []).map((magicLinkItem) => magicLinkItem.token === payload.token ? { ...magicLinkItem, usedCount: magicLinkItem.usedCount + 1, updatedAt: now } : magicLinkItem);
       persistDatabase({ ...currentDb, users: updatedUsers, magicLinks: updatedLinks });
       apiPost('/api/users', { fullName: newStudent.fullName, email: newStudent.email, password: newStudent.password, phone: newStudent.phone, role: 'STUDENT', school: newStudent.school, address: newStudent.address, waliUserId: targetWali.id, isActive: false });
       if (isNewWali) apiPost('/api/users', { fullName: targetWali.fullName, email: targetWali.email, password: targetWali.password, phone: targetWali.phone, role: 'WALI_MURID', occupation: targetWali.occupation, address: targetWali.address, isActive: false });
@@ -671,11 +766,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (data.id) {
-        let updated: User | null = null;
-        const list = currentDb.users.map((u) => { if (u.id === data.id) { updated = { ...u, fullName: data.fullName, email: data.email, phone: data.phone, school: data.school, address: data.address, waliUserId: data.waliUserId, updatedAt: now } as User; return updated; } return u; });
+        let updatedStudent: User | null = null;
+        const list = currentDb.users.map((userItem) => {
+          if (userItem.id === data.id) {
+            updatedStudent = { ...userItem, fullName: data.fullName, email: data.email, phone: data.phone, school: data.school, address: data.address, waliUserId: data.waliUserId, updatedAt: now } as User;
+            return updatedStudent;
+          }
+          return userItem;
+        });
         persistDatabase({ ...currentDb, users: list });
         apiPost('/api/users', data);
-        return { error: false, statusCode: 200, message: 'Data siswa diperbarui.', data: updated };
+        return { error: false, statusCode: 200, message: 'Data siswa diperbarui.', data: updatedStudent };
       } else {
         const newUser: User = { id: generateEntityId('u-stu'), email: data.email, password: data.password || 'password123', fullName: data.fullName, phone: data.phone, role: 'STUDENT', school: data.school, address: data.address, waliUserId: data.waliUserId, isActive: true, createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, users: [...currentDb.users, newUser] });
@@ -688,11 +789,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (data.id) {
-        let updated: User | null = null;
-        const list = currentDb.users.map((u) => { if (u.id === data.id) { updated = { ...u, fullName: data.fullName, email: data.email, phone: data.phone, education: data.education, experienceYears: data.experienceYears, subjectIds: data.subjectIds, levelIds: data.levelIds, updatedAt: now } as User; return updated; } return u; });
+        let updatedTentor: User | null = null;
+        const list = currentDb.users.map((userItem) => {
+          if (userItem.id === data.id) {
+            updatedTentor = { ...userItem, fullName: data.fullName, email: data.email, phone: data.phone, education: data.education, experienceYears: data.experienceYears, subjectIds: data.subjectIds, levelIds: data.levelIds, updatedAt: now } as User;
+            return updatedTentor;
+          }
+          return userItem;
+        });
         persistDatabase({ ...currentDb, users: list });
         apiPost('/api/users', data);
-        return { error: false, statusCode: 200, message: 'Data tentor diperbarui.', data: updated };
+        return { error: false, statusCode: 200, message: 'Data tentor diperbarui.', data: updatedTentor };
       } else {
         const newUser: User = { id: generateEntityId('u-tnt'), email: data.email, password: data.password || 'tentor123', fullName: data.fullName, phone: data.phone, role: 'TENTOR', education: data.education, experienceYears: data.experienceYears, subjectIds: data.subjectIds || [], levelIds: data.levelIds || [], isActive: true, createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, users: [...currentDb.users, newUser] });
@@ -705,11 +812,17 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       if (data.id) {
-        let updated: User | null = null;
-        const list = currentDb.users.map((u) => { if (u.id === data.id) { updated = { ...u, fullName: data.fullName, email: data.email, phone: data.phone, occupation: data.occupation, address: data.address, updatedAt: now } as User; return updated; } return u; });
+        let updatedWali: User | null = null;
+        const list = currentDb.users.map((userItem) => {
+          if (userItem.id === data.id) {
+            updatedWali = { ...userItem, fullName: data.fullName, email: data.email, phone: data.phone, occupation: data.occupation, address: data.address, updatedAt: now } as User;
+            return updatedWali;
+          }
+          return userItem;
+        });
         persistDatabase({ ...currentDb, users: list });
         apiPost('/api/users', data);
-        return { error: false, statusCode: 200, message: 'Data wali diperbarui.', data: updated };
+        return { error: false, statusCode: 200, message: 'Data wali diperbarui.', data: updatedWali };
       } else {
         const newUser: User = { id: generateEntityId('u-wali'), email: data.email, password: data.password || 'password123', fullName: data.fullName, phone: data.phone, role: 'WALI_MURID', occupation: data.occupation, address: data.address, isActive: true, createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, users: [...currentDb.users, newUser] });
@@ -722,7 +835,7 @@ function createDatabaseStore() {
     deleteStudentMaster: (userId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, users: currentDb.users.map((u) => u.id === userId ? { ...u, deletedAt: now, updatedAt: now } : u) });
+      persistDatabase({ ...currentDb, users: currentDb.users.map((userItem) => userItem.id === userId ? { ...userItem, deletedAt: now, updatedAt: now } : userItem) });
       apiDelete('/api/users', userId);
       return { error: false, statusCode: 200, message: 'Data siswa berhasil dihapus.', data: null };
     },
@@ -730,7 +843,7 @@ function createDatabaseStore() {
     deleteTentorMaster: (userId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, users: currentDb.users.map((u) => u.id === userId ? { ...u, deletedAt: now, updatedAt: now } : u) });
+      persistDatabase({ ...currentDb, users: currentDb.users.map((userItem) => userItem.id === userId ? { ...userItem, deletedAt: now, updatedAt: now } : userItem) });
       apiDelete('/api/users', userId);
       return { error: false, statusCode: 200, message: 'Data tentor berhasil dihapus.', data: null };
     },
@@ -738,7 +851,7 @@ function createDatabaseStore() {
     deleteWaliMaster: (userId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, users: currentDb.users.map((u) => u.id === userId ? { ...u, deletedAt: now, updatedAt: now } : u) });
+      persistDatabase({ ...currentDb, users: currentDb.users.map((userItem) => userItem.id === userId ? { ...userItem, deletedAt: now, updatedAt: now } : userItem) });
       apiDelete('/api/users', userId);
       return { error: false, statusCode: 200, message: 'Data wali murid berhasil dihapus.', data: null };
     },
@@ -747,24 +860,24 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       const email = payload.email.trim().toLowerCase();
-      if (currentDb.users.some((u) => u.deletedAt === null && u.email.toLowerCase() === email))
+      if (currentDb.users.some((userItem) => userItem.deletedAt === null && userItem.email.toLowerCase() === email))
         return { error: true, statusCode: 409, message: 'Email sudah terdaftar.', data: null };
       const newUser: User = { id: generateEntityId('u-tentor'), email, password: payload.password || 'tentor123', fullName: payload.fullName.trim(), phone: payload.phone || '', role: 'TENTOR', education: payload.education, experienceYears: payload.experienceYears, subjectIds: payload.subjectIds || [], levelIds: payload.levelIds || [], isActive: false, createdAt: now, updatedAt: now, deletedAt: null };
       persistDatabase({ ...currentDb, users: [...currentDb.users, newUser] });
       apiPost('/api/users', { ...newUser, password: payload.password || 'tentor123' });
       // Update magic link used count
-      const updatedLinks = (currentDb.magicLinks || []).map((l) => l.token === payload.token ? { ...l, usedCount: l.usedCount + 1, updatedAt: now } : l);
+      const updatedLinks = (currentDb.magicLinks || []).map((magicLinkItem) => magicLinkItem.token === payload.token ? { ...magicLinkItem, usedCount: magicLinkItem.usedCount + 1, updatedAt: now } : magicLinkItem);
       persistDatabase({ ...get(store), magicLinks: updatedLinks });
       return { error: false, statusCode: 201, message: 'Pendaftaran tentor berhasil! Akun menunggu verifikasi admin.', data: newUser };
     },
 
     convertCandidateToTentor: (candidateId: string): ApiResponse<User> => {
       const currentDb = get(store);
-      const cand = currentDb.candidates.find((c) => c.id === candidateId);
+      const cand = currentDb.candidates.find((candidateItem) => candidateItem.id === candidateId);
       if (!cand) return { error: true, statusCode: 404, message: 'Kandidat tidak ditemukan.', data: null };
       const now = new Date().toISOString();
       const newTentor: User = { id: generateEntityId('u-tentor'), email: cand.email, password: 'tentor123', fullName: cand.fullName, phone: cand.phone, role: 'TENTOR', education: cand.education, experienceYears: cand.experienceYears, subjectIds: cand.subjectIds, levelIds: cand.levelIds, createdAt: now, updatedAt: now, deletedAt: null };
-      persistDatabase({ ...currentDb, users: [...currentDb.users, newTentor], candidates: currentDb.candidates.map((c) => c.id === candidateId ? { ...c, status: 'ACCEPTED' as const, updatedAt: now } : c) });
+      persistDatabase({ ...currentDb, users: [...currentDb.users, newTentor], candidates: currentDb.candidates.map((candidateItem) => candidateItem.id === candidateId ? { ...candidateItem, status: 'ACCEPTED' as const, updatedAt: now } : candidateItem) });
       apiPost('/api/users', { email: cand.email, password: 'tentor123', fullName: cand.fullName, phone: cand.phone, role: 'TENTOR', education: cand.education, experienceYears: cand.experienceYears, subjectIds: cand.subjectIds, levelIds: cand.levelIds });
       return { error: false, statusCode: 201, message: `Kandidat berhasil diterima sebagai tentor.`, data: newTentor };
     }

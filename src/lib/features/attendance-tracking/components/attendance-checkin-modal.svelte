@@ -27,13 +27,13 @@
 
     // 1. Direct Enrollments
     const directEnrollments = $dbStore.enrollments.filter(
-      (e) => e.deletedAt === null && e.tentorId === tentor.id && e.status === 'ACTIVE'
+      (enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.tentorId === tentor.id && enrollmentItem.status === 'ACTIVE'
     );
     for (const enr of directEnrollments) {
       seenIds.add(enr.id);
-      const student = $dbStore.users.find((u) => u.id === enr.studentId);
-      const subject = $dbStore.subjects.find((s) => s.id === enr.subjectId);
-      const cls = $dbStore.classes.find((c) => c.id === enr.classId);
+      const student = $dbStore.users.find((userItem) => userItem.id === enr.studentId);
+      const subject = $dbStore.subjects.find((subjectItem) => subjectItem.id === enr.subjectId);
+      const cls = $dbStore.classes.find((classItem) => classItem.id === enr.classId);
       list.push({
         id: enr.id,
         label: `${student?.fullName || 'Murid'} — ${cls?.className || 'Kelas'} ${subject?.name || 'Mapel'} (Privat)`,
@@ -45,7 +45,7 @@
 
     // 2. Assigned Jobs
     const assignedJobs = $dbStore.jobs.filter(
-      (j) => j.deletedAt === null && j.assignedTentorId === tentor.id && j.status === 'ASSIGNED'
+      (jobItem) => jobItem.deletedAt === null && jobItem.assignedTentorId === tentor.id && jobItem.status === 'ASSIGNED'
     );
     for (const job of assignedJobs) {
       if (job.enrollmentId && seenIds.has(job.enrollmentId)) continue;
@@ -53,13 +53,13 @@
       
       const studentNames = Array.isArray(job.studentNames) && job.studentNames.length > 0
         ? job.studentNames.join(', ')
-        : (job.studentName || (job.studentId ? $dbStore.users.find((u) => u.id === job.studentId)?.fullName : 'Murid'));
+        : (job.studentName || (job.studentId ? $dbStore.users.find((userItem) => userItem.id === job.studentId)?.fullName : 'Murid'));
       
       const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
-      const subjectNames = $dbStore.subjects.filter((s) => subjectIds.includes(s.id)).map((s) => s.name).join(', ') || 'Mapel';
+      const subjectNames = $dbStore.subjects.filter((subjectItem) => subjectIds.includes(subjectItem.id)).map((subjectItem) => subjectItem.name).join(', ') || 'Mapel';
 
       const classIds = Array.isArray(job.classIds) && job.classIds.length > 0 ? job.classIds : (job.classId ? [job.classId] : []);
-      const classNames = $dbStore.classes.filter((c) => classIds.includes(c.id)).map((c) => c.className).join(', ') || 'Kelas';
+      const classNames = $dbStore.classes.filter((classItem) => classIds.includes(classItem.id)).map((classItem) => classItem.className).join(', ') || 'Kelas';
 
       const isGroup = (job.studentCount && job.studentCount > 1) || (Array.isArray(job.studentIds) && job.studentIds.length > 1);
 
@@ -89,7 +89,7 @@
     selectedEnrollmentId = myActiveAssignments[0].id;
   }
 
-  $: selectedAssignment = myActiveAssignments.find((a) => a.id === selectedEnrollmentId);
+  $: selectedAssignment = myActiveAssignments.find((assignmentItem) => assignmentItem.id === selectedEnrollmentId);
 
   $: if (selectedAssignment) {
     if (selectedAssignment.scheduleTime) startTime = selectedAssignment.scheduleTime;
@@ -97,16 +97,16 @@
   }
 
   // Duration calculation
-  function time24ToMin(t: string): number | null {
-    const m = /^([01][0-9]|2[0-3]):([0-5][0-9])$/.exec(String(t || '').trim());
-    return m ? +m[1] * 60 + +m[2] : null;
+  function time24ToMin(timeString: string): number | null {
+    const match = /^([01][0-9]|2[0-3]):([0-5][0-9])$/.exec(String(timeString || '').trim());
+    return match ? +match[1] * 60 + +match[2] : null;
   }
 
   $: durationMinutes = (() => {
-    const s = time24ToMin(startTime);
-    const e = time24ToMin(endTime);
-    if (s === null || e === null || s === e) return 90;
-    return e > s ? e - s : e - s + 1440;
+    const startMinutes = time24ToMin(startTime);
+    const endMinutes = time24ToMin(endTime);
+    if (startMinutes === null || endMinutes === null || startMinutes === endMinutes) return 90;
+    return endMinutes > startMinutes ? endMinutes - startMinutes : endMinutes - startMinutes + 1440;
   })();
 
   $: sessionsCount = Math.round((durationMinutes / 90) * 10) / 10;
@@ -173,8 +173,8 @@
 </script>
 
 <Modal {open} {onClose} title="Check-in Presensi" icon="location_on" maxWidth="620px">
-  <div id="gps-box" style="margin-bottom:12px">
-    <div class="quick-actions" style="margin-bottom:10px">
+  <div id="gps-box" class="mb-3">
+    <div class="quick-actions mb-2.5">
       <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" on:click={handleGetGps} icon="gps_fixed">
         Ambil Lokasi GPS
       </Button>
@@ -198,7 +198,7 @@
         id="f_enr"
         required
         bind:value={selectedEnrollmentId}
-        options={myActiveAssignments.map((a) => ({ value: a.id, label: a.label }))}
+        options={myActiveAssignments.map((assignmentItem) => ({ value: assignmentItem.id, label: assignmentItem.label }))}
       />
     </div>
 

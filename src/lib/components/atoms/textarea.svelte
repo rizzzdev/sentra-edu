@@ -19,7 +19,7 @@
   {readonly}
   {required}
   bind:value
-  class="w-full p-3 text-sm bg-[var(--color-surface)] text-[var(--color-fg)] border border-[var(--color-border)] rounded-[var(--radius-sm)] outline-none transition-colors duration-150 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)] disabled:opacity-50 disabled:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed resize-y {className}"
+  class="w-full p-3 text-sm bg-surface text-fg border border-border rounded-xl outline-none transition-colors duration-150 focus:border-primary focus:ring-2 focus:ring-primary-soft disabled:opacity-50 disabled:bg-muted disabled:cursor-not-allowed resize-y {className}"
   on:input
   on:change
 ></textarea>

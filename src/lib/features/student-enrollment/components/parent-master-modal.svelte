@@ -57,9 +57,9 @@
       } else {
         toastStore.error(response.message);
       }
-    } catch (err) {
-      if (err instanceof ZodError) {
-        toastStore.error(err.errors[0].message);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        toastStore.error(error.errors[0].message);
       } else {
         toastStore.error('Terjadi kesalahan validasi data.');
       }
@@ -127,7 +127,7 @@
       />
     </div>
 
-    <div class="modal-foot" style="padding: 14px 0 0; border-top: none;">
+    <div class="modal-foot pt-3.5 border-t-0">
       <Button variant="outline" on:click={onClose}>
         Batal
       </Button>

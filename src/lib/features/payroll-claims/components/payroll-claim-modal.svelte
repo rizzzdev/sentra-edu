@@ -22,7 +22,7 @@
   let selectedMonth: string = String(now.getMonth() + 1);
   let selectedYear: number = now.getFullYear();
 
-  $: tentors = $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'TENTOR' && u.isActive);
+  $: tentors = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'TENTOR' && userItem.isActive);
 
   $: if (tentor) {
     selectedTentorId = tentor.id;
@@ -36,33 +36,33 @@
   ];
 
   // Tentor options for SelectSearch
-  $: tentorOptions = tentors.map((t) => {
-    const info = getTentorSessionCount(t.id);
+  $: tentorOptions = tentors.map((tentorUser) => {
+    const info = getTentorSessionCount(tentorUser.id);
     return {
-      value: t.id,
-      label: `${t.fullName} (${info.count} sesi · ${formatCurrencyIDR(info.total)})`
+      value: tentorUser.id,
+      label: `${tentorUser.fullName} (${info.count} sesi · ${formatCurrencyIDR(info.total)})`
     };
   });
 
   // Month options
-  $: monthOptions = monthNames.map((m, i) => ({
-    value: String(i + 1),
-    label: `${m} ${selectedYear}`
+  $: monthOptions = monthNames.map((monthName, index) => ({
+    value: String(index + 1),
+    label: `${monthName} ${selectedYear}`
   }));
 
-  function getTentorSessionCount(tId: string): { count: number; total: number } {
+  function getTentorSessionCount(targetTentorId: string): { count: number; total: number } {
     const existingClaimedIds = $dbStore.payrollClaims
-      .filter((c) => c.deletedAt === null && c.status !== 'REJECTED')
-      .flatMap((c) => c.attendanceIds);
+      .filter((claimItem) => claimItem.deletedAt === null && claimItem.status !== 'REJECTED')
+      .flatMap((claimItem) => claimItem.attendanceIds);
 
     const attendances = $dbStore.attendances.filter(
-      (a) => a.deletedAt === null && a.tentorId === tId && a.status === 'APPROVED' && !existingClaimedIds.includes(a.id)
+      (attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.tentorId === targetTentorId && attendanceItem.status === 'APPROVED' && !existingClaimedIds.includes(attendanceItem.id)
     );
 
-    const total = attendances.reduce((sum, a) => {
-      const enr = $dbStore.enrollments.find((e) => e.id === a.enrollmentId);
-      const pkg = enr ? $dbStore.packages.find((p) => p.id === enr.packageId) : null;
-      return sum + (pkg ? pkg.tentorFee : 100000);
+    const total = attendances.reduce((sum, attendanceItem) => {
+      const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
+      const packagePlan = enrollmentItem ? $dbStore.packages.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
+      return sum + (packagePlan ? packagePlan.tentorFee : 100000);
     }, 0);
 
     return { count: attendances.length, total };
@@ -70,38 +70,38 @@
 
   // Detail sesi yang akan diklaim
   $: pendingAttendances = selectedTentorId
-    ? $dbStore.attendances.filter((a) => {
+    ? $dbStore.attendances.filter((attendanceItem) => {
         const existingClaimedIds = $dbStore.payrollClaims
-          .filter((c) => c.deletedAt === null && c.status !== 'REJECTED')
-          .flatMap((c) => c.attendanceIds);
-        return a.deletedAt === null && a.tentorId === selectedTentorId && a.status === 'APPROVED' && !existingClaimedIds.includes(a.id);
+          .filter((claimItem) => claimItem.deletedAt === null && claimItem.status !== 'REJECTED')
+          .flatMap((claimItem) => claimItem.attendanceIds);
+        return attendanceItem.deletedAt === null && attendanceItem.tentorId === selectedTentorId && attendanceItem.status === 'APPROVED' && !existingClaimedIds.includes(attendanceItem.id);
       })
     : [];
 
-  $: sessionTotal = pendingAttendances.reduce((sum, a) => {
-    const enr = $dbStore.enrollments.find((e) => e.id === a.enrollmentId);
-    const pkg = enr ? $dbStore.packages.find((p) => p.id === enr.packageId) : null;
-    return sum + (pkg ? pkg.tentorFee : 100000);
+  $: sessionTotal = pendingAttendances.reduce((sum, attendanceItem) => {
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
+    const packagePlan = enrollmentItem ? $dbStore.packages.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
+    return sum + (packagePlan ? packagePlan.tentorFee : 100000);
   }, 0);
 
   function getStudentName(enrollmentId: string): string {
-    const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    if (!enr) return '—';
-    const stu = $dbStore.users.find((u) => u.id === enr.studentId);
-    return stu?.fullName || '—';
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    if (!enrollmentItem) return '—';
+    const studentUser = $dbStore.users.find((userItem) => userItem.id === enrollmentItem.studentId);
+    return studentUser?.fullName || '—';
   }
 
   function getSubjectName(enrollmentId: string): string {
-    const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    if (!enr) return '—';
-    const sub = $dbStore.subjects.find((s) => s.id === enr.subjectId);
-    return sub?.name || '—';
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    if (!enrollmentItem) return '—';
+    const subjectItem = $dbStore.subjects.find((subject) => subject.id === enrollmentItem.subjectId);
+    return subjectItem?.name || '—';
   }
 
   function getFee(enrollmentId: string): number {
-    const enr = $dbStore.enrollments.find((e) => e.id === enrollmentId);
-    const pkg = enr ? $dbStore.packages.find((p) => p.id === enr.packageId) : null;
-    return pkg ? pkg.tentorFee : 100000;
+    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    const packagePlan = enrollmentItem ? $dbStore.packages.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
+    return packagePlan ? packagePlan.tentorFee : 100000;
   }
 
   function handleSubmit() {
@@ -115,7 +115,7 @@
       return;
     }
 
-    const attIds = pendingAttendances.map((a) => a.id);
+    const attendanceIds = pendingAttendances.map((attendanceItem) => attendanceItem.id);
 
     const payload = {
       tentorId: selectedTentorId,
@@ -124,7 +124,7 @@
       periodMonth: Number(selectedMonth),
       periodYear: selectedYear,
       totalAmount: sessionTotal,
-      attendanceIds: attIds
+      attendanceIds
     };
 
     const response = dbStore.submitPayrollClaim(payload);
@@ -150,7 +150,7 @@
         />
       </div>
     {:else}
-      <div class="alert alert-info" style="margin-top:-4px">
+      <div class="alert alert-info -mt-1">
         <Icon name="verified" size="sm" />
         <span>Hanya sesi <strong>APPROVED yang belum masuk klaim lain</strong> yang dihitung.</span>
       </div>
@@ -174,7 +174,7 @@
 
     <!-- Detail sesi yang akan diklaim -->
     {#if selectedTentorId && pendingAttendances.length > 0}
-      <div class="alert alert-success" style="margin-top:4px">
+      <div class="alert alert-success mt-1">
         <Icon name="check_circle" size="sm" />
         <span>
           <strong>{pendingAttendances.length} sesi</strong> APPROVED akan dimasukkan ke klaim ini
@@ -182,8 +182,8 @@
         </span>
       </div>
 
-      <div style="margin-top:12px; max-height:240px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm);">
-        <table class="tbl" style="margin:0;">
+      <div class="mt-3 max-h-60 overflow-y-auto border border-border rounded-xl">
+        <table class="tbl m-0">
           <thead>
             <tr>
               <th>Tanggal</th>
@@ -205,7 +205,7 @@
         </table>
       </div>
     {:else if selectedTentorId}
-      <div class="alert alert-warning" style="margin-top:8px">
+      <div class="alert alert-warning mt-2">
         <Icon name="warning" size="sm" />
         <span>Belum ada sesi APPROVED yang tersedia untuk klaim pada periode ini.</span>
       </div>

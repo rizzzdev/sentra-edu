@@ -102,25 +102,24 @@
   }
 </script>
 
-<div class="auth-page">
-  <div class="auth-card" style="max-width:540px">
+<div class="flex min-h-screen items-center justify-center p-6 sm:p-8 bg-bg">
+  <div class="w-full max-w-lg bg-surface border border-border rounded-2xl shadow-md p-8">
 
     <!-- Brand Header -->
-    <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;margin-bottom:16px">
+    <div class="flex items-center gap-2.5 font-extrabold text-lg mb-4">
       <img
-        class="logo"
+        class="w-9 h-9 rounded-xl object-cover"
         src="/logo-sentraedu.jpg"
         alt="SentraEdu"
-        style="width:36px;height:36px;border-radius:11px;object-fit:cover"
       />
-      <span class="brand-name">
-        <span style="color:var(--primary)">Sentra</span><span style="color:var(--accent)">Edu</span>
+      <span class="brand-name font-extrabold">
+        <span class="text-primary">Sentra</span><span class="text-accent">Edu</span>
       </span>
     </div>
 
     <!-- Title & Theme Toggle -->
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <h1 style="font-size:1.25rem;display:flex;align-items:center;gap:8px">
+    <div class="flex items-center justify-between gap-3">
+      <h1 class="text-xl font-bold flex items-center gap-2">
         <Icon name="how_to_reg" filled={true} />
         {tokenValidation.magicLink?.title || 'Pendaftaran Siswa Baru'}
       </h1>
@@ -134,7 +133,7 @@
       />
     </div>
 
-    <p style="color:var(--muted-fg);font-size:.9rem;margin:6px 0 18px">
+    <p class="text-muted-fg text-sm my-2 mb-4.5">
       Lengkapi formulir 2 langkah di bawah ini untuk mendaftar.
     </p>
 
@@ -145,32 +144,32 @@
           <Icon name="check_circle" size="xl" />
         </div>
         <div>
-          <h2 style="font-size:1.3rem;font-weight:800">Pendaftaran Berhasil!</h2>
-          <p style="color:var(--muted-fg);font-size:.9rem;margin-top:6px">
+          <h2 class="text-xl font-extrabold">Pendaftaran Berhasil!</h2>
+          <p class="text-muted-fg text-sm mt-1.5">
             {#if isExistingWali}
               Siswa <strong>{createdAccounts.student.fullName}</strong> berhasil didaftarkan dan ditautkan ke Wali Murid <strong>{createdAccounts.wali.fullName}</strong>.
             {:else}
               Akun Siswa & Akun Wali Murid Baru telah berhasil dibuat.
             {/if}
-            <br/><span style="color:var(--warn);font-weight:600">Akun Anda sedang menunggu verifikasi dari admin sebelum bisa digunakan.</span>
+            <br/><span class="text-warn font-semibold">Akun Anda sedang menunggu verifikasi dari admin sebelum bisa digunakan.</span>
           </p>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;text-align:left;margin:8px 0">
-          <div style="padding:14px;background:var(--primary-soft);border-radius:12px">
-            <div style="display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:700;font-size:.78rem">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left my-2">
+          <div class="p-3.5 bg-primary-soft rounded-xl">
+            <div class="flex items-center gap-1.5 text-primary font-bold text-xs">
               <Icon name="school" size="xs" /> Akun Siswa
             </div>
-            <div style="font-weight:700;font-size:.88rem;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{createdAccounts.student.fullName}</div>
-            <div style="color:var(--muted-fg);font-size:.78rem;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{createdAccounts.student.email}</div>
+            <div class="font-bold text-sm mt-1 truncate">{createdAccounts.student.fullName}</div>
+            <div class="text-muted-fg text-xs font-mono truncate">{createdAccounts.student.email}</div>
           </div>
 
-          <div style="padding:14px;background:var(--accent-soft);border-radius:12px">
-            <div style="display:flex;align-items:center;gap:6px;color:var(--accent-strong);font-weight:700;font-size:.78rem">
+          <div class="p-3.5 bg-accent-soft rounded-xl">
+            <div class="flex items-center gap-1.5 text-accent-strong font-bold text-xs">
               <Icon name="family_restroom" size="xs" /> Akun Wali Murid
             </div>
-            <div style="font-weight:700;font-size:.88rem;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{createdAccounts.wali.fullName}</div>
-            <div style="color:var(--muted-fg);font-size:.78rem;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{createdAccounts.wali.email}</div>
+            <div class="font-bold text-sm mt-1 truncate">{createdAccounts.wali.fullName}</div>
+            <div class="text-muted-fg text-xs font-mono truncate">{createdAccounts.wali.email}</div>
           </div>
         </div>
 
@@ -199,8 +198,8 @@
           <Icon name="history_toggle_off" size="xl" />
         </div>
         <div>
-          <h2 style="font-size:1.15rem;font-weight:700;color:var(--danger)">Magic Link Tidak Valid / Kadaluarsa</h2>
-          <p style="color:var(--muted-fg);font-size:.88rem;margin-top:6px">
+          <h2 class="text-lg font-bold text-danger">Magic Link Tidak Valid / Kadaluarsa</h2>
+          <p class="text-muted-fg text-sm mt-1.5">
             {tokenValidation.message}
           </p>
         </div>
@@ -215,14 +214,14 @@
 
     {:else}
       <!-- NUMBERED CIRCLE STEPPER -->
-      <div style="display:flex;align-items:center;justify-content:center;max-width:320px;margin:0 auto 28px">
-        <div style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:2px solid {currentStep >= 1 ? 'var(--primary)' : 'var(--border)'};font-weight:800;font-size:1.1rem;transition:all .15s;{currentStep >= 1 ? 'color:var(--primary);background:var(--surface);box-shadow:0 0 0 4px rgba(37,99,235,.1)' : 'color:var(--muted-fg);background:var(--muted)'}">
+      <div class="flex items-center justify-center max-w-xs mx-auto mb-7">
+        <div class="flex items-center justify-center w-11 h-11 rounded-full border-2 font-extrabold text-lg transition-all {currentStep >= 1 ? 'border-primary text-primary bg-surface shadow-sm ring-4 ring-primary/10' : 'border-border text-muted-fg bg-muted'}">
           1
         </div>
 
-        <div style="flex:1;height:2px;margin:0 12px;background:{currentStep >= 2 ? 'var(--primary)' : 'var(--border)'};transition:background .15s"></div>
+        <div class="flex-1 h-0.5 mx-3 transition-colors {currentStep >= 2 ? 'bg-primary' : 'bg-border'}"></div>
 
-        <div style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:2px solid {currentStep === 2 ? 'var(--primary)' : 'var(--border)'};font-weight:800;font-size:1.1rem;transition:all .15s;{currentStep === 2 ? 'color:var(--primary);background:var(--surface);box-shadow:0 0 0 4px rgba(37,99,235,.1)' : 'color:var(--muted-fg);background:var(--muted)'}">
+        <div class="flex items-center justify-center w-11 h-11 rounded-full border-2 font-extrabold text-lg transition-all {currentStep === 2 ? 'border-primary text-primary bg-surface shadow-sm ring-4 ring-primary/10' : 'border-border text-muted-fg bg-muted'}">
           2
         </div>
       </div>
@@ -230,9 +229,9 @@
       {#if currentStep === 1}
         <!-- STEP 1: DATA SISWA -->
         <form on:submit|preventDefault={handleNextToStep2} novalidate>
-          <div style="padding-bottom:8px;margin-bottom:12px;border-bottom:1px solid var(--border)">
-            <h3 style="font-size:1.05rem;font-weight:700">Mari kita mulai dari Data Siswa.</h3>
-            <p style="color:var(--muted-fg);font-size:.82rem;margin-top:2px">Isi rincian data calon siswa yang akan didaftarkan.</p>
+          <div class="pb-2 mb-3 border-b border-border">
+            <h3 class="text-base font-bold">Mari kita mulai dari Data Siswa.</h3>
+            <p class="text-muted-fg text-xs mt-0.5">Isi rincian data calon siswa yang akan didaftarkan.</p>
           </div>
 
           <div class="field">
@@ -291,28 +290,30 @@
           </div>
 
           {#if errorMessage}
-            <div class="form-error" style="display:block">
+            <div class="form-error block">
               {errorMessage}
             </div>
           {/if}
 
-          <Button type="submit" variant="primary" fullWidth icon="arrow_forward" style="margin-top:12px">
-            SELANJUTNYA
-          </Button>
+          <div class="mt-3">
+            <Button type="submit" variant="primary" fullWidth icon="arrow_forward">
+              SELANJUTNYA
+            </Button>
+          </div>
         </form>
 
       {:else}
         <!-- STEP 2: DATA WALI MURID -->
         <form on:submit|preventDefault={handleRegister} novalidate>
-          <div style="padding-bottom:8px;margin-bottom:12px;border-bottom:1px solid var(--border)">
-            <h3 style="font-size:1.05rem;font-weight:700">Selanjutnya, Data Orang Tua / Wali.</h3>
-            <p style="color:var(--muted-fg);font-size:.82rem;margin-top:2px">Pilih status akun wali murid untuk penautan.</p>
+          <div class="pb-2 mb-3 border-b border-border">
+            <h3 class="text-base font-bold">Selanjutnya, Data Orang Tua / Wali.</h3>
+            <p class="text-muted-fg text-xs mt-0.5">Pilih status akun wali murid untuk penautan.</p>
           </div>
 
           <!-- Radio Choice Selector -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div class="grid grid-cols-2 gap-2.5 mb-3.5">
             <label
-              style="display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 14px;border-radius:10px;border:1px solid {isExistingWali === false ? 'var(--primary)' : 'var(--border)'};font-size:.82rem;font-weight:700;cursor:pointer;transition:all .12s;{isExistingWali === false ? 'background:var(--primary-soft);color:var(--primary-strong)' : 'background:var(--surface);color:var(--muted-fg)'}"
+              class="flex items-center justify-center text-center px-3.5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all {isExistingWali === false ? 'border-primary bg-primary-soft text-primary-strong' : 'border-border bg-surface text-muted-fg hover:bg-muted'}"
             >
               <input
                 type="radio"
@@ -325,7 +326,7 @@
             </label>
 
             <label
-              style="display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 14px;border-radius:10px;border:1px solid {isExistingWali === true ? 'var(--primary)' : 'var(--border)'};font-size:.82rem;font-weight:700;cursor:pointer;transition:all .12s;{isExistingWali === true ? 'background:var(--primary-soft);color:var(--primary-strong)' : 'background:var(--surface);color:var(--muted-fg)'}"
+              class="flex items-center justify-center text-center px-3.5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all {isExistingWali === true ? 'border-primary bg-primary-soft text-primary-strong' : 'border-border bg-surface text-muted-fg hover:bg-muted'}"
             >
               <input
                 type="radio"
@@ -420,12 +421,12 @@
           {/if}
 
           {#if errorMessage}
-            <div class="form-error" style="display:block">
+            <div class="form-error block">
               {errorMessage}
             </div>
           {/if}
 
-          <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+          <div class="flex items-center gap-2.5 mt-3.5">
             <Button
               variant="outline"
               isIconOnly

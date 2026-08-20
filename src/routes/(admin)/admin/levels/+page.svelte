@@ -15,13 +15,13 @@
   let deleteDialogOpen: boolean = false;
   let deletingLevelId: string | null = null;
 
-  $: allLevels = $dbStore.educationLevels.filter((l) => l.deletedAt === null);
+  $: allLevels = $dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null);
 
   $: filteredLevels = allLevels.filter(
-    (l) =>
+    (levelItem) =>
       !searchQuery ||
-      l.levelName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (l.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+      levelItem.levelName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (levelItem.description || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   $: paginatedLevels = filteredLevels.slice(
@@ -31,7 +31,7 @@
   $: totalPages = Math.max(1, Math.ceil(filteredLevels.length / itemsPerPage));
 
   function getClassCount(levelId: string): number {
-    return $dbStore.classes.filter((c) => c.deletedAt === null && c.educationLevelId === levelId).length;
+    return $dbStore.classes.filter((classItem) => classItem.deletedAt === null && classItem.educationLevelId === levelId).length;
   }
 
   function handleOpenCreate() {
@@ -83,7 +83,7 @@
             <th>Jenjang</th>
             <th class="num">Jumlah Kelas</th>
             <th>Deskripsi</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -94,18 +94,18 @@
               </td>
             </tr>
           {:else}
-            {#each paginatedLevels as l (l.id)}
+            {#each paginatedLevels as levelItem (levelItem.id)}
               <tr>
-                <td><strong>{l.levelName}</strong></td>
-                <td class="num">{getClassCount(l.id)} kelas</td>
-                <td>{l.description || '—'}</td>
+                <td><strong>{levelItem.levelName}</strong></td>
+                <td class="num">{getClassCount(levelItem.id)} kelas</td>
+                <td>{levelItem.description || '—'}</td>
                 <td>
                   <div class="actions">
                     <button
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEdit(l)}
+                      on:click={() => handleOpenEdit(levelItem)}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -114,7 +114,7 @@
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
                       on:click={() => {
-                        deletingLevelId = l.id;
+                        deletingLevelId = levelItem.id;
                         deleteDialogOpen = true;
                       }}
                     >
@@ -143,13 +143,13 @@
           >
             &laquo;
           </button>
-          {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+          {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
             <button
               type="button"
-              class="page-btn {currentPage === p ? 'active' : ''}"
-              on:click={() => { currentPage = p; }}
+              class="page-btn {currentPage === pageNumber ? 'active' : ''}"
+              on:click={() => { currentPage = pageNumber; }}
             >
-              {p}
+              {pageNumber}
             </button>
           {/each}
           <button

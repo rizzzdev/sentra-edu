@@ -12,13 +12,13 @@
 
   function getPageNumbers(current: number, max: number): (number | string)[] {
     if (max <= 7) {
-      return Array.from({ length: max }, (_, i) => i + 1);
+      return Array.from({ length: max }, (_, index) => index + 1);
     }
     const pages: (number | string)[] = [1];
     const start = Math.max(2, current - 2);
     const end = Math.min(max - 1, current + 2);
     if (start > 2) pages.push('…');
-    for (let i = start; i <= end; i++) pages.push(i);
+    for (let pageIndex = start; pageIndex <= end; pageIndex++) pages.push(pageIndex);
     if (end < max - 1) pages.push('…');
     pages.push(max);
     return pages;
@@ -30,92 +30,40 @@
 </script>
 
 {#if totalItems > 0}
-  <div class="page-nav">
-    <div class="page-info">
-      Menampilkan <strong>{startItem}–{endItem}</strong> dari <strong>{totalItems}</strong> data
+  <div class="flex items-center justify-between p-3 sm:px-4 border-t border-border text-xs text-muted-fg bg-surface">
+    <div>
+      Menampilkan <strong class="text-fg">{startItem}–{endItem}</strong> dari <strong class="text-fg">{totalItems}</strong> data
     </div>
-    <div class="page-btns">
-      <button type="button" class="page-btn" disabled={currentPage <= 1} on:click={() => go(currentPage - 1)}>
+    <div class="flex items-center gap-1">
+      <button
+        type="button"
+        class="inline-flex items-center justify-center min-w-8 h-8 px-1.5 border border-border rounded-lg bg-surface text-fg text-xs font-semibold cursor-pointer transition-all hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+        disabled={currentPage <= 1}
+        on:click={() => go(currentPage - 1)}
+        aria-label="Halaman Sebelumnya"
+      >
         <Icon name="chevron_left" size="xs" />
       </button>
-      {#each getPageNumbers(currentPage, totalPages) as p}
-        {#if p === '…'}
-          <span class="page-dots">…</span>
+      {#each getPageNumbers(currentPage, totalPages) as pageNumber}
+        {#if pageNumber === '…'}
+          <span class="inline-flex items-center justify-center min-w-7 h-8 text-muted-fg text-xs">…</span>
         {:else}
           <button
             type="button"
-            class="page-btn {currentPage === p ? 'active' : ''}"
-            on:click={() => go(Number(p))}
-          >{p}</button>
+            class="inline-flex items-center justify-center min-w-8 h-8 px-1.5 border rounded-lg text-xs font-semibold cursor-pointer transition-all {currentPage === pageNumber ? 'bg-primary border-primary text-white font-bold' : 'bg-surface border-border text-fg hover:bg-muted'}"
+            on:click={() => go(Number(pageNumber))}
+          >{pageNumber}</button>
         {/if}
       {/each}
-      <button type="button" class="page-btn" disabled={currentPage >= totalPages} on:click={() => go(currentPage + 1)}>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center min-w-8 h-8 px-1.5 border border-border rounded-lg bg-surface text-fg text-xs font-semibold cursor-pointer transition-all hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+        disabled={currentPage >= totalPages}
+        on:click={() => go(currentPage + 1)}
+        aria-label="Halaman Berikutnya"
+      >
         <Icon name="chevron_right" size="xs" />
       </button>
     </div>
   </div>
 {/if}
-
-<style>
-  .page-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-top: 1px solid var(--color-border, #e2e8f0);
-    font-size: 0.78rem;
-    color: var(--color-fg-muted, #64748b);
-  }
-
-  .page-info strong {
-    color: var(--color-fg, #1e293b);
-  }
-
-  .page-btns {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .page-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    height: 32px;
-    padding: 0 6px;
-    border: 1px solid var(--color-border, #e2e8f0);
-    border-radius: 6px;
-    background: var(--color-surface, #fff);
-    color: var(--color-fg, #1e293b);
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.12s;
-  }
-
-  .page-btn:hover:not(:disabled):not(.active) {
-    background: var(--color-surface-hover, #f1f5f9);
-  }
-
-  .page-btn.active {
-    background: var(--color-primary, #6366f1);
-    border-color: var(--color-primary, #6366f1);
-    color: #fff;
-  }
-
-  .page-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .page-dots {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 28px;
-    height: 32px;
-    color: var(--color-fg-muted, #94a3b8);
-    font-size: 0.82rem;
-  }
-</style>

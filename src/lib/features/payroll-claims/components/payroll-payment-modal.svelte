@@ -14,7 +14,7 @@
 
   let transferProofUrl: string = '';
 
-  $: tentor = claim ? $dbStore.users.find((u) => u.id === claim?.tentorId) : null;
+  $: tentor = claim ? $dbStore.users.find((userItem) => userItem.id === claim?.tentorId) : null;
 
   function handleProcessPayment() {
     if (!claim) return;

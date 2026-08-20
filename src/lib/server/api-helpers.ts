@@ -107,7 +107,7 @@ function mapEnrollmentRow(row: DatabaseRow) {
   };
 }
 
-function ensureArray(val: unknown): string[] {
+function ensureArray(val: string | number | boolean | string[] | number[] | boolean[] | null | undefined): string[] {
   if (Array.isArray(val)) return val.map(String);
   if (typeof val === 'string' && val.startsWith('{') && val.endsWith('}')) {
     const inner = val.slice(1, -1).trim();
@@ -118,7 +118,7 @@ function ensureArray(val: unknown): string[] {
       if (Array.isArray(parsed)) return parsed.map(String);
     } catch { /* not JSON */ }
     // PostgreSQL array format: {a,b,c} — split by comma
-    return inner.split(',').map((s) => s.trim().replace(/^"|"$/g, ''));
+    return inner.split(',').map((segment) => segment.trim().replace(/^"|"$/g, ''));
   }
   return [];
 }

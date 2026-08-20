@@ -70,7 +70,7 @@
 </script>
 
 <Modal {open} {onClose} title="Generate Tagihan SPP" icon="receipt_long" maxWidth="540px">
-  <div class="alert alert-info" style="margin-top:-4px">
+  <div class="alert alert-info -mt-1">
     <Icon name="auto_awesome" size="sm" />
     <span>Total dihitung otomatis dari sesi APPROVED murid pada periode terpilih.</span>
   </div>
@@ -82,7 +82,7 @@
         id="f_studentId" 
         required 
         bind:value={selectedStudentId}
-        options={enrollments.map(e => ({ value: e.studentId, label: getStudentEnrollmentLabel(e) }))}
+        options={enrollments.map((enrollmentItem) => ({ value: enrollmentItem.studentId, label: getStudentEnrollmentLabel(enrollmentItem) }))}
       />
     </div>
 
@@ -93,7 +93,7 @@
           id="f_month" 
           required 
           bind:value={selectedMonth}
-          options={monthNames.map((mName, i) => ({ value: String(i + 1), label: `${mName} ${selectedYear}` }))}
+          options={monthNames.map((monthName, index) => ({ value: String(index + 1), label: `${monthName} ${selectedYear}` }))}
         />
       </div>
 

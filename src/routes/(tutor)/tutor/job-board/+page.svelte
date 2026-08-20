@@ -33,100 +33,100 @@
     }, 250);
   });
 
-  function getClassesList(job: JobPosting): string[] {
-    const ids = Array.isArray(job.classIds) && job.classIds.length > 0
-      ? job.classIds
-      : (job.classId ? [job.classId] : []);
-    const names = ids
-      .map((id) => $dbStore.classes.find((c) => c.id === id)?.className)
-      .filter((n): n is string => Boolean(n));
+  function getClassesList(jobPosting: JobPosting): string[] {
+    const classIds = Array.isArray(jobPosting.classIds) && jobPosting.classIds.length > 0
+      ? jobPosting.classIds
+      : (jobPosting.classId ? [jobPosting.classId] : []);
+    const names = classIds
+      .map((classIdentifier) => $dbStore.classes.find((classItem) => classItem.id === classIdentifier)?.className)
+      .filter((name): name is string => Boolean(name));
     return names.length > 0 ? names : ['Semua Kelas'];
   }
 
-  function getSubjectsList(job: JobPosting): string[] {
-    const ids = Array.isArray(job.subjectIds) && job.subjectIds.length > 0
-      ? job.subjectIds
-      : (job.subjectId ? [job.subjectId] : []);
-    const names = ids
-      .map((id) => $dbStore.subjects.find((s) => s.id === id)?.name)
-      .filter((n): n is string => Boolean(n));
+  function getSubjectsList(jobPosting: JobPosting): string[] {
+    const subjectIds = Array.isArray(jobPosting.subjectIds) && jobPosting.subjectIds.length > 0
+      ? jobPosting.subjectIds
+      : (jobPosting.subjectId ? [jobPosting.subjectId] : []);
+    const names = subjectIds
+      .map((subjectIdentifier) => $dbStore.subjects.find((subjectItem) => subjectItem.id === subjectIdentifier)?.name)
+      .filter((name): name is string => Boolean(name));
     return names.length > 0 ? names : ['Semua Mapel'];
   }
 
   function getPackage(packageId?: string) {
     if (!packageId) return null;
-    return $dbStore.packages.find((p) => p.id === packageId) || null;
+    return $dbStore.packages.find((packageItem) => packageItem.id === packageId) || null;
   }
 
-  function getJobFee(job: JobPosting): number {
-    const pkg = getPackage(job.packageId);
-    return pkg?.tentorFee ? pkg.tentorFee : (job.tentorFee || 0);
+  function getJobFee(jobPosting: JobPosting): number {
+    const packagePlan = getPackage(jobPosting.packageId);
+    return packagePlan?.tentorFee ? packagePlan.tentorFee : (jobPosting.tentorFee || 0);
   }
 
-  function getStudentCount(job: JobPosting): number {
-    if (job.studentCount && job.studentCount > 0) return job.studentCount;
-    if (Array.isArray(job.studentIds) && job.studentIds.length > 0) return job.studentIds.length;
-    if (Array.isArray(job.studentNames) && job.studentNames.length > 0) return job.studentNames.length;
+  function getStudentCount(jobPosting: JobPosting): number {
+    if (jobPosting.studentCount && jobPosting.studentCount > 0) return jobPosting.studentCount;
+    if (Array.isArray(jobPosting.studentIds) && jobPosting.studentIds.length > 0) return jobPosting.studentIds.length;
+    if (Array.isArray(jobPosting.studentNames) && jobPosting.studentNames.length > 0) return jobPosting.studentNames.length;
     return 1;
   }
 
-  function getJobMode(job: JobPosting): 'ONLINE' | 'OFFLINE' {
-    const raw = (job.jobMode || job.mode || 'OFFLINE').toUpperCase();
-    return raw === 'ONLINE' ? 'ONLINE' : 'OFFLINE';
+  function getJobMode(jobPosting: JobPosting): 'ONLINE' | 'OFFLINE' {
+    const rawMode = (jobPosting.jobMode || jobPosting.mode || 'OFFLINE').toUpperCase();
+    return rawMode === 'ONLINE' ? 'ONLINE' : 'OFFLINE';
   }
 
-  function getPackageMode(job: JobPosting): 'PRIVAT' | 'KELOMPOK' {
-    const pkg = getPackage(job.packageId);
-    const raw = (pkg?.mode || '').toUpperCase();
-    if (raw.includes('KELOMPOK') || raw.includes('GROUP') || getStudentCount(job) > 1) {
+  function getPackageMode(jobPosting: JobPosting): 'PRIVAT' | 'KELOMPOK' {
+    const packagePlan = getPackage(jobPosting.packageId);
+    const rawMode = (packagePlan?.mode || '').toUpperCase();
+    if (rawMode.includes('KELOMPOK') || rawMode.includes('GROUP') || getStudentCount(jobPosting) > 1) {
       return 'KELOMPOK';
     }
     return 'PRIVAT';
   }
 
-  $: openJobs = $dbStore.jobs.filter((j) => {
-    if (j.deletedAt !== null) return false;
-    if (j.status !== 'AVAILABLE' && j.status !== 'NEGOTIATING') return false;
+  $: openJobs = $dbStore.jobs.filter((jobItem) => {
+    if (jobItem.deletedAt !== null) return false;
+    if (jobItem.status !== 'AVAILABLE' && jobItem.status !== 'NEGOTIATING') return false;
 
-    if (statusFilter && j.status !== statusFilter) return false;
+    if (statusFilter && jobItem.status !== statusFilter) return false;
 
-    const jMode = getJobMode(j);
-    if (modeFilter && jMode !== modeFilter) return false;
+    const jobItemMode = getJobMode(jobItem);
+    if (modeFilter && jobItemMode !== modeFilter) return false;
 
-    const pMode = getPackageMode(j);
-    if (packageModeFilter && pMode !== packageModeFilter) return false;
+    const packagePlanMode = getPackageMode(jobItem);
+    if (packageModeFilter && packagePlanMode !== packageModeFilter) return false;
 
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return true;
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
 
-    const classNames = getClassesList(j).join(' ').toLowerCase();
-    const subjectNames = getSubjectsList(j).join(' ').toLowerCase();
-    const pkgName = (getPackage(j.packageId)?.name || '').toLowerCase();
-    const location = (j.location || '').toLowerCase();
+    const classNames = getClassesList(jobItem).join(' ').toLowerCase();
+    const subjectNames = getSubjectsList(jobItem).join(' ').toLowerCase();
+    const packageName = (getPackage(jobItem.packageId)?.name || '').toLowerCase();
+    const location = (jobItem.location || '').toLowerCase();
 
     return (
-      j.title.toLowerCase().includes(q) ||
-      classNames.includes(q) ||
-      subjectNames.includes(q) ||
-      pkgName.includes(q) ||
-      location.includes(q)
+      jobItem.title.toLowerCase().includes(query) ||
+      classNames.includes(query) ||
+      subjectNames.includes(query) ||
+      packageName.includes(query) ||
+      location.includes(query)
     );
   });
 
   function hasApplied(jobId: string): boolean {
     if (!currentUser) return false;
     return $dbStore.applications.some(
-      (a) => a.deletedAt === null && a.jobId === jobId && a.tentorId === currentUser?.id
+      (applicationItem) => applicationItem.deletedAt === null && applicationItem.jobId === jobId && applicationItem.tentorId === currentUser?.id
     );
   }
 
-  function handleOpenApply(job: JobPosting) {
-    applyingJob = job;
+  function handleOpenApply(jobPosting: JobPosting) {
+    applyingJob = jobPosting;
     applyModalOpen = true;
   }
 
-  function handleOpenLocation(job: JobPosting) {
-    viewingLocationJob = job;
+  function handleOpenLocation(jobPosting: JobPosting) {
+    viewingLocationJob = jobPosting;
     locationModalOpen = true;
   }
 </script>
@@ -188,7 +188,7 @@
         </div>
         <Skeleton width="w-full" height="h-4" />
         <Skeleton width="w-3/4" height="h-4" />
-        <div class="flex justify-between items-center pt-3 border-t border-[var(--color-border)]">
+        <div class="flex justify-between items-center pt-3 border-t border-border">
           <Skeleton width="w-36" height="h-5" />
           <Skeleton width="w-28" height="h-8" className="rounded-lg" />
         </div>
@@ -207,37 +207,36 @@
   </div>
 {:else}
   <div class="space-y-4">
-    {#each openJobs as j (j.id)}
-      {@const applied = hasApplied(j.id)}
-      {@const pkg = getPackage(j.packageId)}
-      {@const jMode = getJobMode(j)}
-      {@const pMode = getPackageMode(j)}
-      {@const fee = getJobFee(j)}
-      {@const studentCount = getStudentCount(j)}
+    {#each openJobs as jobItem (jobItem.id)}
+      {@const applied = hasApplied(jobItem.id)}
+      {@const jobMode = getJobMode(jobItem)}
+      {@const packagePlanMode = getPackageMode(jobItem)}
+      {@const fee = getJobFee(jobItem)}
+      {@const studentCount = getStudentCount(jobItem)}
 
       <div class="job-card">
         <!-- TOP HEADER -->
         <div class="j-top">
           <div>
-            <div class="j-title">{j.title}</div>
+            <div class="j-title">{jobItem.title}</div>
             <div class="flex items-center gap-1.5 flex-wrap mt-1.5">
-              <span class="badge {getStatusBadgeClass(j.status)}">
-                {#if j.status === 'AVAILABLE'}
+              <span class="badge {getStatusBadgeClass(jobItem.status)}">
+                {#if jobItem.status === 'AVAILABLE'}
                   <Icon name="event_available" size="xs" />
-                {:else if j.status === 'NEGOTIATING'}
+                {:else if jobItem.status === 'NEGOTIATING'}
                   <Icon name="handshake" size="xs" />
                 {/if}
-                {getStatusLabel(j.status, JOB_STATUS_LABEL)}
+                {getStatusLabel(jobItem.status, JOB_STATUS_LABEL)}
               </span>
 
-              <span class="badge {jMode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
-                <Icon name={jMode === 'ONLINE' ? 'videocam' : 'home_pin'} size="xs" />
-                {jMode === 'ONLINE' ? 'Online' : 'Tatap Muka'}
+              <span class="badge {jobMode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
+                <Icon name={jobMode === 'ONLINE' ? 'videocam' : 'home_pin'} size="xs" />
+                {jobMode === 'ONLINE' ? 'Online' : 'Tatap Muka'}
               </span>
 
-              <span class="badge {pMode === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
-                <Icon name={pMode === 'KELOMPOK' ? 'groups' : 'person'} size="xs" />
-                {pMode === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
+              <span class="badge {packagePlanMode === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
+                <Icon name={packagePlanMode === 'KELOMPOK' ? 'groups' : 'person'} size="xs" />
+                {packagePlanMode === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
               </span>
 
               <span class="badge b-neutral text-xs font-medium">
@@ -249,37 +248,37 @@
         </div>
 
         <!-- SPECS & DETAILS -->
-        <div class="j-meta-grid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3.5 pt-3 border-t border-border">
           <!-- KELAS -->
-          <div class="meta-item">
-            <span class="meta-label"><Icon name="stairs" size="xs" /> Kelas</span>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold uppercase tracking-wider text-muted-fg inline-flex items-center gap-1"><Icon name="stairs" size="xs" /> Kelas</span>
             <div class="flex items-center gap-1 flex-wrap mt-1">
-              {#each getClassesList(j) as cls}
+              {#each getClassesList(jobItem) as className}
                 <span class="badge b-neutral text-xs">
-                  {cls}
+                  {className}
                 </span>
               {/each}
             </div>
           </div>
 
           <!-- MAPEL -->
-          <div class="meta-item">
-            <span class="meta-label"><Icon name="menu_book" size="xs" /> Mata Pelajaran</span>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold uppercase tracking-wider text-muted-fg inline-flex items-center gap-1"><Icon name="menu_book" size="xs" /> Mata Pelajaran</span>
             <div class="flex items-center gap-1 flex-wrap mt-1">
-              {#each getSubjectsList(j) as sub}
+              {#each getSubjectsList(jobItem) as subjectName}
                 <span class="badge b-sky text-xs">
-                  {sub}
+                  {subjectName}
                 </span>
               {/each}
             </div>
           </div>
 
           <!-- JADWAL -->
-          <div class="meta-item sm:col-span-2">
-            <span class="meta-label"><Icon name="schedule" size="xs" /> Jadwal & Durasi</span>
+          <div class="flex flex-col sm:col-span-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-muted-fg inline-flex items-center gap-1"><Icon name="schedule" size="xs" /> Jadwal & Durasi</span>
             <div class="flex items-center gap-2 flex-wrap mt-1">
               <div class="flex items-center gap-1 flex-wrap">
-                {#each getScheduleDaysList(j.scheduleDays) as day}
+                {#each getScheduleDaysList(jobItem.scheduleDays) as day}
                   <span class="badge b-neutral text-xs font-semibold">
                     <Icon name="calendar_today" size="xs" />
                     {day}
@@ -287,18 +286,18 @@
                 {/each}
               </div>
               <span class="text-xs text-muted-fg font-medium">
-                • {j.scheduleTime || '16:00'}{#if j.scheduleEndTime} – {j.scheduleEndTime}{/if} WIB
-                ({j.sessionDurationMinutes || 90} menit/sesi)
+                • {jobItem.scheduleTime || '16:00'}{#if jobItem.scheduleEndTime} – {jobItem.scheduleEndTime}{/if} WIB
+                ({jobItem.sessionDurationMinutes || 90} menit/sesi)
               </span>
             </div>
           </div>
 
           <!-- CATATAN -->
-          {#if j.notes || j.additionalNotes}
-            <div class="meta-item sm:col-span-2">
-              <div class="text-xs text-muted-fg bg-[var(--color-surface-hover)] p-2.5 rounded-lg flex items-start gap-1.5">
+          {#if jobItem.notes || jobItem.additionalNotes}
+            <div class="flex flex-col sm:col-span-2">
+              <div class="text-xs text-muted-fg bg-muted p-2.5 rounded-lg flex items-start gap-1.5">
                 <Icon name="info" size="xs" className="mt-0.5 flex-shrink-0 text-primary" />
-                <span>{j.notes || j.additionalNotes}</span>
+                <span>{jobItem.notes || jobItem.additionalNotes}</span>
               </div>
             </div>
           {/if}
@@ -306,34 +305,34 @@
 
         <!-- FOOTER & ACTION -->
         <div class="j-foot">
-          <div class="meta-item">
-            <span class="meta-label"><Icon name="payments" size="xs" /> Estimasi Honor Pengajar</span>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold uppercase tracking-wider text-muted-fg inline-flex items-center gap-1"><Icon name="payments" size="xs" /> Estimasi Honor Pengajar</span>
             <div class="j-fee mt-0.5">
               <strong>{formatCurrencyIDR(fee)}</strong> <span class="text-xs text-muted-fg font-normal">/ sesi</span>
-              {#if j.transportAllowance && j.transportAllowance > 0}
+              {#if jobItem.transportAllowance && jobItem.transportAllowance > 0}
                 <span class="text-xs text-emerald-600 font-semibold ml-1">
-                  (+ {formatCurrencyIDR(j.transportAllowance)} transport)
+                  (+ {formatCurrencyIDR(jobItem.transportAllowance)} transport)
                 </span>
               {/if}
             </div>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
-            {#if jMode === 'OFFLINE' && (j.location || (j.latitude && j.longitude))}
+            {#if jobMode === 'OFFLINE' && (jobItem.location || (jobItem.latitude && jobItem.longitude))}
               <button
                 type="button"
                 class="btn btn-sm btn-outline inline-flex items-center gap-1.5"
-                on:click={() => handleOpenLocation(j)}
+                on:click={() => handleOpenLocation(jobItem)}
               >
                 <Icon name="location_on" size="xs" /> Lihat Lokasi
               </button>
             {/if}
 
-            {#if (j.status === 'AVAILABLE' || j.status === 'NEGOTIATING') && !applied}
+            {#if (jobItem.status === 'AVAILABLE' || jobItem.status === 'NEGOTIATING') && !applied}
               <button
                 type="button"
                 class="btn btn-sm btn-primary inline-flex items-center gap-1.5 shadow-sm"
-                on:click={() => handleOpenApply(j)}
+                on:click={() => handleOpenApply(jobItem)}
               >
                 <Icon name="send" size="xs" /> Ajukan Lamaran
               </button>
@@ -365,24 +364,36 @@
     open={locationModalOpen}
     title="Lokasi Bimbingan Belajar"
     icon="location_on"
-    maxWidth="600px"
+    maxWidth="620px"
     onClose={() => { locationModalOpen = false; }}
   >
-    <div>
+    <div class="flex flex-col gap-4 py-1">
       {#if viewingLocationJob.latitude && viewingLocationJob.longitude}
-        <div class="rounded-xl overflow-hidden border border-[var(--color-border)] shadow-sm">
+        <div class="rounded-xl overflow-hidden border border-border shadow-sm">
           <LeafletMap
             latitude={viewingLocationJob.latitude}
             longitude={viewingLocationJob.longitude}
             readonly={true}
-            height="320px"
+            height="300px"
             zoom={15}
           />
         </div>
-      {:else}
-        <div class="text-xs text-muted-fg italic text-center py-8 border border-dashed border-[var(--color-border)] rounded-xl">
+      {/if}
+
+      {#if viewingLocationJob.location}
+        <div class="flex items-start gap-3.5 p-4 sm:px-4.5 bg-muted border border-border rounded-xl">
+          <div class="w-9 h-9 rounded-lg bg-rose-100 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Icon name="pin_drop" size="sm" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold uppercase tracking-wider text-muted-fg">Alamat Lengkap</div>
+            <div class="text-sm font-medium text-fg leading-relaxed mt-1">{viewingLocationJob.location}</div>
+          </div>
+        </div>
+      {:else if !viewingLocationJob.latitude || !viewingLocationJob.longitude}
+        <div class="text-xs text-muted-fg italic text-center py-8 border border-dashed border-border rounded-xl">
           <Icon name="map" size="md" className="opacity-40 mb-1 block mx-auto text-3xl" />
-          Koordinat peta GPS belum disetel untuk lowongan ini.
+          Informasi lokasi belum disetel untuk lowongan ini.
         </div>
       {/if}
     </div>
@@ -394,36 +405,3 @@
     </svelte:fragment>
   </Modal>
 {/if}
-
-<style>
-  .j-meta-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid var(--color-border, #e2e8f0);
-  }
-
-  @media (min-width: 640px) {
-    .j-meta-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .meta-item {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .meta-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--color-muted-fg, #64748b);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-</style>

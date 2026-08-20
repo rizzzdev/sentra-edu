@@ -15,13 +15,13 @@
   let deleteDialogOpen: boolean = false;
   let deletingSubjectId: string | null = null;
 
-  $: allSubjects = $dbStore.subjects.filter((s) => s.deletedAt === null);
+  $: allSubjects = $dbStore.subjects.filter((subjectItem) => subjectItem.deletedAt === null);
 
   $: filteredSubjects = allSubjects.filter(
-    (s) =>
+    (subjectItem) =>
       !searchQuery ||
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (s.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+      subjectItem.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (subjectItem.description || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   $: paginatedSubjects = filteredSubjects.slice(
@@ -78,7 +78,7 @@
           <tr>
             <th>Nama</th>
             <th>Deskripsi</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -89,17 +89,17 @@
               </td>
             </tr>
           {:else}
-            {#each paginatedSubjects as s (s.id)}
+            {#each paginatedSubjects as subjectItem (subjectItem.id)}
               <tr>
-                <td><strong>{s.name}</strong></td>
-                <td>{s.description || '—'}</td>
+                <td><strong>{subjectItem.name}</strong></td>
+                <td>{subjectItem.description || '—'}</td>
                 <td>
                   <div class="actions">
                     <button
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEdit(s)}
+                      on:click={() => handleOpenEdit(subjectItem)}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -108,7 +108,7 @@
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
                       on:click={() => {
-                        deletingSubjectId = s.id;
+                        deletingSubjectId = subjectItem.id;
                         deleteDialogOpen = true;
                       }}
                     >
@@ -137,13 +137,13 @@
           >
             &laquo;
           </button>
-          {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+          {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
             <button
               type="button"
-              class="page-btn {currentPage === p ? 'active' : ''}"
-              on:click={() => { currentPage = p; }}
+              class="page-btn {currentPage === pageNumber ? 'active' : ''}"
+              on:click={() => { currentPage = pageNumber; }}
             >
-              {p}
+              {pageNumber}
             </button>
           {/each}
           <button

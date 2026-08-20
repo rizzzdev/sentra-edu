@@ -17,7 +17,7 @@
         .split(' ')
         .filter(Boolean)
         .slice(0, 2)
-        .map((w) => w[0].toUpperCase())
+        .map((word) => word[0].toUpperCase())
         .join('')
     : 'U';
 
@@ -30,26 +30,26 @@
 
   // Activity stats by role
   $: approvedSessions = currentUser
-    ? $dbStore.attendances.filter((a) => a.deletedAt === null && a.tentorId === currentUser?.id && a.status === 'APPROVED').length
+    ? $dbStore.attendances.filter((attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.tentorId === currentUser?.id && attendanceItem.status === 'APPROVED').length
     : 0;
 
   $: activeJobs = currentUser
-    ? $dbStore.jobs.filter((j) => j.deletedAt === null && j.assignedTentorId === currentUser?.id && j.status === 'ASSIGNED').length
+    ? $dbStore.jobs.filter((jobItem) => jobItem.deletedAt === null && jobItem.assignedTentorId === currentUser?.id && jobItem.status === 'ASSIGNED').length
     : 0;
 
   $: paidHonor = currentUser
     ? $dbStore.payrollClaims
-        .filter((c) => c.deletedAt === null && c.tentorId === currentUser?.id && c.status === 'PAID')
-        .reduce((sum, c) => sum + c.totalAmount, 0)
+        .filter((claimItem) => claimItem.deletedAt === null && claimItem.tentorId === currentUser?.id && claimItem.status === 'PAID')
+        .reduce((sum, claimItem) => sum + claimItem.totalAmount, 0)
     : 0;
 
   $: studentProgramsList = currentUser
     ? getStudentPrograms($dbStore, currentUser.id, currentUser.fullName)
     : [];
   $: studentPrograms = studentProgramsList.length;
-  $: studentProgramIds = studentProgramsList.map((p) => p.id);
+  $: studentProgramIds = studentProgramsList.map((programItem) => programItem.id);
   $: studentApprovedSessions = currentUser
-    ? $dbStore.attendances.filter((a) => a.deletedAt === null && a.status === 'APPROVED' && (studentProgramIds.includes(a.enrollmentId) || a.enrollmentId === currentUser.id)).length
+    ? $dbStore.attendances.filter((attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.status === 'APPROVED' && (studentProgramIds.includes(attendanceItem.enrollmentId) || attendanceItem.enrollmentId === currentUser.id)).length
     : 0;
 
   $: waliProgramsList = currentUser
@@ -58,22 +58,22 @@
   $: waliProgramsCount = waliProgramsList.length;
 
   $: waliChildren = currentUser
-    ? $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.waliUserId === currentUser?.id).length
+    ? $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.waliUserId === currentUser?.id).length
     : 0;
 
   function getSubjectNames(subjectIds?: string[]): string {
     if (!subjectIds || subjectIds.length === 0) return '—';
     return $dbStore.subjects
-      .filter((s) => subjectIds.includes(s.id))
-      .map((s) => s.name)
+      .filter((subjectItem) => subjectIds.includes(subjectItem.id))
+      .map((subjectItem) => subjectItem.name)
       .join(', ') || '—';
   }
 
   function getLevelNames(levelIds?: string[]): string {
     if (!levelIds || levelIds.length === 0) return '—';
     return $dbStore.educationLevels
-      .filter((l) => levelIds.includes(l.id))
-      .map((l) => l.levelName)
+      .filter((levelItem) => levelIds.includes(levelItem.id))
+      .map((levelItem) => levelItem.levelName)
       .join(', ') || '—';
   }
 </script>
@@ -91,18 +91,18 @@
 
   <div class="grid-2">
     <div class="card">
-      <div class="card-body" style="display:flex;gap:18px;align-items:center">
-        <div class="avatar" style="width:64px;height:64px;font-size:1.4rem">
+      <div class="card-body flex items-center gap-4.5">
+        <div class="avatar w-16 h-16 text-2xl font-extrabold">
           {initials}
         </div>
         <div>
-          <div style="font-size:1.2rem;font-weight:800">
+          <div class="text-xl font-extrabold">
             {currentUser.fullName}
           </div>
-          <div style="color:var(--muted-fg);font-size:.86rem">
+          <div class="text-muted-fg text-sm">
             {currentUser.email}
           </div>
-          <div style="margin-top:8px">
+          <div class="mt-2">
             <span class="badge {roleBadgeMap[currentUser.role]}">
               {ROLE_LABEL[currentUser.role] || currentUser.role}
             </span>
@@ -167,7 +167,7 @@
       <Icon name="insights" size="md" /> Ringkasan Aktivitas
     </div>
     <div class="card-body">
-      <div class="stat-grid" style="margin-bottom:0">
+      <div class="stat-grid mb-0">
         {#if currentUser.role === 'SUPER_ADMIN'}
           <div class="stat">
             <div class="s-icon tone-sky"><Icon name="work" size="lg" /></div>
@@ -186,7 +186,7 @@
           <div class="stat">
             <div class="s-icon tone-violet"><Icon name="school" size="lg" /></div>
             <div>
-              <div class="s-val">{$dbStore.users.filter((u) => u.role === 'TENTOR').length}</div>
+              <div class="s-val">{$dbStore.users.filter((userItem) => userItem.role === 'TENTOR').length}</div>
               <div class="s-lbl">Tentor Aktif</div>
             </div>
           </div>

@@ -26,20 +26,20 @@
     ? getParentPrograms($dbStore, currentUser.id)
     : [];
 
-  $: program = allPrograms.find((p: UnifiedProgram) => p.id === programId);
+  $: program = allPrograms.find((programItem: UnifiedProgram) => programItem.id === programId);
 
-  $: programAttendances = $dbStore.attendances.filter((a) => {
-    if (a.deletedAt !== null) return false;
-    if (a.enrollmentId === programId) return true;
-    if (program && program.enrollmentId && a.enrollmentId === program.enrollmentId) return true;
+  $: programAttendances = $dbStore.attendances.filter((attendanceItem) => {
+    if (attendanceItem.deletedAt !== null) return false;
+    if (attendanceItem.enrollmentId === programId) return true;
+    if (program && program.enrollmentId && attendanceItem.enrollmentId === program.enrollmentId) return true;
     return false;
-  }).sort((a, b) => (a.sessionDate < b.sessionDate ? 1 : -1));
+  }).sort((firstItem, secondItem) => (firstItem.sessionDate < secondItem.sessionDate ? 1 : -1));
 
-  $: approvedCount = programAttendances.filter((a) => a.status === 'APPROVED').length;
+  $: approvedCount = programAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length;
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
-    return $dbStore.users.find((u) => u.id === userId)?.fullName || '—';
+    return $dbStore.users.find((userItem) => userItem.id === userId)?.fullName || '—';
   }
 </script>
 
@@ -170,7 +170,7 @@
         <div class="card-body">
           <div class="flex flex-wrap gap-2">
             {#each program.studentNames as studentName}
-              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface-hover)] border border-[var(--color-border)] text-sm font-semibold text-fg">
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted border border-border text-sm font-semibold text-fg">
                 <Icon name="face" size="xs" className="text-primary" />
                 <span>{studentName}</span>
               </div>
@@ -246,7 +246,7 @@
             </div>
           </div>
 
-          <div class="pt-3 border-t border-[var(--color-border)]">
+          <div class="pt-3 border-t border-border">
             <div class="text-xs font-semibold text-muted-fg uppercase tracking-wider mb-1">Alamat / Lokasi Belajar</div>
             <div class="text-sm text-fg flex items-start gap-1.5">
               <Icon name="location_on" size="xs" className="text-rose-500 mt-0.5 flex-shrink-0" />
@@ -255,9 +255,9 @@
           </div>
 
           {#if program.latitude && program.longitude}
-            <div class="pt-3 border-t border-[var(--color-border)]">
+            <div class="pt-3 border-t border-border">
               <div class="text-xs font-semibold text-muted-fg uppercase tracking-wider mb-2">Peta Lokasi Les</div>
-              <div class="rounded-xl overflow-hidden border border-[var(--color-border)]">
+              <div class="rounded-xl overflow-hidden border border-border">
                 <LeafletMap
                   latitude={program.latitude}
                   longitude={program.longitude}
@@ -305,22 +305,22 @@
                 </td>
               </tr>
             {:else}
-              {#each programAttendances as att (att.id)}
+              {#each programAttendances as attendanceItem (attendanceItem.id)}
                 <tr>
                   <td>
-                    <div class="font-medium">{formatDateIndonesian(att.sessionDate)}</div>
-                    <div class="text-xs text-muted-fg">{att.startTime ? att.startTime.slice(11, 16) : ''} – {att.endTime ? att.endTime.slice(11, 16) : ''} WIB</div>
+                    <div class="font-medium">{formatDateIndonesian(attendanceItem.sessionDate)}</div>
+                    <div class="text-xs text-muted-fg">{attendanceItem.startTime ? attendanceItem.startTime.slice(11, 16) : ''} – {attendanceItem.endTime ? attendanceItem.endTime.slice(11, 16) : ''} WIB</div>
                   </td>
                   <td>
-                    <div class="font-semibold text-fg">{att.topic || '—'}</div>
+                    <div class="font-semibold text-fg">{attendanceItem.topic || '—'}</div>
                   </td>
-                  <td>{getUserName(att.tentorId)}</td>
+                  <td>{getUserName(attendanceItem.tentorId)}</td>
                   <td>
-                    <div class="text-sm text-muted-fg">{att.studentNotes || '—'}</div>
+                    <div class="text-sm text-muted-fg">{attendanceItem.studentNotes || '—'}</div>
                   </td>
                   <td>
-                    <span class="badge {getStatusBadgeClass(att.status)}">
-                      {getStatusLabel(att.status, ATTENDANCE_STATUS_LABEL)}
+                    <span class="badge {getStatusBadgeClass(attendanceItem.status)}">
+                      {getStatusLabel(attendanceItem.status, ATTENDANCE_STATUS_LABEL)}
                     </span>
                   </td>
                 </tr>

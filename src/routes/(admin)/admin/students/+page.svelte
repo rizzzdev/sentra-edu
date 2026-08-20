@@ -25,20 +25,21 @@
   // Student Master Modal State
   let studentModalOpen: boolean = false;
   let editingStudent: User | null = null;
+  let deleteStudentDialogOpen: boolean = false;
   let deleteStudentId: string | null = null;
 
-  $: allStudents = $dbStore.users.filter((user) => user.deletedAt === null && user.role === 'STUDENT');
+  $: allStudents = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT');
 
-  $: filteredStudents = allStudents.filter((student) => {
-    const q = searchQuery.toLowerCase();
-    if (!q) return true;
-    const waliName = student.waliUserId ? ($dbStore.users.find((wali) => wali.id === student.waliUserId)?.fullName || '') : '';
+  $: filteredStudents = allStudents.filter((studentUser) => {
+    const query = searchQuery.toLowerCase();
+    if (!query) return true;
+    const waliName = studentUser.waliUserId ? ($dbStore.users.find((waliUser) => waliUser.id === studentUser.waliUserId)?.fullName || '') : '';
     return (
-      student.fullName.toLowerCase().includes(q) ||
-      student.email.toLowerCase().includes(q) ||
-      (student.phone || '').toLowerCase().includes(q) ||
-      (student.school || '').toLowerCase().includes(q) ||
-      waliName.toLowerCase().includes(q)
+      studentUser.fullName.toLowerCase().includes(query) ||
+      studentUser.email.toLowerCase().includes(query) ||
+      (studentUser.phone || '').toLowerCase().includes(query) ||
+      (studentUser.school || '').toLowerCase().includes(query) ||
+      waliName.toLowerCase().includes(query)
     );
   });
 
@@ -47,20 +48,21 @@
 
   function getWaliName(waliId?: string): string {
     if (!waliId) return '—';
-    return $dbStore.users.find((wali) => wali.id === waliId)?.fullName || '—';
+    return $dbStore.users.find((waliUser) => waliUser.id === waliId)?.fullName || '—';
   }
 
   function getWaliPhone(waliId?: string): string {
     if (!waliId) return '';
-    return $dbStore.users.find((wali) => wali.id === waliId)?.phone || '';
+    return $dbStore.users.find((waliUser) => waliUser.id === waliId)?.phone || '';
   }
 
   function handleConfirmDeleteStudent() {
     if (!deleteStudentId) return;
-    const res = dbStore.deleteStudentMaster(deleteStudentId);
+    const response = dbStore.deleteStudentMaster(deleteStudentId);
+    deleteStudentDialogOpen = false;
     deleteStudentId = null;
-    if (!res.error) toastStore.success(res.message);
-    else toastStore.error(res.message);
+    if (!response.error) toastStore.success(response.message);
+    else toastStore.error(response.message);
   }
 </script>
 
@@ -93,7 +95,7 @@
   <div class="stat">
     <div class="s-icon tone-emerald"><Icon name="family_restroom" size="lg" /></div>
     <div>
-      <div class="s-val">{allStudents.filter(student => !!student.waliUserId).length}</div>
+      <div class="s-val">{allStudents.filter((studentUser) => Boolean(studentUser.waliUserId)).length}</div>
       <div class="s-lbl">Murid Ditautkan Wali</div>
     </div>
   </div>
@@ -123,7 +125,7 @@
             <th>Sekolah / Instansi</th>
             <th>Wali Murid</th>
             <th>Tanggal Daftar</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -193,7 +195,7 @@
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deleteStudentId = student.id; }}
+                      on:click={() => { deleteStudentId = student.id; deleteStudentDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -213,8 +215,8 @@
         </div>
         <div class="page-btns">
           <button type="button" class="page-btn" disabled={currentPage <= 1} on:click={() => currentPage--}>&laquo;</button>
-          {#each Array.from({ length: totalPagesStudents }, (_, i) => i + 1) as p}
-            <button type="button" class="page-btn {currentPage === p ? 'active' : ''}" on:click={() => { currentPage = p; }}>{p}</button>
+          {#each Array.from({ length: totalPagesStudents }, (_, index) => index + 1) as pageNumber}
+            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" on:click={() => { currentPage = pageNumber; }}>{pageNumber}</button>
           {/each}
           <button type="button" class="page-btn" disabled={currentPage >= totalPagesStudents} on:click={() => currentPage++}>&raquo;</button>
         </div>
@@ -231,11 +233,11 @@
 />
 
 <ConfirmationDialog
-  open={!!deleteStudentId}
+  open={deleteStudentDialogOpen}
   title="Hapus Master Data Murid"
   message="Apakah Anda yakin ingin menghapus data master murid ini?"
   confirmText="Hapus"
   confirmVariant="danger"
   onConfirm={handleConfirmDeleteStudent}
-  onCancel={() => { deleteStudentId = null; }}
+  onCancel={() => { deleteStudentDialogOpen = false; deleteStudentId = null; }}
 />

@@ -81,8 +81,8 @@
           }
         }
       }
-    } catch (err) {
-      console.warn('Reverse geocoding error:', err);
+    } catch (error) {
+      console.warn('Reverse geocoding error:', error);
     } finally {
       isReverseGeocoding = false;
     }
@@ -122,8 +122,8 @@
       searchResults = [];
       searchError = 'Lokasi tidak ditemukan. Coba gunakan nama jalan, kelurahan, atau kota yang lebih spesifik.';
       showDropdown = true;
-    } catch (err) {
-      console.warn('Geocoding search error:', err);
+    } catch (error) {
+      console.warn('Geocoding search error:', error);
       searchError = 'Gagal memuat hasil pencarian. Periksa koneksi internet.';
       showDropdown = true;
     } finally {
@@ -205,7 +205,7 @@
 
   onMount(async () => {
     await tick();
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     leaflet = await import('leaflet');
 
@@ -348,13 +348,13 @@
           bind:value={searchQuery}
           on:input={handleInputSearch}
           on:focus={() => { if (searchResults.length > 0) showDropdown = true; }}
-          on:keydown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              e.stopPropagation();
+          on:keydown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              event.stopPropagation();
               performSearch(searchQuery);
             }
-            if (e.key === 'Escape') {
+            if (event.key === 'Escape') {
               showDropdown = false;
             }
           }}

@@ -22,8 +22,8 @@
   // Sync when value changes externally (e.g. editing mode)
   $: value, initFromValue();
 
-  function handleInput(e: Event) {
-    const input = e.target as HTMLInputElement;
+  function handleInput(event: Event) {
+    const input = event.target as HTMLInputElement;
     // Strip everything that isn't a digit
     const caretPos = input.selectionStart || 0;
     const oldLen = rawDigits.length;
@@ -41,22 +41,24 @@
     input.setSelectionRange(newPos, newPos);
   }
 
-  function handleFocus(e: Event) {
-    const input = e.target as HTMLInputElement;
+  function handleFocus(event: Event) {
+    const input = event.target as HTMLInputElement;
     // Place caret at end
     const len = input.value.length;
     input.setSelectionRange(len, len);
   }
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter') {
-      (e.target as HTMLInputElement).blur();
+  function handleKeydown(keyboardEvent: KeyboardEvent) {
+    if (keyboardEvent.key === 'Enter') {
+      (keyboardEvent.target as HTMLInputElement).blur();
     }
   }
 </script>
 
-<div class="currency-wrapper {className}">
-  <span class="currency-prefix" class:disabled>Rp</span>
+<div class="flex items-center w-full h-10 bg-surface border border-border rounded-xl transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-soft overflow-hidden {className}">
+  <span class="flex items-center justify-center flex-none px-3 h-full text-sm font-semibold text-muted-fg bg-muted border-r border-border select-none {disabled ? 'opacity-50' : ''}">
+    Rp
+  </span>
   <input
     {id}
     type="text"
@@ -69,66 +71,6 @@
     on:input={handleInput}
     on:focus={handleFocus}
     on:keydown={handleKeydown}
-    class="currency-field"
+    class="w-full h-full px-3 text-sm text-fg bg-transparent border-0 outline-none text-right tabular-nums placeholder:text-muted-fg disabled:opacity-50 disabled:cursor-not-allowed"
   />
 </div>
-
-<style>
-  .currency-wrapper {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 2.5rem;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-
-  .currency-wrapper:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
-  }
-
-  .currency-prefix {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    padding: 0 0.75rem;
-    height: 100%;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-fg-muted);
-    background: var(--color-surface-hover);
-    border-right: 1px solid var(--color-border);
-    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
-    user-select: none;
-  }
-
-  .currency-prefix.disabled {
-    opacity: 0.5;
-  }
-
-  .currency-field {
-    width: 100%;
-    height: 100%;
-    padding: 0 0.75rem;
-    font-size: 0.875rem;
-    color: var(--color-fg);
-    background: transparent;
-    border: none;
-    outline: none;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .currency-field::placeholder {
-    color: var(--color-fg-muted);
-  }
-
-  .currency-field:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-</style>

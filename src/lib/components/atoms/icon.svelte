@@ -5,16 +5,16 @@
   export let className: string = '';
 
   const sizeClassMap: Record<string, string> = {
-    xs: 'text-[16px]', // 16px (4px multiple)
-    sm: 'text-[18px]',
-    md: 'text-[20px]', // 20px (4px multiple)
-    lg: 'text-[24px]', // 24px (4px multiple)
-    xl: 'text-[32px]'  // 32px (4px multiple)
+    xs: 'text-base', // 16px
+    sm: 'text-lg',   // 18px
+    md: 'text-xl',   // 20px
+    lg: 'text-2xl',  // 24px
+    xl: 'text-4xl'   // 32px/36px
   };
 </script>
 
 <span
-  class="mat select-none align-middle {filled ? 'filled' : ''} {sizeClassMap[size] || 'text-[20px]'} {className}"
+  class="mat select-none align-middle {filled ? 'filled' : ''} {sizeClassMap[size] || 'text-xl'} {className}"
   aria-hidden="true"
 >
   {name}

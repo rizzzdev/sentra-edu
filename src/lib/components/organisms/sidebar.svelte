@@ -83,7 +83,7 @@
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
+    .map((word) => word[0].toUpperCase())
     .join('') || 'U';
   function isNavActive(current: string, targetPath: string): boolean {
     if (current === targetPath) return true;
@@ -98,7 +98,7 @@
   <div class="side-brand">
     <div class="side-brand-top">
       <img
-        class="logo w-9 h-9 rounded-[11px] object-cover flex-none"
+        class="logo w-9 h-9 rounded-xl object-cover flex-none"
         src="/logo-sentraedu.jpg"
         alt="SentraEdu"
       />

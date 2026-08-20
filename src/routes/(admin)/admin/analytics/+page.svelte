@@ -8,70 +8,70 @@
   let resetDialogOpen: boolean = false;
   let fileInput: HTMLInputElement;
 
-  $: paidInvoices = $dbStore.invoices.filter((i) => i.deletedAt === null && i.status === 'PAID');
-  $: totalRevenue = paidInvoices.reduce((s, i) => s + i.amount, 0);
+  $: paidInvoices = $dbStore.invoices.filter((invoiceItem) => invoiceItem.deletedAt === null && invoiceItem.status === 'PAID');
+  $: totalRevenue = paidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
 
-  $: paidClaims = $dbStore.payrollClaims.filter((c) => c.deletedAt === null && c.status === 'PAID');
-  $: totalHonor = paidClaims.reduce((s, c) => s + c.totalAmount, 0);
+  $: paidClaims = $dbStore.payrollClaims.filter((claimItem) => claimItem.deletedAt === null && claimItem.status === 'PAID');
+  $: totalHonor = paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
 
-  $: allAtt = $dbStore.attendances.filter((a) => a.deletedAt === null);
-  $: approvedN = allAtt.filter((a) => a.status === 'APPROVED').length;
-  $: decidedN = allAtt.filter((a) => a.status === 'APPROVED' || a.status === 'REJECTED').length;
+  $: allAtt = $dbStore.attendances.filter((attendanceItem) => attendanceItem.deletedAt === null);
+  $: approvedN = allAtt.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length;
+  $: decidedN = allAtt.filter((attendanceItem) => attendanceItem.status === 'APPROVED' || attendanceItem.status === 'REJECTED').length;
   $: verifyRate = decidedN ? Math.round((approvedN / decidedN) * 100) : 0;
 
   // Monthly 6-month SPP & Honor
   const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   $: monthItems = Array.from({ length: 6 }, (_, index) => {
-    const mi = 5 - index;
+    const monthOffset = 5 - index;
     const now = new Date();
-    const d = new Date(now.getFullYear(), now.getMonth() - mi, 1);
-    const m = d.getMonth() + 1;
-    const y = d.getFullYear();
+    const targetDate = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
+    const targetMonth = targetDate.getMonth() + 1;
+    const targetYear = targetDate.getFullYear();
 
     const sppVal = $dbStore.invoices
-      .filter((i) => i.deletedAt === null && i.status === 'PAID' && i.periodMonth === m && i.periodYear === y)
-      .reduce((s, i) => s + i.amount, 0);
+      .filter((invoiceItem) => invoiceItem.deletedAt === null && invoiceItem.status === 'PAID' && invoiceItem.periodMonth === targetMonth && invoiceItem.periodYear === targetYear)
+      .reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
 
     const honorVal = $dbStore.payrollClaims
-      .filter((c) => c.deletedAt === null && c.status === 'PAID' && c.periodMonth === m && c.periodYear === y)
-      .reduce((s, c) => s + c.totalAmount, 0);
+      .filter((claimItem) => claimItem.deletedAt === null && claimItem.status === 'PAID' && claimItem.periodMonth === targetMonth && claimItem.periodYear === targetYear)
+      .reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
 
     return {
-      label: `${monthNamesShort[d.getMonth()]} ${y}`,
+      label: `${monthNamesShort[targetDate.getMonth()]} ${targetYear}`,
       spp: sppVal,
       honor: honorVal
     };
   });
 
-  $: maxMonthVal = Math.max(1, ...monthItems.map((m) => Math.max(m.spp, m.honor)));
+  $: maxMonthVal = Math.max(1, ...monthItems.map((monthItem) => Math.max(monthItem.spp, monthItem.honor)));
 
   // Top Tentors
   $: topTentors = (() => {
     const tentorSessions: Record<string, number> = {};
     $dbStore.attendances
-      .filter((a) => a.deletedAt === null && a.status === 'APPROVED')
-      .forEach((a) => {
-        tentorSessions[a.tentorId] = (tentorSessions[a.tentorId] || 0) + 1;
+      .filter((attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.status === 'APPROVED')
+      .forEach((attendanceItem) => {
+        tentorSessions[attendanceItem.tentorId] = (tentorSessions[attendanceItem.tentorId] || 0) + 1;
       });
 
     return Object.keys(tentorSessions)
-      .sort((a, b) => tentorSessions[b] - tentorSessions[a])
+      .sort((firstId, secondId) => tentorSessions[secondId] - tentorSessions[firstId])
       .slice(0, 8)
-      .map((tid) => {
-        const u = $dbStore.users.find((user) => user.id === tid);
-        return { label: u?.fullName || 'Tentor', value: tentorSessions[tid] };
+      .map((tentorId) => {
+        const user = $dbStore.users.find((userItem) => userItem.id === tentorId);
+        return { label: user?.fullName || 'Tentor', value: tentorSessions[tentorId] };
       });
   })();
 
-  $: maxTentorSessions = Math.max(1, ...topTentors.map((t) => t.value));
+  $: maxTentorSessions = Math.max(1, ...topTentors.map((tentorItem) => tentorItem.value));
 
   // Job Status counts
   $: jobStatusCount = (() => {
     const counts: Record<string, number> = {};
     $dbStore.jobs
-      .filter((j) => j.deletedAt === null)
-      .forEach((j) => {
-        counts[j.status] = (counts[j.status] || 0) + 1;
+      .filter((jobItem) => jobItem.deletedAt === null)
+      .forEach((jobItem) => {
+        counts[jobItem.status] = (counts[jobItem.status] || 0) + 1;
       });
     return counts;
   })();
@@ -80,9 +80,9 @@
   $: candStatusCount = (() => {
     const counts: Record<string, number> = {};
     $dbStore.candidates
-      .filter((c) => c.deletedAt === null)
-      .forEach((c) => {
-        counts[c.status] = (counts[c.status] || 0) + 1;
+      .filter((candidateItem) => candidateItem.deletedAt === null)
+      .forEach((candidateItem) => {
+        counts[candidateItem.status] = (counts[candidateItem.status] || 0) + 1;
       });
     return counts;
   })();
@@ -100,103 +100,104 @@
   }
 
   function handleFileChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      if (content) {
-        const response = dbStore.importDatabaseJson(content);
-        if (!response.error) {
-          toastStore.success(response.message);
+    reader.onload = (readerEvent) => {
+      try {
+        const jsonContent = (readerEvent.target?.result as string) || '';
+        const result = dbStore.importDatabaseJson(jsonContent);
+        if (result.error) {
+          toastStore.error(result.message);
         } else {
-          toastStore.error(response.message);
+          toastStore.success('Data berhasil diimport.');
         }
+      } catch (parseError) {
+        toastStore.error('File JSON tidak valid.');
       }
     };
     reader.readAsText(file);
-    target.value = '';
+    input.value = '';
   }
 
   function handleResetDatabase() {
-    const response = dbStore.resetToFactoryDefaults();
+    dbStore.resetToFactoryDefaults();
     resetDialogOpen = false;
-    if (!response.error) {
-      toastStore.success(response.message);
-    } else {
-      toastStore.error(response.message);
-    }
+    toastStore.success('Database berhasil direset ke kondisi awal.');
   }
 </script>
 
 <div class="page-head">
   <div>
-    <h3><Icon name="monitoring" size="lg" /> Analitik</h3>
-    <div class="desc">Ringkasan data operasional SentraEdu.</div>
+    <h3><Icon name="monitoring" size="lg" /> Analitik &amp; Laporan</h3>
+    <div class="desc">Metrik performa operasional, keuangan, dan data bimbingan belajar SentraEdu.</div>
   </div>
 </div>
 
+<!-- STAT METRICS -->
 <div class="stat-grid">
   <div class="stat">
     <div class="s-icon tone-emerald"><Icon name="account_balance_wallet" size="lg" /></div>
     <div>
       <div class="s-val">{formatCurrencyIDR(totalRevenue)}</div>
-      <div class="s-lbl">Pendapatan SPP (Lunas)</div>
+      <div class="s-lbl">Total SPP Masuk</div>
     </div>
   </div>
   <div class="stat">
-    <div class="s-icon tone-violet"><Icon name="payments" size="lg" /></div>
+    <div class="s-icon tone-amber"><Icon name="payments" size="lg" /></div>
     <div>
       <div class="s-val">{formatCurrencyIDR(totalHonor)}</div>
-      <div class="s-lbl">Honor Tentor Dibayar</div>
+      <div class="s-lbl">Total Honor Dibayar</div>
     </div>
   </div>
   <div class="stat">
-    <div class="s-icon tone-sky"><Icon name="location_on" size="lg" /></div>
+    <div class="s-icon tone-sky"><Icon name="savings" size="lg" /></div>
     <div>
-      <div class="s-val">{allAtt.length}</div>
-      <div class="s-lbl">Total Sesi Tercatat</div>
+      <div class="s-val">{formatCurrencyIDR(totalRevenue - totalHonor)}</div>
+      <div class="s-lbl">Margin Operasional</div>
     </div>
   </div>
   <div class="stat">
-    <div class="s-icon tone-amber"><Icon name="verified" size="lg" /></div>
+    <div class="s-icon tone-violet"><Icon name="fact_check" size="lg" /></div>
     <div>
       <div class="s-val">{verifyRate}%</div>
-      <div class="s-lbl">Presensi Disetujui</div>
+      <div class="s-lbl">Tingkat Persetujuan Presensi</div>
     </div>
   </div>
 </div>
 
-<!-- Chart: Pendapatan & Honor per Bulan -->
-<div class="card">
+<!-- 6-MONTH CHART -->
+<div class="card mb-6">
   <div class="card-head">
-    <Icon name="bar_chart" size="md" /> Pendapatan & Honor per Bulan (6 bulan terakhir)
+    <Icon name="bar_chart" size="md" /> Tren Finansial 6 Bulan Terakhir (SPP vs Honor)
   </div>
   <div class="card-body">
-    <div class="chart-legend">
-      <span><span class="dot" style="background:var(--primary)"></span>SPP</span>
-      <span><span class="dot" style="background:var(--accent)"></span>Honor</span>
-    </div>
-    <div class="bar-chart">
-      {#each monthItems as m}
-        <div class="bar-col">
-          <div class="bar-pair">
-            <div
-              class="bar"
-              style="height: {Math.max(2, Math.round((m.spp / maxMonthVal) * 110))}px"
-              title="SPP: {formatCurrencyIDR(m.spp)}"
-            ></div>
-            <div
-              class="bar alt"
-              style="height: {Math.max(2, Math.round((m.honor / maxMonthVal) * 110))}px"
-              title="Honor: {formatCurrencyIDR(m.honor)}"
-            ></div>
+    <div class="chart-container">
+      <div class="vbar-chart">
+        {#each monthItems as monthItem}
+          <div class="vbar-col">
+            <div class="vbar-bars">
+              <div
+                class="vbar vbar-spp"
+                style="height: {(monthItem.spp / maxMonthVal) * 100}%"
+                title="SPP: {formatCurrencyIDR(monthItem.spp)}"
+              ></div>
+              <div
+                class="vbar vbar-honor"
+                style="height: {(monthItem.honor / maxMonthVal) * 100}%"
+                title="Honor: {formatCurrencyIDR(monthItem.honor)}"
+              ></div>
+            </div>
+            <div class="vbar-lbl">{monthItem.label}</div>
           </div>
-          <div class="bar-label">{m.label}</div>
-        </div>
-      {/each}
+        {/each}
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot dot-spp"></span> SPP Masuk</span>
+        <span class="legend-item"><span class="legend-dot dot-honor"></span> Honor Dibayar</span>
+      </div>
     </div>
   </div>
 </div>
@@ -208,13 +209,13 @@
       <Icon name="emoji_events" size="md" /> Top Tentor (Sesi Disetujui)
     </div>
     <div class="card-body">
-      {#each topTentors as t}
+      {#each topTentors as tentorItem}
         <div class="hbar-row">
-          <div class="hbar-name" title={t.label}>{t.label}</div>
+          <div class="hbar-name" title={tentorItem.label}>{tentorItem.label}</div>
           <div class="hbar-track">
-            <div class="hbar-fill" style="width: {(t.value / maxTentorSessions) * 100}%"></div>
+            <div class="hbar-fill" style="width: {(tentorItem.value / maxTentorSessions) * 100}%"></div>
           </div>
-          <div class="hbar-val">{t.value} sesi</div>
+          <div class="hbar-val">{tentorItem.value} sesi</div>
         </div>
       {/each}
     </div>
@@ -228,12 +229,12 @@
   </div>
   <div class="card-body">
     <div class="chip-row">
-      {#each Object.keys(jobStatusCount) as s}
-        <span style="display:inline-flex;align-items:center;gap:6px;margin:4px 8px 4px 0">
-          <span class="badge {s === 'AVAILABLE' ? 'b-available' : s === 'NEGOTIATING' ? 'b-negotiating' : s === 'ASSIGNED' ? 'b-assigned' : 'b-cancelled'}">
-            {s}
+      {#each Object.keys(jobStatusCount) as statusKey}
+        <span class="inline-flex items-center gap-1.5 my-1 mr-2">
+          <span class="badge {statusKey === 'AVAILABLE' ? 'b-available' : statusKey === 'NEGOTIATING' ? 'b-negotiating' : statusKey === 'ASSIGNED' ? 'b-assigned' : 'b-cancelled'}">
+            {statusKey}
           </span>
-          <span style="font-weight:700;font-size:1.05rem">{jobStatusCount[s]}</span>
+          <span class="font-bold text-base">{jobStatusCount[statusKey]}</span>
         </span>
       {/each}
     </div>
@@ -247,12 +248,12 @@
   </div>
   <div class="card-body">
     <div class="chip-row">
-      {#each Object.keys(candStatusCount) as s}
-        <span style="display:inline-flex;align-items:center;gap:6px;margin:4px 8px 4px 0">
-          <span class="badge {s === 'ACCEPTED' ? 'b-accepted' : s === 'REJECTED' ? 'b-rejected' : s === 'TESTED' ? 'b-tested' : s === 'INTERVIEWED' ? 'b-interviewed' : 'b-pending'}">
-            {s}
+      {#each Object.keys(candStatusCount) as statusKey}
+        <span class="inline-flex items-center gap-1.5 my-1 mr-2">
+          <span class="badge {statusKey === 'ACCEPTED' ? 'b-accepted' : statusKey === 'REJECTED' ? 'b-rejected' : statusKey === 'TESTED' ? 'b-tested' : statusKey === 'INTERVIEWED' ? 'b-interviewed' : 'b-pending'}">
+            {statusKey}
           </span>
-          <span style="font-weight:700;font-size:1.05rem">{candStatusCount[s]}</span>
+          <span class="font-bold text-base">{candStatusCount[statusKey]}</span>
         </span>
       {/each}
     </div>
@@ -265,7 +266,7 @@
     <Icon name="database" size="md" /> Manajemen Data Prototype
   </div>
   <div class="card-body">
-    <p style="font-size:.84rem;color:var(--muted-fg);margin-bottom:12px">
+    <p class="text-xs text-muted-fg mb-3">
       Seluruh data tersimpan di localStorage browser. Export untuk backup/pindah perangkat, import untuk memuat data dari file JSON.
     </p>
     <div class="quick-actions">

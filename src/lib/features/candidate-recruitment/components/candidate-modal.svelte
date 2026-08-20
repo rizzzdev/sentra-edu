@@ -41,19 +41,19 @@
     source = 'Media Sosial';
   }
 
-  function handleToggleSubject(id: string) {
-    if (subjectIds.includes(id)) {
-      subjectIds = subjectIds.filter((s) => s !== id);
+  function handleToggleSubject(targetSubjectId: string) {
+    if (subjectIds.includes(targetSubjectId)) {
+      subjectIds = subjectIds.filter((subjectId) => subjectId !== targetSubjectId);
     } else {
-      subjectIds = [...subjectIds, id];
+      subjectIds = [...subjectIds, targetSubjectId];
     }
   }
 
-  function handleToggleLevel(id: string) {
-    if (levelIds.includes(id)) {
-      levelIds = levelIds.filter((l) => l !== id);
+  function handleToggleLevel(targetLevelId: string) {
+    if (levelIds.includes(targetLevelId)) {
+      levelIds = levelIds.filter((levelId) => levelId !== targetLevelId);
     } else {
-      levelIds = [...levelIds, id];
+      levelIds = [...levelIds, targetLevelId];
     }
   }
 
@@ -155,36 +155,36 @@
     </div>
 
     <div class="field">
-      <div style="font-size:.82rem;font-weight:600;margin-bottom:5px">
+      <div class="text-xs font-semibold mb-1.5">
         Mapel yang Bisa Diajar (boleh lebih dari satu) <i class="req">*</i>
       </div>
       <div class="multi-group">
-        {#each $dbStore.subjects.filter((s) => s.deletedAt === null) as s}
+        {#each $dbStore.subjects.filter((subjectItem) => subjectItem.deletedAt === null) as subjectItem}
           <label class="multi-opt">
             <input
               type="checkbox"
-              value={s.id}
-              checked={subjectIds.includes(s.id)}
-              on:change={() => handleToggleSubject(s.id)}
-            /> {s.name}
+              value={subjectItem.id}
+              checked={subjectIds.includes(subjectItem.id)}
+              on:change={() => handleToggleSubject(subjectItem.id)}
+            /> {subjectItem.name}
           </label>
         {/each}
       </div>
     </div>
 
     <div class="field">
-      <div style="font-size:.82rem;font-weight:600;margin-bottom:5px">
+      <div class="text-xs font-semibold mb-1.5">
         Jenjang yang Bisa Diajar (boleh lebih dari satu) <i class="req">*</i>
       </div>
       <div class="multi-group">
-        {#each $dbStore.educationLevels.filter((l) => l.deletedAt === null) as l}
+        {#each $dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null) as levelItem}
           <label class="multi-opt">
             <input
               type="checkbox"
-              value={l.id}
-              checked={levelIds.includes(l.id)}
-              on:change={() => handleToggleLevel(l.id)}
-            /> {l.levelName}
+              value={levelItem.id}
+              checked={levelIds.includes(levelItem.id)}
+              on:change={() => handleToggleLevel(levelItem.id)}
+            /> {levelItem.levelName}
           </label>
         {/each}
       </div>

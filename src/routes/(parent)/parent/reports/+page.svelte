@@ -9,37 +9,37 @@
 
   // Student data calculation
   $: studentPrograms = currentUser ? getStudentPrograms($dbStore, currentUser.id, currentUser.fullName) : [];
-  $: studentProgramIds = studentPrograms.map((p) => p.id);
+  $: studentProgramIds = studentPrograms.map((programItem) => programItem.id);
   $: studentEnrs = currentUser
-    ? $dbStore.enrollments.filter((e) => e.deletedAt === null && e.studentId === currentUser?.id)
+    ? $dbStore.enrollments.filter((enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.studentId === currentUser?.id)
     : [];
-  $: studentEnrIds = studentEnrs.map((e) => e.id);
+  $: studentEnrIds = studentEnrs.map((enrollmentItem) => enrollmentItem.id);
 
   $: studentApprovedAtt = $dbStore.attendances.filter(
-    (a) => a.deletedAt === null && (studentEnrIds.includes(a.enrollmentId) || studentProgramIds.includes(a.enrollmentId)) && a.status === 'APPROVED'
+    (attendanceItem) => attendanceItem.deletedAt === null && (studentEnrIds.includes(attendanceItem.enrollmentId) || studentProgramIds.includes(attendanceItem.enrollmentId)) && attendanceItem.status === 'APPROVED'
   );
 
   $: studentBySubject = (() => {
     const map: Record<string, { count: number; topics: string[] }> = {};
-    studentApprovedAtt.forEach((a) => {
-      let sName = 'Lainnya';
-      const enr = $dbStore.enrollments.find((e) => e.id === a.enrollmentId);
-      if (enr) {
-        const sub = $dbStore.subjects.find((s) => s.id === enr.subjectId);
-        if (sub) sName = sub.name;
+    studentApprovedAtt.forEach((attendanceItem) => {
+      let subjectDisplayName = 'Lainnya';
+      const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
+      if (enrollmentItem) {
+        const subjectItem = $dbStore.subjects.find((subject) => subject.id === enrollmentItem.subjectId);
+        if (subjectItem) subjectDisplayName = subjectItem.name;
       } else {
-        const job = $dbStore.jobs.find((j) => j.id === a.enrollmentId);
-        if (job) {
-          const subjectIds = Array.isArray(job.subjectIds) && job.subjectIds.length > 0 ? job.subjectIds : (job.subjectId ? [job.subjectId] : []);
-          const sub = $dbStore.subjects.find((s) => subjectIds.includes(s.id));
-          if (sub) sName = sub.name;
+        const jobItem = $dbStore.jobs.find((job) => job.id === attendanceItem.enrollmentId);
+        if (jobItem) {
+          const subjectIds = Array.isArray(jobItem.subjectIds) && jobItem.subjectIds.length > 0 ? jobItem.subjectIds : (jobItem.subjectId ? [jobItem.subjectId] : []);
+          const subjectItem = $dbStore.subjects.find((subject) => subjectIds.includes(subject.id));
+          if (subjectItem) subjectDisplayName = subjectItem.name;
         }
       }
 
-      if (!map[sName]) map[sName] = { count: 0, topics: [] };
-      map[sName].count++;
-      if (a.topic && !map[sName].topics.includes(a.topic)) {
-        map[sName].topics.push(a.topic);
+      if (!map[subjectDisplayName]) map[subjectDisplayName] = { count: 0, topics: [] };
+      map[subjectDisplayName].count++;
+      if (attendanceItem.topic && !map[subjectDisplayName].topics.includes(attendanceItem.topic)) {
+        map[subjectDisplayName].topics.push(attendanceItem.topic);
       }
     });
     return map;
@@ -49,41 +49,41 @@
 
   // Wali Murid data calculation
   $: waliPrograms = currentUser ? getParentPrograms($dbStore, currentUser.id) : [];
-  $: waliProgramIds = waliPrograms.map((p) => p.id);
+  $: waliProgramIds = waliPrograms.map((programItem) => programItem.id);
   $: waliStudents = currentUser
-    ? $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.waliUserId === currentUser?.id)
+    ? $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.waliUserId === currentUser?.id)
     : [];
-  $: waliStudentIds = waliStudents.map((s) => s.id);
+  $: waliStudentIds = waliStudents.map((studentUser) => studentUser.id);
 
   $: waliEnrs = $dbStore.enrollments.filter(
-    (e) => e.deletedAt === null && (e.waliUserId === currentUser?.id || waliStudentIds.includes(e.studentId))
+    (enrollmentItem) => enrollmentItem.deletedAt === null && (enrollmentItem.waliUserId === currentUser?.id || waliStudentIds.includes(enrollmentItem.studentId))
   );
-  $: waliEnrIds = waliEnrs.map((e) => e.id);
+  $: waliEnrIds = waliEnrs.map((enrollmentItem) => enrollmentItem.id);
 
   $: waliApprovedAtt = $dbStore.attendances.filter(
-    (a) => a.deletedAt === null && (waliEnrIds.includes(a.enrollmentId) || waliProgramIds.includes(a.enrollmentId)) && a.status === 'APPROVED'
+    (attendanceItem) => attendanceItem.deletedAt === null && (waliEnrIds.includes(attendanceItem.enrollmentId) || waliProgramIds.includes(attendanceItem.enrollmentId)) && attendanceItem.status === 'APPROVED'
   );
 
   $: waliByStudent = (() => {
     const map: Record<string, { count: number; hours: number }> = {};
-    waliApprovedAtt.forEach((a) => {
-      let sName = '—';
-      const enr = $dbStore.enrollments.find((e) => e.id === a.enrollmentId);
-      if (enr) {
-        const student = $dbStore.users.find((u) => u.id === enr.studentId);
-        if (student) sName = student.fullName;
+    waliApprovedAtt.forEach((attendanceItem) => {
+      let studentDisplayName = '—';
+      const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
+      if (enrollmentItem) {
+        const studentUser = $dbStore.users.find((userItem) => userItem.id === enrollmentItem.studentId);
+        if (studentUser) studentDisplayName = studentUser.fullName;
       } else {
-        const job = $dbStore.jobs.find((j) => j.id === a.enrollmentId);
-        if (job) {
-          if (Array.isArray(job.studentNames) && job.studentNames.length > 0) sName = job.studentNames.join(', ');
-          else if (job.studentName) sName = job.studentName;
-          else if (job.studentId) sName = $dbStore.users.find((u) => u.id === job.studentId)?.fullName || '—';
+        const jobItem = $dbStore.jobs.find((job) => job.id === attendanceItem.enrollmentId);
+        if (jobItem) {
+          if (Array.isArray(jobItem.studentNames) && jobItem.studentNames.length > 0) studentDisplayName = jobItem.studentNames.join(', ');
+          else if (jobItem.studentName) studentDisplayName = jobItem.studentName;
+          else if (jobItem.studentId) studentDisplayName = $dbStore.users.find((userItem) => userItem.id === jobItem.studentId)?.fullName || '—';
         }
       }
 
-      if (!map[sName]) map[sName] = { count: 0, hours: 0 };
-      map[sName].count++;
-      map[sName].hours += 90;
+      if (!map[studentDisplayName]) map[studentDisplayName] = { count: 0, hours: 0 };
+      map[studentDisplayName].count++;
+      map[studentDisplayName].hours += 90;
     });
     return map;
   })();
@@ -141,12 +141,12 @@
                 <td colspan="3" class="empty">Belum ada sesi yang disetujui.</td>
               </tr>
             {:else}
-              {#each Object.keys(studentBySubject) as sName}
-                {@const d = studentBySubject[sName]}
+              {#each Object.keys(studentBySubject) as subjectName}
+                {@const detail = studentBySubject[subjectName]}
                 <tr>
-                  <td><strong>{sName}</strong></td>
-                  <td class="num">{d.count} sesi</td>
-                  <td>{d.topics.join(', ')}</td>
+                  <td><strong>{subjectName}</strong></td>
+                  <td class="num">{detail.count} sesi</td>
+                  <td>{detail.topics.join(', ')}</td>
                 </tr>
               {/each}
             {/if}
@@ -184,12 +184,12 @@
                 <td colspan="3" class="empty">Belum ada sesi yang disetujui.</td>
               </tr>
             {:else}
-              {#each Object.keys(waliByStudent) as sName}
-                {@const d = waliByStudent[sName]}
+              {#each Object.keys(waliByStudent) as studentName}
+                {@const detail = waliByStudent[studentName]}
                 <tr>
-                  <td><strong>{sName}</strong></td>
-                  <td class="num">{d.count} sesi</td>
-                  <td class="num">{Math.round(d.hours / 60)} jam</td>
+                  <td><strong>{studentName}</strong></td>
+                  <td class="num">{detail.count} sesi</td>
+                  <td class="num">{Math.round(detail.hours / 60)} jam</td>
                 </tr>
               {/each}
             {/if}

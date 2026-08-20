@@ -40,16 +40,16 @@
 </script>
 
 <div
-  class="flex items-center gap-4 p-5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all duration-150 {className}"
+  class="flex items-center gap-4 p-5 bg-surface border border-border rounded-xl shadow-sm hover:shadow-md transition-all duration-150 {className}"
 >
-  <div class="flex items-center justify-center w-12 h-12 rounded-[var(--radius-sm)] border {currentTone.bg} {currentTone.text} {currentTone.border} flex-none">
+  <div class="flex items-center justify-center w-12 h-12 rounded-xl border {currentTone.bg} {currentTone.text} {currentTone.border} flex-none">
     <Icon name={icon} size="lg" filled={true} />
   </div>
   <div class="flex flex-col min-w-0">
-    <span class="text-xs font-bold uppercase tracking-wider text-[var(--color-fg-muted)] truncate">{title}</span>
-    <span class="text-2xl font-extrabold text-[var(--color-fg)] mt-0.5 tracking-tight">{value}</span>
+    <span class="text-xs font-bold uppercase tracking-wider text-muted-fg truncate">{title}</span>
+    <span class="text-2xl font-extrabold text-fg mt-0.5 tracking-tight">{value}</span>
     {#if subtitle}
-      <span class="text-xs text-[var(--color-fg-muted)] mt-0.5">{subtitle}</span>
+      <span class="text-xs text-muted-fg mt-0.5">{subtitle}</span>
     {/if}
   </div>
 </div>

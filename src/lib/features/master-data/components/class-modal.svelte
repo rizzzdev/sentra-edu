@@ -25,7 +25,7 @@
     description = editingClass.description || '';
   } else {
     className = '';
-    educationLevelId = $dbStore.educationLevels.filter((l) => l.deletedAt === null)[0]?.id || '';
+    educationLevelId = $dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null)[0]?.id || '';
     baseRatePer90Min = 100000;
     description = '';
   }
@@ -75,7 +75,7 @@
         bind:value={educationLevelId}
         options={[
           { value: '', label: '— Pilih jenjang —' },
-          ...$dbStore.educationLevels.filter((l) => l.deletedAt === null).map(lvl => ({ value: lvl.id, label: lvl.levelName }))
+          ...$dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null).map((levelItem) => ({ value: levelItem.id, label: levelItem.levelName }))
         ]}
       />
     </div>

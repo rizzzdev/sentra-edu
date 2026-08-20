@@ -25,9 +25,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     }
 
     // 2. Parse + validate input
-    let body: Record<string, unknown>;
+    interface LoginPayload {
+      email?: string;
+      password?: string;
+    }
+    let body: LoginPayload;
     try {
-      body = (await request.json()) as Record<string, unknown>;
+      body = (await request.json()) as LoginPayload;
     } catch {
       return json({ error: true, statusCode: 400, message: 'Request body harus JSON.', data: null }, { status: 400 });
     }
@@ -113,8 +117,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     }, {
       headers: { 'X-RateLimit-Remaining': String(remaining) }
     });
-  } catch (err_raw) { const err = err_raw as Error;
-    console.error('[API] /api/auth/login error:', err.message);
+  } catch (errorRaw) {
+    const error = errorRaw as Error;
+    console.error('[API] /api/auth/login error:', error.message);
     return json({ error: true, statusCode: 500, message: 'Terjadi kesalahan server.', data: null }, { status: 500 });
   }
 };

@@ -22,15 +22,15 @@
   let deleteDialogOpen: boolean = false;
   let deletingPackageId: string | null = null;
 
-  $: allPackages = $dbStore.packages.filter((p) => p.deletedAt === null);
+  $: allPackages = $dbStore.packages.filter((packageItem) => packageItem.deletedAt === null);
 
-  $: filteredPackages = allPackages.filter((p) => {
-    const q = searchQuery.toLowerCase();
+  $: filteredPackages = allPackages.filter((packageItem) => {
+    const query = searchQuery.toLowerCase();
     const matchesSearch =
-      !q ||
-      p.name.toLowerCase().includes(q) ||
-      (p.description || '').toLowerCase().includes(q);
-    const matchesMode = !modeFilter || p.mode === modeFilter;
+      !query ||
+      packageItem.name.toLowerCase().includes(query) ||
+      (packageItem.description || '').toLowerCase().includes(query);
+    const matchesMode = !modeFilter || packageItem.mode === modeFilter;
     return matchesSearch && matchesMode;
   });
 
@@ -41,7 +41,7 @@
   $: totalPages = Math.max(1, Math.ceil(filteredPackages.length / itemsPerPage));
 
   function getLevelName(levelId: string): string {
-    return $dbStore.educationLevels.find((l) => l.id === levelId)?.levelName || '—';
+    return $dbStore.educationLevels.find((levelItem) => levelItem.id === levelId)?.levelName || '—';
   }
 
   function handleOpenCreatePackage() {
@@ -54,20 +54,20 @@
     packageModalOpen = true;
   }
 
-  function handleOpenEditClass(cls: ClassLevel) {
-    editingClass = cls;
+  function handleOpenEditClass(classItem: ClassLevel) {
+    editingClass = classItem;
     classModalOpen = true;
   }
 
   function handleConfirmDelete() {
     if (!deletingPackageId) return;
-    const res = dbStore.deletePackage(deletingPackageId);
+    const response = dbStore.deletePackage(deletingPackageId);
     deleteDialogOpen = false;
     deletingPackageId = null;
-    if (!res.error) {
+    if (!response.error) {
       toastStore.success('Paket les berhasil dihapus.');
     } else {
-      toastStore.error(res.message);
+      toastStore.error(response.message);
     }
   }
 </script>
@@ -101,7 +101,7 @@
     placeholder="Semua Mode"
     options={[
       { value: '', label: 'Semua Mode' },
-      ...Object.entries(PACKAGE_MODE_LABEL).map(([v, l]) => ({ value: v, label: l }))
+      ...Object.entries(PACKAGE_MODE_LABEL).map(([modeValue, modeLabel]) => ({ value: modeValue, label: modeLabel }))
     ]}
     className="max-w-48"
   />
@@ -122,7 +122,7 @@
             <th class="num">Harga (Wali)</th>
             <th class="num">Honor Tentor/Sesi</th>
             <th>Status</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -133,23 +133,23 @@
               </td>
             </tr>
           {:else}
-            {#each paginatedPackages as p (p.id)}
+            {#each paginatedPackages as packageItem (packageItem.id)}
               <tr>
                 <td>
-                  <strong>{p.name}</strong>
-                  <div class="sub">{p.description || '—'}</div>
+                  <strong>{packageItem.name}</strong>
+                  <div class="sub">{packageItem.description || '—'}</div>
                 </td>
                 <td>
-                  <span class="badge {p.mode === 'KELOMPOK' ? 'b-negotiating' : 'b-available'}">{p.mode}</span>
+                  <span class="badge {packageItem.mode === 'KELOMPOK' ? 'b-negotiating' : 'b-available'}">{packageItem.mode}</span>
                 </td>
-                <td>{p.period === 'BULANAN' ? 'Bulanan' : 'Harian'}</td>
-                <td class="num">{p.sessionsPerPeriod} sesi</td>
-                <td class="num">{p.mode === 'KELOMPOK' ? 'maks ' + p.maxStudents + ' murid' : '1 murid'}</td>
-                <td class="num"><strong>{formatCurrencyIDR(p.price)}</strong></td>
-                <td class="num">{p.tentorFee > 0 ? formatCurrencyIDR(p.tentorFee) + '/sesi' : '—'}</td>
+                <td>{packageItem.period === 'BULANAN' ? 'Bulanan' : 'Harian'}</td>
+                <td class="num">{packageItem.sessionsPerPeriod} sesi</td>
+                <td class="num">{packageItem.mode === 'KELOMPOK' ? 'maks ' + packageItem.maxStudents + ' murid' : '1 murid'}</td>
+                <td class="num"><strong>{formatCurrencyIDR(packageItem.price)}</strong></td>
+                <td class="num">{packageItem.tentorFee > 0 ? formatCurrencyIDR(packageItem.tentorFee) + '/sesi' : '—'}</td>
                 <td>
-                  <span class="badge {p.active ? 'b-available' : 'b-cancelled'}">
-                    {p.active ? 'Tersedia' : 'Nonaktif'}
+                  <span class="badge {packageItem.active ? 'b-available' : 'b-cancelled'}">
+                    {packageItem.active ? 'Tersedia' : 'Nonaktif'}
                   </span>
                 </td>
                 <td>
@@ -158,7 +158,7 @@
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEditPackage(p)}
+                      on:click={() => handleOpenEditPackage(packageItem)}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -167,7 +167,7 @@
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
                       on:click={() => {
-                        deletingPackageId = p.id;
+                        deletingPackageId = packageItem.id;
                         deleteDialogOpen = true;
                       }}
                     >
@@ -196,7 +196,7 @@
           >
             &laquo;
           </button>
-          {#each Array.from({ length: totalPages }, (_, i) => i + 1) as pageNum}
+          {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNum}
             <button
               type="button"
               class="page-btn {currentPage === pageNum ? 'active' : ''}"
@@ -232,22 +232,22 @@
             <th>Kelas</th>
             <th>Jenjang</th>
             <th class="num">Honor Dasar</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
-          {#each $dbStore.classes.filter((c) => c.deletedAt === null) as c (c.id)}
+          {#each $dbStore.classes.filter((classItem) => classItem.deletedAt === null) as classItem (classItem.id)}
             <tr>
-              <td><strong>{c.className}</strong></td>
-              <td>{getLevelName(c.educationLevelId)}</td>
-              <td class="num">{formatCurrencyIDR(c.baseRatePer90Min)}</td>
+              <td><strong>{classItem.className}</strong></td>
+              <td>{getLevelName(classItem.educationLevelId)}</td>
+              <td class="num">{formatCurrencyIDR(classItem.baseRatePer90Min)}</td>
               <td>
                 <div class="actions">
                   <button
                     type="button"
                     class="btn-icon"
                     data-tip="Ubah honor dasar"
-                    on:click={() => handleOpenEditClass(c)}
+                    on:click={() => handleOpenEditClass(classItem)}
                   >
                     <Icon name="edit" size="sm" />
                   </button>

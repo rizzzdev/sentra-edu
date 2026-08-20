@@ -17,8 +17,9 @@ export const GET: RequestHandler = async () => {
     
     setCache('full_db', db);
     return json({ error: false, statusCode: 200, data: db });
-  } catch (err_raw) { const err = err_raw as Error;
-    console.error('[API] /api/db error:', err.message);
+  } catch (errorRaw) {
+    const error = errorRaw as Error;
+    console.error('[API] /api/db error:', error.message);
     return json({ error: true, statusCode: 500, message: 'Terjadi kesalahan server.', data: null }, { status: 500 });
   }
 };

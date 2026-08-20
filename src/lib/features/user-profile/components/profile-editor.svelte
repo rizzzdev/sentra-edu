@@ -25,22 +25,22 @@
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
+    .map((word) => word[0].toUpperCase())
     .join('') || 'U';
 
-  function toggleSubject(id: string) {
-    if (subjectIds.includes(id)) {
-      subjectIds = subjectIds.filter((s) => s !== id);
+  function toggleSubject(subjectId: string) {
+    if (subjectIds.includes(subjectId)) {
+      subjectIds = subjectIds.filter((id) => id !== subjectId);
     } else {
-      subjectIds = [...subjectIds, id];
+      subjectIds = [...subjectIds, subjectId];
     }
   }
 
-  function toggleLevel(id: string) {
-    if (levelIds.includes(id)) {
-      levelIds = levelIds.filter((l) => l !== id);
+  function toggleLevel(levelId: string) {
+    if (levelIds.includes(levelId)) {
+      levelIds = levelIds.filter((id) => id !== levelId);
     } else {
-      levelIds = [...levelIds, id];
+      levelIds = [...levelIds, levelId];
     }
   }
 
@@ -76,10 +76,10 @@
 
 <div class="card">
   <div class="card-body flex items-center gap-3.5">
-    <div class="avatar w-12 h-12 text-[1.1rem]">{initials}</div>
+    <div class="avatar w-12 h-12 text-lg font-bold">{initials}</div>
     <div>
       <div class="font-bold text-base">{currentUser.fullName}</div>
-      <div class="text-muted-fg text-[0.82rem]">{currentUser.email}</div>
+      <div class="text-muted-fg text-xs">{currentUser.email}</div>
       <div class="mt-1">
         <span class="badge b-admin">{ROLE_LABEL[currentUser.role] || currentUser.role}</span>
       </div>
@@ -132,24 +132,24 @@
       </div>
 
       <div class="field">
-        <div class="text-[0.82rem] font-semibold mb-1.5">Mata Pelajaran yang Diampu</div>
+        <div class="text-xs font-semibold mb-1.5">Mata Pelajaran yang Diampu</div>
         <div class="multi-group">
-          {#each $dbStore.subjects.filter((s) => s.deletedAt === null) as s}
+          {#each $dbStore.subjects.filter((subjectItem) => subjectItem.deletedAt === null) as subjectItem}
             <label class="multi-opt">
-              <input type="checkbox" checked={subjectIds.includes(s.id)} on:change={() => toggleSubject(s.id)} />
-              {s.name}
+              <input type="checkbox" checked={subjectIds.includes(subjectItem.id)} on:change={() => toggleSubject(subjectItem.id)} />
+              {subjectItem.name}
             </label>
           {/each}
         </div>
       </div>
 
       <div class="field">
-        <div class="text-[0.82rem] font-semibold mb-1.5">Jenjang yang Dikuasai</div>
+        <div class="text-xs font-semibold mb-1.5">Jenjang yang Dikuasai</div>
         <div class="multi-group">
-          {#each $dbStore.educationLevels.filter((l) => l.deletedAt === null) as l}
+          {#each $dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null) as levelItem}
             <label class="multi-opt">
-              <input type="checkbox" checked={levelIds.includes(l.id)} on:change={() => toggleLevel(l.id)} />
-              {l.levelName}
+              <input type="checkbox" checked={levelIds.includes(levelItem.id)} on:change={() => toggleLevel(levelItem.id)} />
+              {levelItem.levelName}
             </label>
           {/each}
         </div>

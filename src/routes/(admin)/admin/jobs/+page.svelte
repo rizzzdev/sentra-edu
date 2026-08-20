@@ -10,11 +10,13 @@
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import type { JobPosting } from '$lib/shared/types/common.types';
+  import { onMount } from 'svelte';
 
   let searchQuery: string = '';
   let statusFilter: string = '';
   let currentPage: number = 1;
   const itemsPerPage: number = 10;
+  let isLoading: boolean = true;
 
   let jobModalOpen: boolean = false;
   let editingJob: JobPosting | null = null;
@@ -23,54 +25,60 @@
   let deleteDialogOpen: boolean = false;
   let deletingJobId: string | null = null;
 
-  $: allJobs = $dbStore.jobs.filter((j) => j.deletedAt === null);
+  onMount(() => {
+    setTimeout(() => {
+      isLoading = false;
+    }, 250);
+  });
 
-  $: nTotal = allJobs.length;
-  $: nTersedia = allJobs.filter((j) => j.status === 'AVAILABLE').length;
-  $: nNegosiasi = allJobs.filter((j) => j.status === 'NEGOTIATING').length;
-  $: nDitugaskan = allJobs.filter((j) => j.status === 'ASSIGNED').length;
+  $: allJobs = $dbStore.jobs.filter((jobItem) => jobItem.deletedAt === null);
 
-  function getClassesList(job: JobPosting): string[] {
-    const ids = Array.isArray(job.classIds) && job.classIds.length > 0
-      ? job.classIds
-      : (job.classId ? [job.classId] : []);
-    const names = ids
-      .map((id) => $dbStore.classes.find((c) => c.id === id)?.className)
-      .filter((n): n is string => Boolean(n));
+  $: totalJobsCount = allJobs.length;
+  $: availableJobsCount = allJobs.filter((jobItem) => jobItem.status === 'AVAILABLE').length;
+  $: negotiatingJobsCount = allJobs.filter((jobItem) => jobItem.status === 'NEGOTIATING').length;
+  $: assignedJobsCount = allJobs.filter((jobItem) => jobItem.status === 'ASSIGNED').length;
+
+  function getClassesList(jobPosting: JobPosting): string[] {
+    const classIds = Array.isArray(jobPosting.classIds) && jobPosting.classIds.length > 0
+      ? jobPosting.classIds
+      : (jobPosting.classId ? [jobPosting.classId] : []);
+    const names = classIds
+      .map((classIdentifier) => $dbStore.classes.find((classItem) => classItem.id === classIdentifier)?.className)
+      .filter((name): name is string => Boolean(name));
     return names.length > 0 ? names : ['—'];
   }
 
-  function getSubjectsList(job: JobPosting): string[] {
-    const ids = Array.isArray(job.subjectIds) && job.subjectIds.length > 0
-      ? job.subjectIds
-      : (job.subjectId ? [job.subjectId] : []);
-    const names = ids
-      .map((id) => $dbStore.subjects.find((s) => s.id === id)?.name)
-      .filter((n): n is string => Boolean(n));
+  function getSubjectsList(jobPosting: JobPosting): string[] {
+    const subjectIds = Array.isArray(jobPosting.subjectIds) && jobPosting.subjectIds.length > 0
+      ? jobPosting.subjectIds
+      : (jobPosting.subjectId ? [jobPosting.subjectId] : []);
+    const names = subjectIds
+      .map((subjectIdentifier) => $dbStore.subjects.find((subjectItem) => subjectItem.id === subjectIdentifier)?.name)
+      .filter((name): name is string => Boolean(name));
     return names.length > 0 ? names : ['—'];
   }
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '';
-    return $dbStore.users.find((u) => u.id === userId)?.fullName || '';
+    return $dbStore.users.find((userItem) => userItem.id === userId)?.fullName || '';
   }
 
-  function getJobFee(job: JobPosting): number {
-    const pkg = $dbStore.packages.find((p) => p.id === job.packageId);
-    return pkg ? pkg.tentorFee : (job.tentorFee || 0);
+  function getJobFee(jobPosting: JobPosting): number {
+    const packagePlan = $dbStore.packages.find((packageItem) => packageItem.id === jobPosting.packageId);
+    return packagePlan ? packagePlan.tentorFee : (jobPosting.tentorFee || 0);
   }
 
-  $: filteredJobs = allJobs.filter((j) => {
-    const q = searchQuery.trim().toLowerCase();
-    const classNames = getClassesList(j).join(' ').toLowerCase();
-    const subjectNames = getSubjectsList(j).join(' ').toLowerCase();
+  $: filteredJobs = allJobs.filter((jobPosting) => {
+    const query = searchQuery.trim().toLowerCase();
+    const classNames = getClassesList(jobPosting).join(' ').toLowerCase();
+    const subjectNames = getSubjectsList(jobPosting).join(' ').toLowerCase();
 
-    const matchesSearch = !q ||
-      j.title.toLowerCase().includes(q) ||
-      classNames.includes(q) ||
-      subjectNames.includes(q);
+    const matchesSearch = !query ||
+      jobPosting.title.toLowerCase().includes(query) ||
+      classNames.includes(query) ||
+      subjectNames.includes(query);
 
-    const matchesStatus = !statusFilter || j.status === statusFilter;
+    const matchesStatus = !statusFilter || jobPosting.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -114,19 +122,19 @@
 <div class="stat-grid">
   <div class="stat">
     <div class="s-icon tone-sky"><Icon name="work" size="lg" /></div>
-    <div><div class="s-val">{nTotal}</div><div class="s-lbl">Total Lowongan</div></div>
+    <div><div class="s-val">{totalJobsCount}</div><div class="s-lbl">Total Lowongan</div></div>
   </div>
   <div class="stat">
     <div class="s-icon tone-emerald"><Icon name="event_available" size="lg" /></div>
-    <div><div class="s-val">{nTersedia}</div><div class="s-lbl">Tersedia</div></div>
+    <div><div class="s-val">{availableJobsCount}</div><div class="s-lbl">Tersedia</div></div>
   </div>
   <div class="stat">
     <div class="s-icon tone-amber"><Icon name="handshake" size="lg" /></div>
-    <div><div class="s-val">{nNegosiasi}</div><div class="s-lbl">Negosiasi</div></div>
+    <div><div class="s-val">{negotiatingJobsCount}</div><div class="s-lbl">Negosiasi</div></div>
   </div>
   <div class="stat">
     <div class="s-icon tone-violet"><Icon name="lock" size="lg" /></div>
-    <div><div class="s-val">{nDitugaskan}</div><div class="s-lbl">Ditugaskan</div></div>
+    <div><div class="s-val">{assignedJobsCount}</div><div class="s-lbl">Ditugaskan</div></div>
   </div>
 </div>
 
@@ -147,7 +155,7 @@
     placeholder="Semua Status"
     options={[
       { value: '', label: 'Semua Status' },
-      ...Object.entries(JOB_STATUS_LABEL).map(([v, l]) => ({ value: v, label: l }))
+      ...Object.entries(JOB_STATUS_LABEL).map(([val, label]) => ({ value: val, label }))
     ]}
     className="max-w-48"
   />
@@ -176,11 +184,22 @@
             <th>Mata Pelajaran</th>
             <th>Jadwal Belajar</th>
             <th>Status</th>
-            <th style="text-align:right">Aksi</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody>
-          {#if paginatedJobs.length === 0}
+          {#if isLoading}
+            {#each Array(4) as _}
+              <tr>
+                <td><Skeleton width="w-36" height="h-4" /></td>
+                <td><Skeleton width="w-20" height="h-6" className="rounded-full" /></td>
+                <td><Skeleton width="w-24" height="h-6" className="rounded-full" /></td>
+                <td><Skeleton width="w-32" height="h-4" /></td>
+                <td><Skeleton width="w-28" height="h-6" className="rounded-full" /></td>
+                <td><Skeleton width="w-20" height="h-8" className="ml-auto rounded-md" /></td>
+              </tr>
+            {/each}
+          {:else if paginatedJobs.length === 0}
             <tr>
               <td colspan="6" class="empty py-10 text-center text-muted-fg">
                 <Icon name="work_off" size="lg" className="opacity-40 mb-2 block mx-auto text-4xl" />
@@ -193,35 +212,35 @@
               </td>
             </tr>
           {:else}
-            {#each paginatedJobs as j (j.id)}
+            {#each paginatedJobs as jobItem (jobItem.id)}
               <tr>
                 <td>
-                  <strong>{j.title}</strong>
+                  <strong>{jobItem.title}</strong>
                   <div class="sub">
-                    <span class="badge {j.mode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
-                      {j.mode === 'ONLINE' ? 'Online' : 'Offline'}
+                    <span class="badge {jobItem.mode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
+                      {jobItem.mode === 'ONLINE' ? 'Online' : 'Offline'}
                     </span>
-                    <span class="badge {j.studentCount > 1 ? 'b-admin' : 'b-interviewed'}">
-                      {j.studentCount > 1 ? 'Kelompok' : 'Privat'}
+                    <span class="badge {jobItem.studentCount > 1 ? 'b-admin' : 'b-interviewed'}">
+                      {jobItem.studentCount > 1 ? 'Kelompok' : 'Privat'}
                     </span>
                   </div>
                 </td>
                 <td>
                   <div class="flex flex-col gap-1 items-start">
-                    {#each getClassesList(j) as cls}
+                    {#each getClassesList(jobItem) as className}
                       <span class="badge b-neutral text-xs">
                         <Icon name="stairs" size="xs" />
-                        {cls}
+                        {className}
                       </span>
                     {/each}
                   </div>
                 </td>
                 <td>
                   <div class="flex flex-col gap-1 items-start">
-                    {#each getSubjectsList(j) as sub}
+                    {#each getSubjectsList(jobItem) as subjectName}
                       <span class="badge b-sky text-xs">
                         <Icon name="menu_book" size="xs" />
-                        {sub}
+                        {subjectName}
                       </span>
                     {/each}
                   </div>
@@ -229,34 +248,34 @@
                 <td>
                   <div class="flex flex-col gap-1.5 items-start">
                     <div class="flex items-center gap-1 flex-wrap">
-                      {#each getScheduleDaysList(j.scheduleDays) as day}
+                      {#each getScheduleDaysList(jobItem.scheduleDays) as day}
                         <span class="badge b-neutral text-xs font-semibold">
                           <Icon name="calendar_today" size="xs" />
                           {day}
                         </span>
                       {/each}
                     </div>
-                    <div class="sub">{j.scheduleTime || '—'}{#if j.scheduleEndTime} – {j.scheduleEndTime}{/if} WIB</div>
-                    <div class="sub font-medium">{formatCurrencyIDR(getJobFee(j))}/sesi</div>
+                    <div class="sub">{jobItem.scheduleTime || '—'}{#if jobItem.scheduleEndTime} – {jobItem.scheduleEndTime}{/if} WIB</div>
+                    <div class="sub font-medium">{formatCurrencyIDR(getJobFee(jobItem))}/sesi</div>
                   </div>
                 </td>
                 <td>
-                  <span class="badge {getStatusBadgeClass(j.status)}">
-                    {#if j.status === 'ASSIGNED'}
+                  <span class="badge {getStatusBadgeClass(jobItem.status)}">
+                    {#if jobItem.status === 'ASSIGNED'}
                       <Icon name="check_circle" size="xs" />
-                    {:else if j.status === 'AVAILABLE'}
+                    {:else if jobItem.status === 'AVAILABLE'}
                       <Icon name="event_available" size="xs" />
-                    {:else if j.status === 'NEGOTIATING'}
+                    {:else if jobItem.status === 'NEGOTIATING'}
                       <Icon name="handshake" size="xs" />
-                    {:else if j.status === 'CANCELLED'}
+                    {:else if jobItem.status === 'CANCELLED'}
                       <Icon name="cancel" size="xs" />
                     {/if}
-                    {getStatusLabel(j.status, JOB_STATUS_LABEL)}
+                    {getStatusLabel(jobItem.status, JOB_STATUS_LABEL)}
                   </span>
-                  {#if j.assignedTentorId}
+                  {#if jobItem.assignedTentorId}
                     <div class="text-xs text-muted-fg mt-1 flex items-center gap-1 font-medium">
                       <Icon name="badge" size="xs" />
-                      <span>{getUserName(j.assignedTentorId)}</span>
+                      <span>{getUserName(jobItem.assignedTentorId)}</span>
                     </div>
                   {/if}
                 </td>
@@ -266,7 +285,7 @@
                       type="button"
                       class="btn-icon"
                       data-tip="Kelola"
-                      on:click={() => { assigningJob = j; assignModalOpen = true; }}
+                      on:click={() => { assigningJob = jobItem; assignModalOpen = true; }}
                     >
                       <Icon name="tune" size="sm" />
                     </button>
@@ -274,7 +293,7 @@
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => { editingJob = j; jobModalOpen = true; }}
+                      on:click={() => { editingJob = jobItem; jobModalOpen = true; }}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -282,7 +301,7 @@
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deletingJobId = j.id; deleteDialogOpen = true; }}
+                      on:click={() => { deletingJobId = jobItem.id; deleteDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -310,7 +329,7 @@
         >
           &laquo;
         </button>
-        {#each Array.from({ length: totalPages }, (_, i) => i + 1) as pageNumber}
+        {#each Array.from({ length: totalPages }, (_, index) => index + 1) as pageNumber}
           <button
             type="button"
             class="page-btn {currentPage === pageNumber ? 'active' : ''}"
@@ -333,19 +352,31 @@
   </div>
 </div>
 
-<JobModal open={jobModalOpen} {editingJob} onClose={() => { jobModalOpen = false; }} />
+<JobModal
+  open={jobModalOpen}
+  editingJob={editingJob}
+  onClose={() => { jobModalOpen = false; editingJob = null; }}
+/>
+
 <JobManageModal
   open={assignModalOpen}
   job={assigningJob}
-  onClose={() => { assignModalOpen = false; }}
-  onEdit={(j) => { assignModalOpen = false; editingJob = j; jobModalOpen = true; }}
+  onClose={() => { assignModalOpen = false; assigningJob = null; }}
+  onEdit={(jobToEdit) => {
+    assignModalOpen = false;
+    assigningJob = null;
+    editingJob = jobToEdit;
+    jobModalOpen = true;
+  }}
 />
+
 <ConfirmationDialog
   open={deleteDialogOpen}
   title="Hapus Lowongan"
-  message="Apakah Anda yakin ingin menghapus lowongan les ini?"
+  message="Apakah Anda yakin ingin menghapus data lowongan ini? Tindakan ini tidak dapat dibatalkan."
   confirmText="Hapus"
+  cancelText="Batal"
   confirmVariant="danger"
   onConfirm={handleConfirmDelete}
-  onCancel={() => { deleteDialogOpen = false; }}
+  onCancel={() => { deleteDialogOpen = false; deletingJobId = null; }}
 />

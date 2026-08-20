@@ -9,9 +9,9 @@
 
   $: userNotifications = ($dbStore.notifications || [])
     .filter((notif) => notif.userId === currentUser.id)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((firstNotif, secondNotif) => new Date(secondNotif.createdAt).getTime() - new Date(firstNotif.createdAt).getTime());
 
-  $: unreadCount = userNotifications.filter((n) => !n.read).length;
+  $: unreadCount = userNotifications.filter((notificationItem) => !notificationItem.read).length;
 
   function timeAgo(dateString: string): string {
     const diff = (Date.now() - new Date(dateString).getTime()) / 1000;
@@ -21,8 +21,8 @@
     return Math.floor(diff / 86400) + 'h lalu';
   }
 
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') onClose();
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') onClose();
   }
 </script>
 
@@ -37,7 +37,7 @@
     tabindex="-1"
   >
     <div
-      class="modal w-[460px] max-w-[95vw]"
+      class="modal max-w-lg w-full"
       role="dialog"
       aria-modal="true"
       tabindex="0"
@@ -60,20 +60,20 @@
               <div>Belum ada notifikasi.</div>
             </div>
           {:else}
-            {#each userNotifications as n (n.id)}
+            {#each userNotifications as notificationItem (notificationItem.id)}
               <button
                 type="button"
-                class="notif-item {n.read ? 'read' : 'unread'}"
-                on:click={() => dbStore.markNotificationAsRead(n.id)}
+                class="notif-item {notificationItem.read ? 'read' : 'unread'}"
+                on:click={() => dbStore.markNotificationAsRead(notificationItem.id)}
               >
                 <span class="n-ico">
-                  <Icon name={n.icon || 'notifications'} size="md" />
+                  <Icon name={notificationItem.icon || 'notifications'} size="md" />
                 </span>
                 <span class="flex-1 min-w-0">
-                  <span class="n-title">{n.title}</span>
-                  <div class="n-msg">{n.message}</div>
+                  <span class="n-title">{notificationItem.title}</span>
+                  <div class="n-msg">{notificationItem.message}</div>
                   <div class="n-time">
-                    <Icon name="schedule" size="xs" /> {timeAgo(n.createdAt)}
+                    <Icon name="schedule" size="xs" /> {timeAgo(notificationItem.createdAt)}
                   </div>
                 </span>
                 <span class="n-dot-rd"></span>
