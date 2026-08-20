@@ -1,5 +1,6 @@
 <script lang="ts">
-  import TentorsPage from '../+page.svelte';
+  import TentorsPage from '../../tutors/+page.svelte';
 </script>
 
 <TentorsPage />
+
