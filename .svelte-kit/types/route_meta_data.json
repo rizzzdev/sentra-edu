@@ -1,69 +1,75 @@
 {
-	"/(dashboard)": [
+	"/(tutor)": [
+		"src/routes/+layout.ts"
+	],
+	"/(student)": [
+		"src/routes/+layout.ts"
+	],
+	"/(parent)": [
+		"src/routes/+layout.ts"
+	],
+	"/(admin)": [
 		"src/routes/+layout.ts"
 	],
 	"/": [
 		"src/routes/+layout.ts",
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin": [
+	"/(admin)/admin": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/analytics": [
+	"/(admin)/admin/analytics": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/attendance": [
+	"/(admin)/admin/attendance": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/candidates": [
+	"/(admin)/admin/candidates": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/classes": [
+	"/(admin)/admin/classes": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/invoices": [
+	"/(admin)/admin/invoices": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/jobs": [
+	"/(admin)/admin/jobs": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/levels": [
+	"/(admin)/admin/levels": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/magic-links": [
+	"/(admin)/admin/magic-links": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/packages": [
+	"/(admin)/admin/packages": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/payroll": [
+	"/(admin)/admin/payroll": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/profile": [
+	"/(admin)/admin/profile": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/reports-admin": [
+	"/(admin)/admin/reports-admin": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/students": [
+	"/(admin)/admin/students": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/students/parent": [
+	"/(admin)/admin/students/parent": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/subjects": [
+	"/(admin)/admin/subjects": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/tutors": [
+	"/(admin)/admin/tutors": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/tutors/magic-links": [
+	"/(admin)/admin/tutors/magic-links": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/admin/users": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/analytics": [
+	"/(admin)/admin/users": [
 		"src/routes/+layout.ts"
 	],
 	"/api/attendances": [
@@ -114,67 +120,25 @@
 	"/api/users": [
 		"src/routes/api/users/+server.ts"
 	],
-	"/(dashboard)/attendance": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/candidates": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/children": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/classes": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/dashboard": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/invoices": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/job-board": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/jobs": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/levels": [
-		"src/routes/+layout.ts"
-	],
 	"/(auth)/login": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/magic-links": [
+	"/(parent)/parent": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/packages": [
+	"/(parent)/parent/attendance": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/parent": [
+	"/(parent)/parent/children": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/parent/attendance": [
+	"/(parent)/parent/invoices": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/parent/children": [
+	"/(parent)/parent/profile": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/parent/invoices": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/parent/profile": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/parent/reports": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/payroll": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/profile": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/program": [
+	"/(parent)/parent/reports": [
 		"src/routes/+layout.ts"
 	],
 	"/(auth)/register-tutor": [
@@ -183,58 +147,34 @@
 	"/(auth)/register": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/reports-admin": [
+	"/(student)/student": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/reports": [
+	"/(student)/student/attendance": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/students": [
+	"/(student)/student/profile": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/students/parent": [
+	"/(student)/student/program": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/student": [
+	"/(student)/student/reports": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/student/attendance": [
+	"/(tutor)/tutor": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/student/profile": [
+	"/(tutor)/tutor/attendance": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/student/program": [
+	"/(tutor)/tutor/jobboard": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/student/reports": [
+	"/(tutor)/tutor/payroll": [
 		"src/routes/+layout.ts"
 	],
-	"/(dashboard)/subjects": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/tutors": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/tutors/magic-links": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/tutor": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/tutor/attendance": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/tutor/jobboard": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/tutor/payroll": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/tutor/profile": [
-		"src/routes/+layout.ts"
-	],
-	"/(dashboard)/users": [
+	"/(tutor)/tutor/profile": [
 		"src/routes/+layout.ts"
 	]
 }

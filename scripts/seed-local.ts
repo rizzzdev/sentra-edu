@@ -33,6 +33,8 @@ async function initTables() {
 			position TEXT,
 			education TEXT,
 			experience_years INTEGER,
+			subject_ids TEXT[] DEFAULT '{}',
+			level_ids TEXT[] DEFAULT '{}',
 			school TEXT,
 			address TEXT,
 			occupation TEXT,
