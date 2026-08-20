@@ -41,9 +41,11 @@ const useLocalPg = isLocalDatabase(DATABASE_URL);
  *
  * We replicate this exact API using pg.Pool for local PostgreSQL.
  */
+export type SqlParam = string | number | boolean | string[] | number[] | Date | null | undefined;
+
 export let sql: {
-	(strings: TemplateStringsArray, ...values: any[]): Promise<QueryResultRow[]>;
-	query(text: string, values?: any[]): Promise<QueryResultRow[]>;
+	(strings: TemplateStringsArray, ...values: SqlParam[]): Promise<QueryResultRow[]>;
+	query(text: string, values?: SqlParam[]): Promise<QueryResultRow[]>;
 };
 
 if (useLocalPg) {
@@ -61,10 +63,10 @@ if (useLocalPg) {
 
 	const localSql = function localSql(
 		strings: TemplateStringsArray,
-		...values: any[]
+		...values: SqlParam[]
 	): Promise<QueryResultRow[]> {
 		let query = '';
-		const params: any[] = [];
+		const params: SqlParam[] = [];
 		let paramIndex = 1;
 
 		for (let i = 0; i < strings.length; i++) {
@@ -79,14 +81,14 @@ if (useLocalPg) {
 		return pool.query(query, params).then((result: QueryResult) => result.rows);
 	};
 
-	localSql.query = function query(text: string, values?: any[]): Promise<QueryResultRow[]> {
+	localSql.query = function query(text: string, values?: SqlParam[]): Promise<QueryResultRow[]> {
 		return pool.query(text, values).then((result: QueryResult) => result.rows);
 	};
 
 	sql = localSql;
 } else {
 	console.log('[DB] Using Neon PostgreSQL (HTTP driver)');
-	sql = neon(DATABASE_URL) as typeof sql;
+	sql = neon(DATABASE_URL) as unknown as typeof sql;
 }
 
 // ── Schema initialization ────────────────────────────────

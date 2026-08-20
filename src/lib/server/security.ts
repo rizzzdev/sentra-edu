@@ -77,7 +77,8 @@ export function sanitizeObject<T extends Record<string, string | number | boolea
 // ── Input Validators ─────────────────────────────────────
 
 export function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!email || typeof email !== 'string' || email.length > 254) return false;
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 }
 
 export function isValidId(id: string): boolean {

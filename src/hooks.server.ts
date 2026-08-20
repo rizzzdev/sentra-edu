@@ -41,6 +41,21 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
   }
 
+  if (path === '/api/geocode') {
+    const { allowed } = checkRateLimit(ip, 'default');
+    if (!allowed) {
+      return new Response(JSON.stringify({
+        error: true,
+        statusCode: 429,
+        message: 'Terlalu banyak permintaan pencarian lokasi. Silakan coba lagi.',
+        data: []
+      }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '60' }
+      });
+    }
+  }
+
   if (path.startsWith('/api/') && event.request.method === 'POST') {
     const { allowed } = checkRateLimit(ip, 'default');
     if (!allowed) {
@@ -67,6 +82,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     "font-src 'self' https://fonts.gstatic.com; " +
     "img-src 'self' data: https:; " +
     "connect-src 'self' https://nominatim.openstreetmap.org https://photon.komoot.io https://*.google.com https://*.openstreetmap.org; " +
+    "object-src 'none'; " +
+    "base-uri 'self'; " +
     "frame-ancestors 'none';"
   );
 
