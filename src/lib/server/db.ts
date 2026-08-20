@@ -1,14 +1,102 @@
+/**
+ * Database Adapter
+ *
+ * Automatically detects the PostgreSQL driver based on DATABASE_URL:
+ * - Local (localhost / 127.0.0.1 / ::1) → uses `pg` Pool (TCP connection)
+ * - Remote/Neon (.neon.tech / .neon.branch / other) → uses `neon()` HTTP driver
+ *
+ * Both drivers expose the same `sql` tagged-template interface:
+ *   const rows = await sql`SELECT * FROM users WHERE id = ${id}`;
+ *   const rows = await sql.query('SELECT count(*) FROM users');
+ */
+
+import { Pool, type QueryResult, type QueryResultRow } from 'pg';
 import { neon } from '@neondatabase/serverless';
 import { DATABASE_URL } from '$env/static/private';
 
-export const sql = neon(DATABASE_URL);
+// ── Detect driver ────────────────────────────────────────
+function isLocalDatabase(url: string): boolean {
+	try {
+		const parsed = new URL(url);
+		const host = parsed.hostname.toLowerCase();
+		return (
+			host === 'localhost' ||
+			host === '127.0.0.1' ||
+			host === '::1' ||
+			host === '[::1]'
+		);
+	} catch {
+		return false;
+	}
+}
+
+const useLocalPg = isLocalDatabase(DATABASE_URL);
+
+// ── Build sql interface ──────────────────────────────────
+
+/**
+ * The neon() function returns a tagged-template executor:
+ *   sql`SELECT ...`  →  Promise<Row[]>
+ *   sql.query(sql, params?)  →  Promise<Row[]>
+ *
+ * We replicate this exact API using pg.Pool for local PostgreSQL.
+ */
+export let sql: {
+	(strings: TemplateStringsArray, ...values: any[]): Promise<QueryResultRow[]>;
+	query(text: string, values?: any[]): Promise<QueryResultRow[]>;
+};
+
+if (useLocalPg) {
+	console.log('[DB] Using local PostgreSQL (pg driver)');
+	const pool = new Pool({
+		connectionString: DATABASE_URL,
+		max: 20,
+		idleTimeoutMillis: 30000,
+		connectionTimeoutMillis: 5000
+	});
+
+	pool.on('error', (err) => {
+		console.error('[DB] Unexpected pool error:', err.message);
+	});
+
+	const localSql = function localSql(
+		strings: TemplateStringsArray,
+		...values: any[]
+	): Promise<QueryResultRow[]> {
+		let query = '';
+		const params: any[] = [];
+		let paramIndex = 1;
+
+		for (let i = 0; i < strings.length; i++) {
+			query += strings[i];
+			if (i < values.length) {
+				query += `$${paramIndex}`;
+				params.push(values[i]);
+				paramIndex++;
+			}
+		}
+
+		return pool.query(query, params).then((result: QueryResult) => result.rows);
+	};
+
+	localSql.query = function query(text: string, values?: any[]): Promise<QueryResultRow[]> {
+		return pool.query(text, values).then((result: QueryResult) => result.rows);
+	};
+
+	sql = localSql;
+} else {
+	console.log('[DB] Using Neon PostgreSQL (HTTP driver)');
+	sql = neon(DATABASE_URL) as typeof sql;
+}
+
+// ── Schema initialization ────────────────────────────────
 
 /**
  * Initialize database tables.
  * Run once on first server start.
  */
 export async function initDatabase() {
-  await sql`
+	await sql`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,

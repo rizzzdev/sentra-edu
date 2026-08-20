@@ -288,16 +288,16 @@ function createDatabaseStore() {
       const now = new Date().toISOString();
       if (userPayload.id) {
         let updatedUser: User | null = null;
-        const updatedUsers = currentDb.users.map((u) => { if (u.id === userPayload.id) { updatedUser = { ...u, ...userPayload, updatedAt: now } as User; return updatedUser; } return u; });
+        const updatedUsers = currentDb.users.map((user) => { if (user.id === userPayload.id) { updatedUser = { ...user, ...userPayload, updatedAt: now } as User; return updatedUser; } return user; });
         persistDatabase({ ...currentDb, users: updatedUsers });
         apiPost('/api/users', userPayload);
         return { error: false, statusCode: 200, message: 'Data pengguna berhasil diperbarui.', data: updatedUser };
       } else {
-        if (currentDb.users.some((u) => u.deletedAt === null && u.email.toLowerCase() === userPayload.email?.trim().toLowerCase()))
+        if (currentDb.users.some((user) => user.deletedAt === null && user.email.toLowerCase() === userPayload.email?.trim().toLowerCase()))
           return { error: true, statusCode: 409, message: 'Email sudah digunakan.', data: null };
-        const newUser: User = { id: generateEntityId('u'), email: userPayload.email.trim(), password: userPayload.password || 'password123', fullName: userPayload.fullName.trim(), phone: userPayload.phone || '', role: userPayload.role || 'STUDENT', position: userPayload.position, education: userPayload.education, experienceYears: userPayload.experienceYears, subjectIds: userPayload.subjectIds || [], levelIds: userPayload.levelIds || [], school: userPayload.school, address: userPayload.address, createdAt: now, updatedAt: now, deletedAt: null };
+        const newUser: User = { id: generateEntityId('u'), email: userPayload.email.trim(), password: userPayload.password || 'password123', fullName: userPayload.fullName.trim(), phone: userPayload.phone || '', role: userPayload.role || 'STUDENT', position: userPayload.position, education: userPayload.education, experienceYears: userPayload.experienceYears, subjectIds: userPayload.subjectIds || [], levelIds: userPayload.levelIds || [], school: userPayload.school, address: userPayload.address, isActive: userPayload.isActive ?? true, createdAt: now, updatedAt: now, deletedAt: null };
         persistDatabase({ ...currentDb, users: [...currentDb.users, newUser] });
-        apiPost('/api/users', userPayload);
+        apiPost('/api/users', { ...newUser, password: userPayload.password || 'password123' });
         return { error: false, statusCode: 201, message: 'Pengguna baru berhasil ditambahkan.', data: newUser };
       }
     },
@@ -305,7 +305,7 @@ function createDatabaseStore() {
     deleteUser: (userId: string): ApiResponse<null> => {
       const currentDb = get(store);
       const now = new Date().toISOString();
-      persistDatabase({ ...currentDb, users: currentDb.users.map((u) => u.id === userId ? { ...u, deletedAt: now, updatedAt: now } : u) });
+      persistDatabase({ ...currentDb, users: currentDb.users.map((user) => user.id === userId ? { ...user, deletedAt: now, updatedAt: now } : user) });
       apiDelete('/api/users', userId);
       return { error: false, statusCode: 200, message: 'Akun pengguna berhasil dinonaktifkan.', data: null };
     },
@@ -314,10 +314,36 @@ function createDatabaseStore() {
       const currentDb = get(store);
       const now = new Date().toISOString();
       let name = 'pengguna';
-      const updated = currentDb.users.map((u) => { if (u.id === userId) { name = u.fullName; return { ...u, isActive: true, updatedAt: now }; } return u; });
+      let activatedUser: User | null = null;
+      const updated = currentDb.users.map((user) => {
+        if (user.id === userId) {
+          name = user.fullName;
+          activatedUser = { ...user, isActive: true, updatedAt: now };
+          return activatedUser;
+        }
+        return user;
+      });
       persistDatabase({ ...currentDb, users: updated });
       apiPost('/api/users', { id: userId, isActive: true });
-      return { error: false, statusCode: 200, message: `Akun ${name} berhasil diaktifkan.`, data: null };
+      return { error: false, statusCode: 200, message: `Akun ${name} berhasil diaktifkan.`, data: activatedUser };
+    },
+
+    deactivateUser: (userId: string): ApiResponse<User> => {
+      const currentDb = get(store);
+      const now = new Date().toISOString();
+      let name = 'pengguna';
+      let deactivatedUser: User | null = null;
+      const updated = currentDb.users.map((user) => {
+        if (user.id === userId) {
+          name = user.fullName;
+          deactivatedUser = { ...user, isActive: false, updatedAt: now };
+          return deactivatedUser;
+        }
+        return user;
+      });
+      persistDatabase({ ...currentDb, users: updated });
+      apiPost('/api/users', { id: userId, isActive: false });
+      return { error: false, statusCode: 200, message: `Akun ${name} berhasil dinonaktifkan.`, data: deactivatedUser };
     },
 
     // ── JOB MANAGEMENT ──

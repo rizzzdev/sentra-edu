@@ -18,6 +18,7 @@
   let phone: string = '';
   let role: UserRole = 'TENTOR';
   let password: string = '';
+  let isActive: string = 'true';
 
   $: if (editingUser) {
     fullName = editingUser.fullName;
@@ -25,12 +26,14 @@
     phone = editingUser.phone || '';
     role = editingUser.role;
     password = '';
+    isActive = editingUser.isActive !== false ? 'true' : 'false';
   } else {
     fullName = '';
     email = '';
     phone = '';
     role = 'TENTOR';
     password = '';
+    isActive = 'true';
   }
 
   function handleSubmit() {
@@ -44,7 +47,8 @@
       fullName: fullName.trim(),
       email: email.trim(),
       phone: phone.trim(),
-      role
+      role,
+      isActive: isActive === 'true'
     };
 
     if (password.trim()) {
@@ -103,8 +107,22 @@
         id="f_role"
         name="role"
         bind:value={role}
-        options={Object.entries(ROLE_LABEL).map(([v, l]) => ({ value: v, label: l }))}
+        options={Object.entries(ROLE_LABEL).map(([roleKey, roleLabel]) => ({ value: roleKey, label: roleLabel }))}
         placeholder="— Pilih peran —"
+      />
+    </div>
+
+    <div class="field">
+      <label for="f_isActive">Status Akun <i class="req">*</i></label>
+      <SelectSearch
+        id="f_isActive"
+        name="isActive"
+        bind:value={isActive}
+        options={[
+          { value: 'true', label: 'Aktif' },
+          { value: 'false', label: 'Belum Aktif (Nonaktif)' }
+        ]}
+        placeholder="— Pilih status akun —"
       />
     </div>
 
