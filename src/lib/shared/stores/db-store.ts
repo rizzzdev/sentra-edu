@@ -244,6 +244,16 @@ function createDatabaseStore() {
       return { error: false, statusCode: 200, message: 'Kelas berhasil dihapus.', data: null };
     },
 
+    deleteEducationLevel: (levelId: string): ApiResponse<null> => {
+      const currentDb = get(store);
+      if (currentDb.classes.some((c) => c.deletedAt === null && c.educationLevelId === levelId))
+        return { error: true, statusCode: 400, message: 'Jenjang masih digunakan pada kelas.', data: null };
+      const now = new Date().toISOString();
+      persistDatabase({ ...currentDb, educationLevels: currentDb.educationLevels.map((l) => l.id === levelId ? { ...l, deletedAt: now, updatedAt: now } : l) });
+      apiDelete('/api/education-levels', levelId);
+      return { error: false, statusCode: 200, message: 'Jenjang berhasil dihapus.', data: null };
+    },
+
     // ── MASTER DATA: PACKAGES ──
     savePackagePlan: (payload: { id?: string; name: string; mode: 'PRIVATE' | 'KELOMPOK'; period: 'BULANAN' | 'HARIAN'; price: number; sessionsPerPeriod: number; maxStudents: number; tentorFee: number; description: string; active: boolean }): ApiResponse<PackagePlan> => {
       if (!payload.name.trim()) return { error: true, statusCode: 400, message: 'Nama paket wajib diisi.', data: null };

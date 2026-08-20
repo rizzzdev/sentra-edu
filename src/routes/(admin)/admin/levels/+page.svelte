@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/atoms/icon.svelte';
-  import ClassModal from '$lib/features/master-data/components/class-modal.svelte';
+  import LevelModal from '$lib/features/master-data/components/level-modal.svelte';
   import ConfirmationDialog from '$lib/components/organisms/confirmation-dialog.svelte';
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
@@ -10,6 +10,8 @@
   let currentPage: number = 1;
   const itemsPerPage: number = 8;
 
+  let levelModalOpen: boolean = false;
+  let editingLevel: EducationLevel | null = null;
   let deleteDialogOpen: boolean = false;
   let deletingLevelId: string | null = null;
 
@@ -31,6 +33,28 @@
   function getClassCount(levelId: string): number {
     return $dbStore.classes.filter((c) => c.deletedAt === null && c.educationLevelId === levelId).length;
   }
+
+  function handleOpenCreate() {
+    editingLevel = null;
+    levelModalOpen = true;
+  }
+
+  function handleOpenEdit(level: EducationLevel) {
+    editingLevel = level;
+    levelModalOpen = true;
+  }
+
+  function handleConfirmDelete() {
+    if (!deletingLevelId) return;
+    const response = dbStore.deleteEducationLevel(deletingLevelId);
+    deleteDialogOpen = false;
+    deletingLevelId = null;
+    if (!response.error) {
+      toastStore.success(response.message);
+    } else {
+      toastStore.error(response.message);
+    }
+  }
 </script>
 
 <div class="page-head">
@@ -38,6 +62,9 @@
     <h3><Icon name="school" size="lg" /> Jenjang</h3>
     <div class="desc">Master jenjang pendidikan. Tarif honor diatur per kelas pada menu Paket Les.</div>
   </div>
+  <button type="button" class="btn btn-primary" on:click={handleOpenCreate}>
+    <Icon name="add" size="sm" /> Tambah Jenjang
+  </button>
 </div>
 
 <div class="filter-bar">
@@ -56,12 +83,13 @@
             <th>Jenjang</th>
             <th class="num">Jumlah Kelas</th>
             <th>Deskripsi</th>
+            <th style="text-align:right">Aksi</th>
           </tr>
         </thead>
         <tbody>
           {#if paginatedLevels.length === 0}
             <tr>
-              <td colspan="3" class="empty">
+              <td colspan="4" class="empty">
                 {searchQuery ? 'Tidak ada jenjang yang cocok.' : 'Belum ada jenjang.'}
               </td>
             </tr>
@@ -71,6 +99,29 @@
                 <td><strong>{l.levelName}</strong></td>
                 <td class="num">{getClassCount(l.id)} kelas</td>
                 <td>{l.description || '—'}</td>
+                <td>
+                  <div class="actions">
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      data-tip="Ubah"
+                      on:click={() => handleOpenEdit(l)}
+                    >
+                      <Icon name="edit" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-icon btn-icon-danger"
+                      data-tip="Hapus"
+                      on:click={() => {
+                        deletingLevelId = l.id;
+                        deleteDialogOpen = true;
+                      }}
+                    >
+                      <Icon name="delete" size="sm" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             {/each}
           {/if}
@@ -114,3 +165,14 @@
     {/if}
   </div>
 </div>
+
+<LevelModal open={levelModalOpen} {editingLevel} onClose={() => { levelModalOpen = false; }} />
+<ConfirmationDialog
+  open={deleteDialogOpen}
+  title="Hapus Jenjang"
+  message="Apakah Anda yakin ingin menghapus jenjang ini? Kelas yang terkait harus dihapus terlebih dahulu."
+  confirmText="Hapus"
+  confirmVariant="danger"
+  onConfirm={handleConfirmDelete}
+  onCancel={() => { deleteDialogOpen = false; }}
+/>
