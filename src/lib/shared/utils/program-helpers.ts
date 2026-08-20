@@ -24,6 +24,9 @@ export interface UnifiedProgram {
   statusLabel: string;
   statusBadgeClass: string;
   notes?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  enrollmentId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -128,6 +131,9 @@ export function getStudentPrograms(
       scheduleTime: job.scheduleTime || '16:00',
       scheduleEndTime: job.scheduleEndTime || '17:30',
       location: job.location || 'Lokasi Siswa',
+      latitude: job.latitude ?? null,
+      longitude: job.longitude ?? null,
+      enrollmentId: job.enrollmentId ?? null,
       status: job.status,
       statusLabel,
       statusBadgeClass,
@@ -190,6 +196,9 @@ export function getStudentPrograms(
       scheduleDays: enroll.scheduleDay ? [enroll.scheduleDay] : ['Senin'],
       scheduleTime: enroll.scheduleTime || '16:00',
       location: enroll.address || 'Lokasi Siswa',
+      latitude: enroll.latitude ?? null,
+      longitude: enroll.longitude ?? null,
+      enrollmentId: enroll.id,
       status: enroll.status,
       statusLabel,
       statusBadgeClass,

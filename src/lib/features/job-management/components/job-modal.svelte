@@ -36,6 +36,17 @@
   $: selectedPackage = $dbStore.packages.find((p) => p.id === packageId);
   $: isGroupMode = selectedPackage?.mode === 'KELOMPOK';
 
+  // Package options
+  $: packageOptions = [
+    { value: '', label: '— Pilih paket les —' },
+    ...$dbStore.packages
+      .filter((p) => p.deletedAt === null && p.active !== false)
+      .map((p) => ({
+        value: p.id,
+        label: `${p.name} (${p.mode === 'PRIVATE' ? 'Privat' : 'Kelompok'} · Rp ${p.price.toLocaleString('id-ID')})`
+      }))
+  ];
+
   // Student options (from all active students in database)
   $: studentOptions = $dbStore.users
     .filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.isActive !== false)
@@ -60,34 +71,47 @@
 
   $: daySelectOptions = dayOptions.map((d) => ({ value: d, label: d }));
 
-  // Initialize from editing job
-  $: if (editingJob) {
-    title = editingJob.title;
-    packageId = editingJob.packageId || '';
-    mode = editingJob.mode || editingJob.jobMode || 'OFFLINE';
-    selectedStudentIds = editingJob.studentIds && editingJob.studentIds.length > 0
-      ? editingJob.studentIds
-      : (editingJob.studentId ? [editingJob.studentId] : []);
-    selectedClassIds = editingJob.classIds && editingJob.classIds.length > 0
-      ? editingJob.classIds
-      : (editingJob.classId ? [editingJob.classId] : []);
-    selectedSubjectIds = editingJob.subjectIds && editingJob.subjectIds.length > 0
-      ? editingJob.subjectIds
-      : (editingJob.subjectId ? [editingJob.subjectId] : []);
-    preferredDays = editingJob.scheduleDays || ['Senin', 'Rabu'];
-    startTime = editingJob.scheduleTime || '16:00';
-    endTime = editingJob.scheduleEndTime || '17:30';
-    transportAllowance = editingJob.transportAllowance || 0;
-    latitude = editingJob.latitude ?? -6.2;
-    longitude = editingJob.longitude ?? 106.8;
-    description = editingJob.additionalNotes || editingJob.notes || '';
-  } else {
-    resetForm();
+  let previousOpen = false;
+  let previousJobId: string | null = null;
+
+  // Initialize form ONLY when modal opens or when editingJob ID changes
+  $: if (open && (!previousOpen || (editingJob?.id !== previousJobId))) {
+    previousOpen = true;
+    previousJobId = editingJob?.id || null;
+    if (editingJob) {
+      title = editingJob.title || '';
+      packageId = editingJob.packageId || '';
+      mode = editingJob.mode || editingJob.jobMode || 'OFFLINE';
+      selectedStudentIds = editingJob.studentIds && editingJob.studentIds.length > 0
+        ? editingJob.studentIds
+        : (editingJob.studentId ? [editingJob.studentId] : []);
+      selectedClassIds = editingJob.classIds && editingJob.classIds.length > 0
+        ? editingJob.classIds
+        : (editingJob.classId ? [editingJob.classId] : []);
+      selectedSubjectIds = editingJob.subjectIds && editingJob.subjectIds.length > 0
+        ? editingJob.subjectIds
+        : (editingJob.subjectId ? [editingJob.subjectId] : []);
+      preferredDays = editingJob.scheduleDays || ['Senin', 'Rabu'];
+      startTime = editingJob.scheduleTime || '16:00';
+      endTime = editingJob.scheduleEndTime || '17:30';
+      transportAllowance = editingJob.transportAllowance || 0;
+      latitude = editingJob.latitude ?? -6.2;
+      longitude = editingJob.longitude ?? 106.8;
+      description = editingJob.additionalNotes || editingJob.notes || '';
+    } else {
+      resetForm();
+    }
+  }
+
+  $: if (!open && previousOpen) {
+    previousOpen = false;
+    previousJobId = null;
   }
 
   function resetForm() {
     title = '';
-    packageId = $dbStore.packages.filter((pkg) => pkg.deletedAt === null && pkg.active)[0]?.id || '';
+    const activePackages = $dbStore.packages.filter((pkg) => pkg.deletedAt === null && pkg.active !== false);
+    packageId = activePackages[0]?.id || '';
     mode = 'OFFLINE';
     selectedStudentIds = [];
     selectedClassIds = [];
@@ -222,13 +246,8 @@
         id="f_packageId"
         required
         bind:value={packageId}
-        options={[
-          { value: '', label: '— Pilih paket les —' },
-          ...$dbStore.packages.filter((p) => p.deletedAt === null && p.active).map(p => ({
-            value: p.id,
-            label: `${p.name} (${p.mode} · Rp ${p.price.toLocaleString('id-ID')})`
-          }))
-        ]}
+        placeholder="— Pilih paket les —"
+        options={packageOptions}
       />
     </div>
 

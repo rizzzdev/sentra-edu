@@ -84,6 +84,13 @@
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join('') || 'U';
+  function isNavActive(current: string, targetPath: string): boolean {
+    if (current === targetPath) return true;
+    if (['/admin', '/tutor', '/student', '/parent'].includes(targetPath)) {
+      return current === targetPath;
+    }
+    return current.startsWith(targetPath + '/');
+  }
 </script>
 
 <aside class="sidebar {mobileOpen ? 'open' : ''}">
@@ -113,7 +120,7 @@
       {/if}
       <a
         href={item.path}
-        class="nav-item {currentPath === item.path ? 'active' : ''}"
+        class="nav-item {isNavActive(currentPath, item.path) ? 'active' : ''}"
         on:click={onCloseMobile}
       >
         <Icon name={item.icon} size="sm" />

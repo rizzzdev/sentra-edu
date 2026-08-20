@@ -25,7 +25,10 @@
     '/student/profile': 'Profil Akun Pengguna'
   };
 
-  $: currentPageTitle = pageTitleMap[currentPath] || 'SentraEdu';
+  $: currentPageTitle = (() => {
+    if (currentPath.startsWith('/student/program/')) return 'Detail Program Les';
+    return pageTitleMap[currentPath] || 'SentraEdu';
+  })();
 </script>
 
 {#if !$dbStore.isLoaded}

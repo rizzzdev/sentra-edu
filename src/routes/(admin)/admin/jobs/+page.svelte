@@ -6,14 +6,15 @@
   import { dbStore } from '$lib/shared/stores/db-store';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
-  import { JOB_STATUS_LABEL } from '$lib/shared/utils/status-map';
+  import { JOB_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
+  import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import type { JobPosting } from '$lib/shared/types/common.types';
 
   let searchQuery: string = '';
   let statusFilter: string = '';
   let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  const itemsPerPage: number = 10;
 
   let jobModalOpen: boolean = false;
   let editingJob: JobPosting | null = null;
@@ -29,52 +30,41 @@
   $: nNegosiasi = allJobs.filter((j) => j.status === 'NEGOTIATING').length;
   $: nDitugaskan = allJobs.filter((j) => j.status === 'ASSIGNED').length;
 
-  function getClassName(classId: string): string {
-    return $dbStore.classes.find((c) => c.id === classId)?.className || '—';
+  function getClassesList(job: JobPosting): string[] {
+    const ids = Array.isArray(job.classIds) && job.classIds.length > 0
+      ? job.classIds
+      : (job.classId ? [job.classId] : []);
+    const names = ids
+      .map((id) => $dbStore.classes.find((c) => c.id === id)?.className)
+      .filter((n): n is string => Boolean(n));
+    return names.length > 0 ? names : ['—'];
   }
 
-  function getSubjectName(subjectId: string): string {
-    return $dbStore.subjects.find((s) => s.id === subjectId)?.name || '—';
+  function getSubjectsList(job: JobPosting): string[] {
+    const ids = Array.isArray(job.subjectIds) && job.subjectIds.length > 0
+      ? job.subjectIds
+      : (job.subjectId ? [job.subjectId] : []);
+    const names = ids
+      .map((id) => $dbStore.subjects.find((s) => s.id === id)?.name)
+      .filter((n): n is string => Boolean(n));
+    return names.length > 0 ? names : ['—'];
   }
 
-  function getClassesLabel(job: JobPosting): string {
-    if (job.classIds && Array.isArray(job.classIds) && job.classIds.length > 0) {
-      const names = job.classIds
-        .map((classId: string) => getClassName(classId))
-        .filter((name: string) => name && name !== '—');
-      if (names.length > 0) return names.join(', ');
-    }
-    return getClassName(job.classId);
-  }
+  const DAY_NAME_MAP: Record<string, string> = {
+    'Monday': 'Senin', 'Tuesday': 'Selasa', 'Wednesday': 'Rabu',
+    'Thursday': 'Kamis', 'Friday': 'Jumat', 'Saturday': 'Sabtu', 'Sunday': 'Minggu',
+    'mon': 'Senin', 'tue': 'Selasa', 'wed': 'Rabu',
+    'thu': 'Kamis', 'fri': 'Jumat', 'sat': 'Sabtu', 'sun': 'Minggu',
+    'Senin': 'Senin', 'Selasa': 'Selasa', 'Rabu': 'Rabu',
+    'Kamis': 'Kamis', 'Jumat': 'Jumat', 'Sabtu': 'Sabtu', 'Minggu': 'Minggu'
+  };
 
-  function getSubjectsLabel(job: JobPosting): string {
-    if (job.subjectIds && Array.isArray(job.subjectIds) && job.subjectIds.length > 0) {
-      const names = job.subjectIds
-        .map((subjectId: string) => getSubjectName(subjectId))
-        .filter((name: string) => name && name !== '—');
-      if (names.length > 0) return names.join(', ');
-    }
-    return getSubjectName(job.subjectId);
-  }
-
-  function getStudentsLabel(job: JobPosting): string {
-    if (job.studentIds && Array.isArray(job.studentIds) && job.studentIds.length > 0) {
-      const names = job.studentIds
-        .map((studentId: string) => getUserName(studentId))
-        .filter((name: string) => typeof name === 'string' && name.length > 0);
-      if (names.length > 0) return names.join(', ');
-    }
-    return job.studentName || getUserName(job.studentId) || '—';
-  }
-
-  function getPackageName(packageId?: string): string {
-    if (!packageId) return '—';
-    return $dbStore.packages.find((p) => p.id === packageId)?.name || '—';
-  }
-
-  function getPackageMode(packageId?: string): string {
-    if (!packageId) return 'PRIVATE';
-    return $dbStore.packages.find((p) => p.id === packageId)?.mode || 'PRIVATE';
+  function getScheduleDaysList(days: string[] | undefined | null): string[] {
+    if (!days || !Array.isArray(days) || days.length === 0) return ['—'];
+    const mapped = days
+      .map((d) => (typeof d === 'string' ? (DAY_NAME_MAP[d.trim()] || d.trim()) : ''))
+      .filter(Boolean);
+    return mapped.length > 0 ? mapped : ['—'];
   }
 
   function getUserName(userId: string | null | undefined): string {
@@ -88,96 +78,87 @@
   }
 
   $: filteredJobs = allJobs.filter((j) => {
-    const q = searchQuery.toLowerCase();
-    const matchesSearch =
-      !q ||
+    const q = searchQuery.trim().toLowerCase();
+    const classNames = getClassesList(j).join(' ').toLowerCase();
+    const subjectNames = getSubjectsList(j).join(' ').toLowerCase();
+
+    const matchesSearch = !q ||
       j.title.toLowerCase().includes(q) ||
-      getClassesLabel(j).toLowerCase().includes(q) ||
-      getSubjectsLabel(j).toLowerCase().includes(q) ||
-      getPackageName(j.packageId).toLowerCase().includes(q) ||
-      getStudentsLabel(j).toLowerCase().includes(q);
+      classNames.includes(q) ||
+      subjectNames.includes(q);
 
     const matchesStatus = !statusFilter || j.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  $: paginatedJobs = filteredJobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   $: totalPages = Math.max(1, Math.ceil(filteredJobs.length / itemsPerPage));
 
-  function handleOpenCreate() {
-    editingJob = null;
-    jobModalOpen = true;
+  $: if (searchQuery || statusFilter) {
+    if (currentPage > totalPages) {
+      currentPage = 1;
+    }
   }
 
-  function handleOpenEdit(job: JobPosting) {
-    editingJob = job;
-    jobModalOpen = true;
-  }
-
-  function handleOpenAssign(job: JobPosting) {
-    assigningJob = job;
-    assignModalOpen = true;
-  }
+  $: paginatedJobs = filteredJobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   function handleConfirmDelete() {
     if (!deletingJobId) return;
     const response = dbStore.deleteJob(deletingJobId);
     deleteDialogOpen = false;
     deletingJobId = null;
-    if (!response.error) {
-      toastStore.success(response.message);
-    } else {
-      toastStore.error(response.message);
-    }
+    if (!response.error) toastStore.success(response.message);
+    else toastStore.error(response.message);
+  }
+
+  function handleResetFilters() {
+    searchQuery = '';
+    statusFilter = '';
+    currentPage = 1;
   }
 </script>
 
 <div class="page-head">
   <div>
     <h3><Icon name="work" size="lg" /> Lowongan Les</h3>
-    <div class="desc">Daftar lowongan les dengan mode Offline/Online, jenis Private/Kelompok, dan paket les.</div>
+    <div class="desc">Daftar lowongan bimbingan belajar yang siap ditugaskan atau dinegosiasikan dengan tentor.</div>
   </div>
-  <button type="button" class="btn btn-primary" on:click={handleOpenCreate}>
+  <button type="button" class="btn btn-primary inline-flex items-center gap-1.5" on:click={() => { editingJob = null; jobModalOpen = true; }}>
     <Icon name="add" size="sm" /> Buat Lowongan
   </button>
 </div>
 
+<!-- STAT METRICS -->
 <div class="stat-grid">
   <div class="stat">
     <div class="s-icon tone-sky"><Icon name="work" size="lg" /></div>
-    <div>
-      <div class="s-val">{nTotal}</div>
-      <div class="s-lbl">Total Lowongan</div>
-    </div>
+    <div><div class="s-val">{nTotal}</div><div class="s-lbl">Total Lowongan</div></div>
   </div>
   <div class="stat">
     <div class="s-icon tone-emerald"><Icon name="event_available" size="lg" /></div>
-    <div>
-      <div class="s-val">{nTersedia}</div>
-      <div class="s-lbl">Tersedia</div>
-    </div>
+    <div><div class="s-val">{nTersedia}</div><div class="s-lbl">Tersedia</div></div>
   </div>
   <div class="stat">
     <div class="s-icon tone-amber"><Icon name="handshake" size="lg" /></div>
-    <div>
-      <div class="s-val">{nNegosiasi}</div>
-      <div class="s-lbl">Sedang Negosiasi</div>
-    </div>
+    <div><div class="s-val">{nNegosiasi}</div><div class="s-lbl">Negosiasi</div></div>
   </div>
   <div class="stat">
     <div class="s-icon tone-violet"><Icon name="lock" size="lg" /></div>
-    <div>
-      <div class="s-val">{nDitugaskan}</div>
-      <div class="s-lbl">Ditugaskan</div>
-    </div>
+    <div><div class="s-val">{nDitugaskan}</div><div class="s-lbl">Ditugaskan</div></div>
   </div>
 </div>
 
+<!-- FILTER BAR -->
 <div class="filter-bar">
   <div class="filter-search">
     <Icon name="search" size="sm" />
-    <input type="text" placeholder="Cari judul / kelas / mapel / paket / murid..." bind:value={searchQuery} />
+    <input
+      type="text"
+      placeholder="Cari judul lowongan / kelas / mapel..."
+      bind:value={searchQuery}
+      on:input={() => { currentPage = 1; }}
+    />
   </div>
+
   <SelectSearch
     bind:value={statusFilter}
     placeholder="Semua Status"
@@ -187,18 +168,30 @@
     ]}
     className="max-w-48"
   />
+
+  {#if searchQuery || statusFilter}
+    <button
+      type="button"
+      class="btn btn-sm btn-outline"
+      on:click={handleResetFilters}
+      title="Reset filter"
+    >
+      <Icon name="restart_alt" size="xs" /> Reset
+    </button>
+  {/if}
 </div>
 
-<div class="card">
+<!-- TABLE CARD -->
+<div class="card mb-6">
   <div class="card-body flush">
     <div class="table-wrap">
       <table class="tbl">
         <thead>
           <tr>
             <th>Lowongan</th>
-            <th>Kelas · Mapel</th>
-            <th>Paket Les</th>
-            <th class="num">Honor/Sesi</th>
+            <th>Kelas</th>
+            <th>Mata Pelajaran</th>
+            <th>Jadwal Belajar</th>
             <th>Status</th>
             <th style="text-align:right">Aksi</th>
           </tr>
@@ -206,10 +199,14 @@
         <tbody>
           {#if paginatedJobs.length === 0}
             <tr>
-              <td colspan="6" class="empty">
-                {searchQuery || statusFilter
-                  ? 'Tidak ada lowongan yang cocok dengan filter.'
-                  : 'Belum ada lowongan. Klik "Buat Lowongan".'}
+              <td colspan="6" class="empty py-10 text-center text-muted-fg">
+                <Icon name="work_off" size="lg" className="opacity-40 mb-2 block mx-auto text-4xl" />
+                <div class="font-semibold text-fg">Tidak ada lowongan les ditemukan.</div>
+                <div class="text-xs text-muted-fg mt-1">
+                  {searchQuery || statusFilter
+                    ? 'Coba sesuaikan kata kunci pencarian atau filter status.'
+                    : 'Belum ada data lowongan les yang terdaftar.'}
+                </div>
               </td>
             </tr>
           {:else}
@@ -218,34 +215,66 @@
                 <td>
                   <strong>{j.title}</strong>
                   <div class="sub">
-                    <span class="badge {j.mode === 'ONLINE' ? 'b-neutral' : 'b-available'}">{j.mode}</span>
-                    · {j.schedulePreference}
-                  </div>
-                  <div class="sub">
-                    <Icon name="group" size="xs" /> {getStudentsLabel(j)}
-                  </div>
-                </td>
-                <td>
-                  {getClassesLabel(j)} · {getSubjectsLabel(j)}
-                </td>
-                <td>
-                  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                    <span class="badge {getPackageMode(j.packageId) === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
-                      <Icon name={getPackageMode(j.packageId) === 'KELOMPOK' ? 'groups' : 'person'} size="xs" />
-                      {getPackageMode(j.packageId) === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
+                    <span class="badge {j.mode === 'ONLINE' ? 'b-neutral' : 'b-available'}">
+                      {j.mode === 'ONLINE' ? 'Online' : 'Offline'}
                     </span>
-                    <span>{getPackageName(j.packageId)}</span>
+                    <span class="badge {j.studentCount > 1 ? 'b-admin' : 'b-interviewed'}">
+                      {j.studentCount > 1 ? 'Kelompok' : 'Privat'}
+                    </span>
                   </div>
                 </td>
-                <td class="num">
-                  {formatCurrencyIDR(getJobFee(j))}
+                <td>
+                  <div class="flex flex-col gap-1 items-start">
+                    {#each getClassesList(j) as cls}
+                      <span class="badge b-neutral text-xs">
+                        <Icon name="stairs" size="xs" />
+                        {cls}
+                      </span>
+                    {/each}
+                  </div>
                 </td>
                 <td>
-                  <span class="badge {j.status === 'AVAILABLE' ? 'b-available' : j.status === 'NEGOTIATING' ? 'b-negotiating' : j.status === 'ASSIGNED' ? 'b-assigned' : 'b-cancelled'}">
-                    {j.status}
+                  <div class="flex flex-col gap-1 items-start">
+                    {#each getSubjectsList(j) as sub}
+                      <span class="badge b-sky text-xs">
+                        <Icon name="menu_book" size="xs" />
+                        {sub}
+                      </span>
+                    {/each}
+                  </div>
+                </td>
+                <td>
+                  <div class="flex flex-col gap-1.5 items-start">
+                    <div class="flex items-center gap-1 flex-wrap">
+                      {#each getScheduleDaysList(j.scheduleDays) as day}
+                        <span class="badge b-neutral text-xs font-semibold">
+                          <Icon name="calendar_today" size="xs" />
+                          {day}
+                        </span>
+                      {/each}
+                    </div>
+                    <div class="sub">{j.scheduleTime || '—'}{#if j.scheduleEndTime} – {j.scheduleEndTime}{/if} WIB</div>
+                    <div class="sub font-medium">{formatCurrencyIDR(getJobFee(j))}/sesi</div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge {getStatusBadgeClass(j.status)}">
+                    {#if j.status === 'ASSIGNED'}
+                      <Icon name="check_circle" size="xs" />
+                    {:else if j.status === 'AVAILABLE'}
+                      <Icon name="event_available" size="xs" />
+                    {:else if j.status === 'NEGOTIATING'}
+                      <Icon name="handshake" size="xs" />
+                    {:else if j.status === 'CANCELLED'}
+                      <Icon name="cancel" size="xs" />
+                    {/if}
+                    {getStatusLabel(j.status, JOB_STATUS_LABEL)}
                   </span>
                   {#if j.assignedTentorId}
-                    <div class="sub">{getUserName(j.assignedTentorId)}</div>
+                    <div class="text-xs text-muted-fg mt-1 flex items-center gap-1 font-medium">
+                      <Icon name="badge" size="xs" />
+                      <span>{getUserName(j.assignedTentorId)}</span>
+                    </div>
                   {/if}
                 </td>
                 <td>
@@ -254,7 +283,7 @@
                       type="button"
                       class="btn-icon"
                       data-tip="Kelola"
-                      on:click={() => handleOpenAssign(j)}
+                      on:click={() => { assigningJob = j; assignModalOpen = true; }}
                     >
                       <Icon name="tune" size="sm" />
                     </button>
@@ -262,7 +291,7 @@
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEdit(j)}
+                      on:click={() => { editingJob = j; jobModalOpen = true; }}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -270,10 +299,7 @@
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => {
-                        deletingJobId = j.id;
-                        deleteDialogOpen = true;
-                      }}
+                      on:click={() => { deletingJobId = j.id; deleteDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -286,40 +312,41 @@
       </table>
     </div>
 
-    {#if filteredJobs.length > itemsPerPage}
-      <div class="page-nav">
-        <div class="page-info">
-          Menampilkan {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredJobs.length)} dari {filteredJobs.length} data
-        </div>
-        <div class="page-btns">
-          <button
-            type="button"
-            class="page-btn"
-            disabled={currentPage <= 1}
-            on:click={() => currentPage--}
-          >
-            &laquo;
-          </button>
-          {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
-            <button
-              type="button"
-              class="page-btn {currentPage === p ? 'active' : ''}"
-              on:click={() => { currentPage = p; }}
-            >
-              {p}
-            </button>
-          {/each}
-          <button
-            type="button"
-            class="page-btn"
-            disabled={currentPage >= totalPages}
-            on:click={() => currentPage++}
-          >
-            &raquo;
-          </button>
-        </div>
+    <!-- PERSISTENT PAGINATION BAR -->
+    <div class="page-nav">
+      <div class="page-info">
+        Menampilkan {filteredJobs.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredJobs.length)} dari {filteredJobs.length} data
       </div>
-    {/if}
+      <div class="page-btns">
+        <button
+          type="button"
+          class="page-btn"
+          disabled={currentPage <= 1}
+          on:click={() => { currentPage--; }}
+          title="Halaman Sebelumnya"
+        >
+          &laquo;
+        </button>
+        {#each Array.from({ length: totalPages }, (_, i) => i + 1) as pageNumber}
+          <button
+            type="button"
+            class="page-btn {currentPage === pageNumber ? 'active' : ''}"
+            on:click={() => { currentPage = pageNumber; }}
+          >
+            {pageNumber}
+          </button>
+        {/each}
+        <button
+          type="button"
+          class="page-btn"
+          disabled={currentPage >= totalPages}
+          on:click={() => { currentPage++; }}
+          title="Halaman Berikutnya"
+        >
+          &raquo;
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -328,10 +355,7 @@
   open={assignModalOpen}
   job={assigningJob}
   onClose={() => { assignModalOpen = false; }}
-  onEdit={(j) => {
-    assignModalOpen = false;
-    handleOpenEdit(j);
-  }}
+  onEdit={(j) => { assignModalOpen = false; editingJob = j; jobModalOpen = true; }}
 />
 <ConfirmationDialog
   open={deleteDialogOpen}

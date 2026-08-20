@@ -26,7 +26,10 @@
     '/parent/profile': 'Profil Akun Pengguna'
   };
 
-  $: currentPageTitle = pageTitleMap[currentPath] || 'SentraEdu';
+  $: currentPageTitle = (() => {
+    if (currentPath.startsWith('/parent/children/')) return 'Detail Program Les Anak';
+    return pageTitleMap[currentPath] || 'SentraEdu';
+  })();
 </script>
 
 {#if !$dbStore.isLoaded}

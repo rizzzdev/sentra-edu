@@ -19,13 +19,13 @@
   }
 
   let mapEl: HTMLDivElement;
+  let wrapperEl: HTMLDivElement;
   let map: L.Map | null = null;
   let marker: L.Marker | null = null;
   let circle: L.Circle | null = null;
   let centerPulseMarker: L.Marker | null = null;
   let leaflet: typeof import('leaflet');
   let resizeObserver: ResizeObserver | null = null;
-  let intersectionObserver: IntersectionObserver | null = null;
   let invalidateTimers: ReturnType<typeof setTimeout>[] = [];
 
   // Search state
@@ -40,14 +40,6 @@
     if (map) {
       map.invalidateSize();
     }
-  }
-
-  function scheduleInvalidateSize() {
-    invalidateTimers.forEach(clearTimeout);
-    invalidateTimers = [];
-    [50, 150, 300, 500, 800, 1200].forEach((ms) => {
-      invalidateTimers.push(setTimeout(invalidateSize, ms));
-    });
   }
 
   function updateMarkerAndCircle(lat: number, lng: number) {
@@ -171,7 +163,7 @@
 
   onMount(async () => {
     await tick();
-    await new Promise((r) => setTimeout(r, 60));
+    await new Promise((r) => setTimeout(r, 100));
 
     leaflet = await import('leaflet');
 
@@ -182,6 +174,11 @@
 
     if (!mapEl) return;
 
+    // Set explicit dimensions on the map element before init
+    const parsedHeight = parseInt(height, 10) || 300;
+    mapEl.style.width = '100%';
+    mapEl.style.height = `${parsedHeight}px`;
+
     map = leaflet.map(mapEl, {
       center: [initialLat, initialLng],
       zoom,
@@ -190,14 +187,12 @@
       trackResize: true
     });
 
-    // Google Maps Roadmap Style Tile Layer
     leaflet.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
       subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
       maxZoom: 20,
       attribution: '&copy; Google Maps'
     }).addTo(map);
 
-    // Google Maps Style Blue Location Pin Icon
     const bluePinIcon = leaflet.divIcon({
       className: 'gmaps-pin-container',
       html: `
@@ -215,7 +210,6 @@
       popupAnchor: [0, -44]
     });
 
-    // Google Maps Style Blue Center Pulse Marker
     const pulseDotIcon = leaflet.divIcon({
       className: 'gmaps-pulse-container',
       html: `
@@ -228,7 +222,6 @@
       iconAnchor: [8, 8]
     });
 
-    // 50m Radius Circle around center point (Google Blue Theme)
     circle = leaflet.circle([initialLat, initialLng], {
       radius: radius || 50,
       color: '#1a73e8',
@@ -238,13 +231,11 @@
       dashArray: '6 4'
     }).addTo(map);
 
-    // Center Pulse Dot
     centerPulseMarker = leaflet.marker([initialLat, initialLng], {
       icon: pulseDotIcon,
       interactive: false
     }).addTo(map);
 
-    // Blue Pin Marker positioned at center
     marker = leaflet.marker([initialLat, initialLng], {
       icon: bluePinIcon,
       draggable: !readonly
@@ -271,25 +262,14 @@
       });
     }
 
-    // Invalidate size multiple times to handle modal animations & viewport layout
-    scheduleInvalidateSize();
+    // Invalidate size with multiple delays to handle modal animations
+    [100, 300, 600, 1000].forEach((ms) => {
+      invalidateTimers.push(setTimeout(invalidateSize, ms));
+    });
 
-    // Invalidate on element resize
     if (typeof ResizeObserver !== 'undefined') {
       resizeObserver = new ResizeObserver(() => invalidateSize());
       resizeObserver.observe(mapEl);
-    }
-
-    // Invalidate when element becomes visible
-    if (typeof IntersectionObserver !== 'undefined') {
-      intersectionObserver = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            scheduleInvalidateSize();
-          }
-        }
-      });
-      intersectionObserver.observe(mapEl);
     }
   });
 
@@ -297,7 +277,6 @@
     if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
     invalidateTimers.forEach(clearTimeout);
     resizeObserver?.disconnect();
-    intersectionObserver?.disconnect();
     if (map) {
       map.remove();
       map = null;
@@ -305,8 +284,11 @@
   });
 </script>
 
-<div class="leaflet-wrapper" style="height: {height}; min-height: {height};">
-  <!-- Google Maps Style Floating Search Bar -->
+<div
+  class="leaflet-wrapper"
+  bind:this={wrapperEl}
+  style="height: {height}; min-height: {height};"
+>
   {#if !readonly}
     <div class="gmaps-search-bar">
       <div class="search-input-box">
@@ -356,7 +338,6 @@
         </button>
       </div>
 
-      <!-- Autocomplete Dropdown -->
       {#if showDropdown}
         <div class="search-dropdown">
           {#if searchResults.length > 0}
@@ -390,12 +371,12 @@
     </div>
   {/if}
 
-  <!-- Leaflet Map Container -->
-  <div bind:this={mapEl} class="leaflet-map"></div>
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div bind:this={mapEl} class="leaflet-map-el"></div>
 
   {#if !readonly}
     <div class="leaflet-hint">
-      Titik tengah lokasi les · Lingkaran radius {radius || 50} meter
+      Klik peta atau geser marker · lingkaran = radius {radius || 50}m
     </div>
   {/if}
 </div>
@@ -404,30 +385,22 @@
   .leaflet-wrapper {
     position: relative;
     width: 100%;
-    border-radius: var(--radius-sm, 12px);
+    border-radius: 8px;
     border: 1px solid var(--color-border, #e2e8f0);
-    overflow: visible;
-    z-index: 1;
-    background-color: #f8fafc;
-    box-sizing: border-box;
+    overflow: hidden;
+    background-color: #e5e7eb;
   }
 
-  .leaflet-map {
+  .leaflet-map-el {
     width: 100%;
     height: 100%;
-    min-height: 100%;
-    position: relative;
-    border-radius: var(--radius-sm, 12px);
-    overflow: hidden;
-    z-index: 1;
   }
 
-  /* Google Maps Style Floating Search Bar */
+  /* Floating Search Bar */
   .gmaps-search-bar {
     position: absolute;
     top: 10px;
     right: 10px;
-    left: auto;
     z-index: 1000;
     width: calc(100% - 20px);
     max-width: 320px;
@@ -438,23 +411,19 @@
     align-items: center;
     background: #ffffff;
     border-radius: 8px;
-    border: none !important;
-    outline: none !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
     padding: 0 8px;
     height: 38px;
-    transition: box-shadow 0.15s ease;
   }
 
   .search-input-box:focus-within {
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22), 0 0 0 2px #1a73e8 !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22), 0 0 0 2px #1a73e8;
   }
 
   .search-icon {
     color: #5f6368;
     display: flex;
     align-items: center;
-    justify-content: center;
     margin-right: 6px;
     flex-shrink: 0;
   }
@@ -472,7 +441,6 @@
 
   .search-input::placeholder {
     color: #80868b;
-    font-size: 0.84rem;
   }
 
   .search-spinner {
@@ -501,40 +469,25 @@
     height: 28px;
     color: #5f6368;
     cursor: pointer;
-    transition: background-color 0.12s, color 0.12s;
     flex-shrink: 0;
     margin-left: 2px;
   }
 
-  .clear-btn:hover {
-    background-color: #f1f3f4;
-    color: #202124;
-  }
-
-  .gps-btn {
-    color: #1a73e8;
-  }
-
-  .gps-btn:hover {
-    background-color: #e8f0fe;
-    color: #174ea6;
-  }
+  .clear-btn:hover { background-color: #f1f3f4; color: #202124; }
+  .gps-btn { color: #1a73e8; }
+  .gps-btn:hover { background-color: #e8f0fe; color: #174ea6; }
 
   .search-dropdown {
     margin-top: 6px;
     background: #ffffff;
     border-radius: 8px;
-    border: none !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
     overflow: hidden;
     max-height: 220px;
     overflow-y: auto;
   }
 
-  .dropdown-list {
-    display: flex;
-    flex-direction: column;
-  }
+  .dropdown-list { display: flex; flex-direction: column; }
 
   .dropdown-item {
     display: flex;
@@ -546,28 +499,14 @@
     border-bottom: 1px solid #f1f3f4;
     text-align: left;
     cursor: pointer;
-    transition: background-color 0.1s ease;
     width: 100%;
   }
 
-  .dropdown-item:last-child {
-    border-bottom: none;
-  }
+  .dropdown-item:last-child { border-bottom: none; }
+  .dropdown-item:hover { background-color: #f8f9fa; }
 
-  .dropdown-item:hover {
-    background-color: #f8f9fa;
-  }
-
-  .item-icon {
-    color: #1a73e8;
-    margin-top: 1px;
-    flex-shrink: 0;
-  }
-
-  .item-text {
-    flex: 1;
-    min-width: 0;
-  }
+  .item-icon { color: #1a73e8; margin-top: 1px; flex-shrink: 0; }
+  .item-text { flex: 1; min-width: 0; }
 
   .item-name {
     font-size: 0.85rem;
@@ -614,6 +553,7 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   }
 
+  /* Leaflet overrides — minimal, just fix icon paths */
   :global(.gmaps-pin-container) {
     background: transparent !important;
     border: none !important;
@@ -669,45 +609,7 @@
   }
 
   @keyframes gmapsPulse {
-    0% {
-      transform: scale(0.6);
-      opacity: 0.9;
-    }
-    100% {
-      transform: scale(2.2);
-      opacity: 0;
-    }
-  }
-
-  :global(.leaflet-container) {
-    width: 100% !important;
-    height: 100% !important;
-    font-family: inherit !important;
-    background-color: #f1f5f9 !important;
-    outline: none;
-  }
-
-  :global(.leaflet-container img),
-  :global(.leaflet-tile-container img),
-  :global(.leaflet-tile),
-  :global(.leaflet-marker-icon),
-  :global(.leaflet-marker-shadow) {
-    max-width: none !important;
-    max-height: none !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    outline: none !important;
-    box-sizing: content-box !important;
-  }
-
-  :global(.leaflet-tile) {
-    visibility: inherit !important;
-  }
-
-  :global(.leaflet-tile-container) {
-    pointer-events: none;
+    0% { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(2.2); opacity: 0; }
   }
 </style>

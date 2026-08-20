@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@import "leaflet-control-geocoder/dist/Control.Geocoder.css";
 
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -526,18 +528,16 @@ strong, b { font-weight: 700; }
   border-radius: 999px; padding: 3px 10px; font-size: .72rem; font-weight: 600; white-space: nowrap;
 }
 .badge .mat { font-size: 14px; }
-.b-available, .b-approved, .b-paid { background: var(--success-soft); color: var(--success); }
-.b-negotiating, .b-submitted, .b-requested, .b-unpaid { background: var(--accent-soft); color: var(--accent-strong); }
-.b-assigned { background: var(--primary-soft); color: var(--primary-strong); }
-.b-cancelled, .b-rejected { background: var(--danger-soft); color: var(--danger); }
-.b-neutral { background: var(--muted); color: var(--muted-fg); }
-.b-pending { background: var(--muted); color: var(--muted-fg); }
+.b-available, .b-approved, .b-paid, .b-emerald, .b-success { background: var(--success-soft); color: var(--success); }
+.b-negotiating, .b-submitted, .b-requested, .b-unpaid, .b-amber, .b-accent, .b-open { background: var(--accent-soft); color: var(--accent-strong); }
+.b-assigned, .b-sky, .b-primary { background: var(--primary-soft); color: var(--primary-strong); }
+.b-cancelled, .b-rejected, .b-danger { background: var(--danger-soft); color: var(--danger); }
+.b-neutral, .b-pending { background: var(--muted); color: var(--muted-fg); }
 .b-accepted { background: var(--success-soft); color: var(--success); }
-.b-admin { background: var(--violet-soft); color: var(--violet); }
+.b-admin, .b-tested, .b-violet { background: var(--violet-soft); color: var(--violet); }
 .b-tentor { background: var(--success-soft); color: var(--success); }
 .b-student { background: var(--accent-soft); color: var(--accent-strong); }
-.b-tested { background: var(--violet-soft); color: var(--violet); }
-.b-interviewed { background: var(--teal-soft); color: var(--teal); }
+.b-interviewed, .b-teal { background: var(--teal-soft); color: var(--teal); }
 
 /* Table */
 .table-wrap { overflow-x: auto; }
@@ -790,8 +790,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: .86rem; }
    LEAFLET MAP FIXES (Tailwind CSS v4 Reset Compatibility)
    ============================================================ */
 .leaflet-container {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
   position: relative;
   overflow: hidden;
   font-family: inherit;

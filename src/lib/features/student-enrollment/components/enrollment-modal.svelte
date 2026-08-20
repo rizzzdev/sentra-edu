@@ -24,24 +24,36 @@
 
   $: students = $dbStore.users.filter((u) => u.deletedAt === null && u.role === 'STUDENT');
 
-  $: if (editingEnrollment) {
-    studentId = editingEnrollment.studentId;
-    classId = editingEnrollment.classId;
-    subjectId = editingEnrollment.subjectId;
-    packageId = editingEnrollment.packageId;
-    fullAddress = editingEnrollment.address || '';
-    latitude = editingEnrollment.latitude || -6.2;
-    longitude = editingEnrollment.longitude || 106.8;
-  } else {
-    studentId = students[0]?.id || '';
-    classId = $dbStore.classes.filter((c) => c.deletedAt === null)[0]?.id || '';
-    subjectId = $dbStore.subjects.filter((s) => s.deletedAt === null)[0]?.id || '';
-    packageId = $dbStore.packages.filter((p) => p.deletedAt === null && p.active)[0]?.id || '';
-    parentName = '';
-    parentPhone = '';
-    fullAddress = '';
-    latitude = -6.2;
-    longitude = 106.8;
+  let previousOpen = false;
+  let previousEnrollmentId: string | null = null;
+
+  $: if (open && (!previousOpen || (editingEnrollment?.id !== previousEnrollmentId))) {
+    previousOpen = true;
+    previousEnrollmentId = editingEnrollment?.id || null;
+    if (editingEnrollment) {
+      studentId = editingEnrollment.studentId;
+      classId = editingEnrollment.classId;
+      subjectId = editingEnrollment.subjectId;
+      packageId = editingEnrollment.packageId;
+      fullAddress = editingEnrollment.address || '';
+      latitude = editingEnrollment.latitude || -6.2;
+      longitude = editingEnrollment.longitude || 106.8;
+    } else {
+      studentId = students[0]?.id || '';
+      classId = $dbStore.classes.filter((c) => c.deletedAt === null)[0]?.id || '';
+      subjectId = $dbStore.subjects.filter((s) => s.deletedAt === null)[0]?.id || '';
+      packageId = $dbStore.packages.filter((p) => p.deletedAt === null && p.active !== false)[0]?.id || '';
+      parentName = '';
+      parentPhone = '';
+      fullAddress = '';
+      latitude = -6.2;
+      longitude = 106.8;
+    }
+  }
+
+  $: if (!open && previousOpen) {
+    previousOpen = false;
+    previousEnrollmentId = null;
   }
 
   function handleSubmit() {

@@ -107,28 +107,56 @@ function mapEnrollmentRow(row: DatabaseRow) {
   };
 }
 
+function ensureArray(val: unknown): string[] {
+  if (Array.isArray(val)) return val.map(String);
+  if (typeof val === 'string' && val.startsWith('{') && val.endsWith('}')) {
+    const inner = val.slice(1, -1).trim();
+    if (!inner) return [];
+    // Try JSON array first: {"a","b"} or ["a","b"]
+    try {
+      const parsed = JSON.parse(inner);
+      if (Array.isArray(parsed)) return parsed.map(String);
+    } catch { /* not JSON */ }
+    // PostgreSQL array format: {a,b,c} — split by comma
+    return inner.split(',').map((s) => s.trim().replace(/^"|"$/g, ''));
+  }
+  return [];
+}
+
 function mapJobRow(row: DatabaseRow) {
+  const classIds = ensureArray(row.class_ids);
+  const subjectIds = ensureArray(row.subject_ids);
+  const studentIds = ensureArray(row.student_ids);
+  const studentNames = ensureArray(row.student_names);
+
   return {
     id: String(row.id),
     title: String(row.title),
-    classId: String(row.class_id || ''),
-    subjectId: String(row.subject_id || ''),
+    classId: String(row.class_id || classIds[0] || ''),
+    classIds,
+    subjectId: String(row.subject_id || subjectIds[0] || ''),
+    subjectIds,
     packageId: row.package_id ? String(row.package_id) : undefined,
     jobMode: (row.job_mode || 'OFFLINE') as 'OFFLINE' | 'ONLINE',
     mode: (row.job_mode || 'OFFLINE') as 'OFFLINE' | 'ONLINE',
     tentorFee: Number(row.tentor_fee) || 0,
+    transportAllowance: Number(row.transport_allowance) || 0,
     sessionDurationMinutes: Number(row.session_duration_minutes) || 90,
-    scheduleDays: (row.schedule_days as string[]) || [],
+    scheduleDays: ensureArray(row.schedule_days),
     scheduleTime: String(row.schedule_time || ''),
+    scheduleEndTime: String(row.schedule_end_time || ''),
     studentCount: Number(row.student_count) || 1,
     location: String(row.location || ''),
     latitude: row.latitude !== null && row.latitude !== undefined ? Number(row.latitude) : null,
     longitude: row.longitude !== null && row.longitude !== undefined ? Number(row.longitude) : null,
     status: (row.status || 'AVAILABLE') as 'AVAILABLE' | 'NEGOTIATING' | 'ASSIGNED' | 'CANCELLED',
     assignedTentorId: row.assigned_tentor_id ? String(row.assigned_tentor_id) : null,
-    studentId: row.student_id ? String(row.student_id) : null,
+    studentId: row.student_id ? String(row.student_id) : (studentIds[0] || null),
+    studentIds,
+    studentNames,
     enrollmentId: row.enrollment_id ? String(row.enrollment_id) : null,
     notes: String(row.notes || ''),
+    additionalNotes: String(row.additional_notes || ''),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     deletedAt: row.deleted_at ? String(row.deleted_at) : null

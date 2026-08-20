@@ -49,11 +49,15 @@
   $: tentorPaginatedJobs = tentorMyJobs.slice((tentorPage - 1) * itemsPerPage, tentorPage * itemsPerPage);
 
   // Student stats & list
+  let studentProgPage: number = 1;
+  let studentAttPage: number = 1;
   $: studentPrograms = currentUser ? getStudentPrograms($dbStore, currentUser.id, currentUser.fullName) : [];
   $: studentEnrIds = $dbStore.enrollments.filter((enroll) => enroll.deletedAt === null && enroll.studentId === currentUser?.id).map((e) => e.id);
   $: studentProgramIds = studentPrograms.map((p) => p.id);
   $: studentMyAtt = $dbStore.attendances.filter((att) => att.deletedAt === null && (studentEnrIds.includes(att.enrollmentId) || studentProgramIds.includes(att.enrollmentId)));
   $: studentApprovedAtt = studentMyAtt.filter((att) => att.status === 'APPROVED');
+  $: studentPaginatedPrograms = studentPrograms.slice((studentProgPage - 1) * itemsPerPage, studentProgPage * itemsPerPage);
+  $: studentPaginatedAtt = studentMyAtt.slice((studentAttPage - 1) * itemsPerPage, studentAttPage * itemsPerPage);
 
   // Wali stats & list
   $: waliPrograms = currentUser ? getParentPrograms($dbStore, currentUser.id) : [];
@@ -412,12 +416,13 @@
   <!-- STUDENT DASHBOARD -->
   <div class="page-head">
     <div>
-      <h3><Icon name="space_dashboard" size="lg" /> Dashboard</h3>
-      <div class="desc">Pantau les aktif, presensi, dan laporan hasil belajar Anda.</div>
+      <h3><Icon name="space_dashboard" size="lg" /> Dashboard Murid</h3>
+      <div class="desc">Selamat datang, <strong>{currentUser.fullName}</strong>. Pantau les aktif, presensi, dan progres belajar Anda.</div>
     </div>
   </div>
 
-  <div class="stat-grid">
+  <!-- STAT CARDS -->
+  <div class="stat-grid mb-6">
     <div class="stat">
       <div class="s-icon tone-sky"><Icon name="school" size="lg" /></div>
       <div>
@@ -433,7 +438,7 @@
       </div>
     </div>
     <div class="stat">
-      <div class="s-icon tone-amber"><Icon name="location_on" size="lg" /></div>
+      <div class="s-icon tone-amber"><Icon name="fact_check" size="lg" /></div>
       <div>
         <div class="s-val">{studentMyAtt.length}</div>
         <div class="s-lbl">Total Sesi Tercatat</div>
@@ -441,77 +446,263 @@
     </div>
   </div>
 
+  <!-- PROGRAM LES AKTIF TABLE/CARD -->
   <div class="card mb-6">
-    <div class="card-head">
-      <div class="card-title">
-        <Icon name="school" size="sm" /> Program Les Anda
+    <div class="card-head flex justify-between items-center">
+      <div class="card-title flex items-center gap-2">
+        <Icon name="school" size="md" /> Program Les Aktif Anda
       </div>
-      <a href="/student/program" class="btn btn-sm btn-outline">Lihat Semua</a>
+      <a href="/student/program" class="btn btn-sm btn-outline">
+        <Icon name="visibility" size="xs" /> Lihat Semua ({studentPrograms.length})
+      </a>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Program / Mapel</th>
-            <th>Paket & Mode</th>
-            <th>Tentor</th>
-            <th>Jadwal</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#if studentPrograms.length === 0}
+    <div class="card-body flush">
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
             <tr>
-              <td colspan="5" class="empty-cell text-center py-6">
-                <Icon name="school" size="lg" className="text-muted mb-2" />
-                <div>Belum ada program les terdaftar.</div>
-              </td>
+              <th>Program / Mapel</th>
+              <th>Paket & Mode</th>
+              <th>Tentor Pengajar</th>
+              <th>Jadwal Belajar</th>
+              <th>Status</th>
+              <th style="text-align:right">Aksi</th>
             </tr>
-          {:else}
-            {#each studentPrograms.slice(0, 5) as prog (prog.id)}
+          </thead>
+          <tbody>
+            {#if isLoading}
+              {#each Array(3) as _}
+                <tr>
+                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-24" height="h-4" /></td>
+                  <td><Skeleton width="w-28" height="h-4" /></td>
+                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-20" height="h-6" className="rounded-full" /></td>
+                  <td><Skeleton width="w-8" height="h-8" className="ml-auto rounded-md" /></td>
+                </tr>
+              {/each}
+            {:else if studentPrograms.length === 0}
               <tr>
-                <td>
-                  <div class="font-medium">{prog.title}</div>
-                  <div class="text-xs text-muted">{prog.classNames.join(', ')}</div>
-                </td>
-                <td>
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="badge {prog.packageMode === 'PRIVAT' ? 'b-sky' : 'b-amber'}">
-                      <Icon name={prog.packageMode === 'PRIVAT' ? 'person' : 'groups'} size="xs" />
-                      {prog.packageMode}
-                    </span>
-                    <span class="badge b-neutral">
-                      {prog.jobMode === 'OFFLINE' ? 'Tatap Muka' : 'Online'}
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <div class="font-medium">{prog.tentorName}</div>
-                  {#if prog.tentorPhone}
-                    <div class="text-xs text-muted">{prog.tentorPhone}</div>
-                  {/if}
-                </td>
-                <td>
-                  <div class="text-sm">{prog.scheduleDays.join(', ')}</div>
-                  <div class="text-xs text-muted">{prog.scheduleTime}{#if prog.scheduleEndTime} - {prog.scheduleEndTime}{/if} WIB</div>
-                </td>
-                <td>
-                  <span class="badge {prog.statusBadgeClass}">{prog.statusLabel}</span>
+                <td colspan="6" class="empty py-8 text-center text-muted-fg">
+                  <Icon name="school" size="lg" className="opacity-50 mb-2 block mx-auto text-4xl" />
+                  <div class="font-medium">Belum ada program les terdaftar.</div>
+                  <div class="text-xs text-muted mt-1">Hubungi admin untuk memulai bimbingan belajar.</div>
                 </td>
               </tr>
+            {:else}
+              {#each studentPaginatedPrograms as prog (prog.id)}
+                <tr>
+                  <td>
+                    <div class="font-semibold text-fg">{prog.title}</div>
+                    <div class="text-xs text-muted-fg mt-0.5">{prog.classNames.join(', ')}</div>
+                  </td>
+                  <td>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="badge {prog.packageMode === 'PRIVAT' ? 'b-sky' : 'b-amber'}">
+                        <Icon name={prog.packageMode === 'PRIVAT' ? 'person' : 'groups'} size="xs" />
+                        {prog.packageMode}
+                      </span>
+                      <span class="badge b-neutral">
+                        <Icon name={prog.jobMode === 'OFFLINE' ? 'home_pin' : 'videocam'} size="xs" />
+                        {prog.jobMode === 'OFFLINE' ? 'Tatap Muka' : 'Online'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="font-medium text-fg">{prog.tentorName}</div>
+                    {#if prog.tentorPhone}
+                      <a
+                        href="https://wa.me/{prog.tentorPhone.replace(/[^0-9]/g, '')}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-xs text-emerald-600 font-semibold hover:underline inline-flex items-center gap-1 mt-0.5"
+                      >
+                        <Icon name="chat" size="xs" /> WA
+                      </a>
+                    {/if}
+                  </td>
+                  <td>
+                    <div class="text-sm font-medium">{prog.scheduleDays.join(', ')}</div>
+                    <div class="text-xs text-muted-fg">{prog.scheduleTime}{#if prog.scheduleEndTime} – {prog.scheduleEndTime}{/if} WIB</div>
+                  </td>
+                  <td>
+                    <span class="badge {prog.statusBadgeClass}">
+                      {#if prog.status === 'ASSIGNED'}
+                        <Icon name="check_circle" size="xs" />
+                      {:else if prog.status === 'AVAILABLE'}
+                        <Icon name="hourglass_empty" size="xs" />
+                      {/if}
+                      {prog.statusLabel}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="actions">
+                      <a
+                        href="/student/program/{prog.id}"
+                        class="btn-icon"
+                        data-tip="Detail"
+                      >
+                        <Icon name="visibility" size="sm" />
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              {/each}
+            {/if}
+          </tbody>
+        </table>
+      </div>
+
+      {#if studentPrograms.length > itemsPerPage}
+        <div class="page-nav">
+          <div class="page-info">
+            Menampilkan {(studentProgPage - 1) * itemsPerPage + 1}–{Math.min(studentProgPage * itemsPerPage, studentPrograms.length)} dari {studentPrograms.length} data
+          </div>
+          <div class="page-btns">
+            <button
+              type="button"
+              class="page-btn"
+              disabled={studentProgPage <= 1}
+              on:click={() => { studentProgPage--; }}
+            >
+              &laquo;
+            </button>
+            {#each Array.from({ length: Math.ceil(studentPrograms.length / itemsPerPage) }, (_, i) => i + 1) as p}
+              <button
+                type="button"
+                class="page-btn {studentProgPage === p ? 'active' : ''}"
+                on:click={() => { studentProgPage = p; }}
+              >
+                {p}
+              </button>
             {/each}
-          {/if}
-        </tbody>
-      </table>
+            <button
+              type="button"
+              class="page-btn"
+              disabled={studentProgPage * itemsPerPage >= studentPrograms.length}
+              on:click={() => { studentProgPage++; }}
+            >
+              &raquo;
+            </button>
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 
+  <!-- RECENT ATTENDANCE TABLE -->
+  <div class="card mb-6">
+    <div class="card-head flex justify-between items-center">
+      <div class="card-title flex items-center gap-2">
+        <Icon name="fact_check" size="md" /> Presensi Belajar Terbaru
+      </div>
+      <a href="/student/attendance" class="btn btn-sm btn-outline">
+        <Icon name="visibility" size="xs" /> Lihat Semua ({studentMyAtt.length})
+      </a>
+    </div>
+    <div class="card-body flush">
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Topik Pembelajaran</th>
+              <th>Tentor</th>
+              <th>Catatan Siswa</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#if isLoading}
+              {#each Array(3) as _}
+                <tr>
+                  <td><Skeleton width="w-24" height="h-4" /></td>
+                  <td><Skeleton width="w-36" height="h-4" /></td>
+                  <td><Skeleton width="w-28" height="h-4" /></td>
+                  <td><Skeleton width="w-32" height="h-4" /></td>
+                  <td><Skeleton width="w-20" height="h-6" className="rounded-full" /></td>
+                </tr>
+              {/each}
+            {:else if studentMyAtt.length === 0}
+              <tr>
+                <td colspan="5" class="empty py-8 text-center text-muted-fg">
+                  <Icon name="location_off" size="lg" className="opacity-50 mb-2 block mx-auto text-4xl" />
+                  <div class="font-medium">Belum ada catatan presensi belajar.</div>
+                </td>
+              </tr>
+            {:else}
+              {#each studentPaginatedAtt as att (att.id)}
+                <tr>
+                  <td>
+                    <div class="font-medium">{formatDateIndonesian(att.sessionDate)}</div>
+                    <div class="text-xs text-muted-fg">{att.startTime ? att.startTime.slice(11, 16) : ''} – {att.endTime ? att.endTime.slice(11, 16) : ''} WIB</div>
+                  </td>
+                  <td>
+                    <div class="font-semibold text-fg">{att.topic || '—'}</div>
+                  </td>
+                  <td>{getUserName(att.tentorId)}</td>
+                  <td>
+                    <div class="text-sm text-muted-fg">{att.studentNotes || '—'}</div>
+                  </td>
+                  <td>
+                    <span class="badge {getStatusBadgeClass(att.status)}">
+                      {getStatusLabel(att.status, ATTENDANCE_STATUS_LABEL)}
+                    </span>
+                  </td>
+                </tr>
+              {/each}
+            {/if}
+          </tbody>
+        </table>
+      </div>
+
+      {#if studentMyAtt.length > itemsPerPage}
+        <div class="page-nav">
+          <div class="page-info">
+            Menampilkan {(studentAttPage - 1) * itemsPerPage + 1}–{Math.min(studentAttPage * itemsPerPage, studentMyAtt.length)} dari {studentMyAtt.length} data
+          </div>
+          <div class="page-btns">
+            <button
+              type="button"
+              class="page-btn"
+              disabled={studentAttPage <= 1}
+              on:click={() => { studentAttPage--; }}
+            >
+              &laquo;
+            </button>
+            {#each Array.from({ length: Math.ceil(studentMyAtt.length / itemsPerPage) }, (_, i) => i + 1) as p}
+              <button
+                type="button"
+                class="page-btn {studentAttPage === p ? 'active' : ''}"
+                on:click={() => { studentAttPage = p; }}
+              >
+                {p}
+              </button>
+            {/each}
+            <button
+              type="button"
+              class="page-btn"
+              disabled={studentAttPage * itemsPerPage >= studentMyAtt.length}
+              on:click={() => { studentAttPage++; }}
+            >
+              &raquo;
+            </button>
+          </div>
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
   <div class="quick-actions">
     <a href="/student/program" class="btn btn-primary">
-      <Icon name="school" size="sm" /> Lihat Program Les
+      <Icon name="school" size="sm" /> Program Les Aktif
     </a>
     <a href="/student/attendance" class="btn btn-outline">
-      <Icon name="fact_check" size="sm" /> Lihat Presensi
+      <Icon name="fact_check" size="sm" /> Presensi Belajar
+    </a>
+    <a href="/student/reports" class="btn btn-outline">
+      <Icon name="summarize" size="sm" /> Laporan Belajar
     </a>
   </div>
 
