@@ -8,10 +8,12 @@
   import { JOB_STATUS_LABEL, APPLICATION_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
   import type { JobPost } from '$lib/shared/types/common.types';
   import Button from '$lib/components/atoms/button.svelte';
+  import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
   export let onClose: () => void = () => {};
+  export let onEdit: ((job: JobPost) => void) | undefined = undefined;
 
   let confirmCancelOpen: boolean = false;
   let confirmRejectAppId: string | null = null;
@@ -19,7 +21,6 @@
   $: applications = job
     ? $dbStore.applications.filter((a) => a.deletedAt === null && a.jobId === job?.id)
     : [];
-  $: pendingApps = applications.filter((a) => a.status === 'PENDING');
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
@@ -34,14 +35,51 @@
     return $dbStore.subjects.find((s) => s.id === subjectId)?.name || '—';
   }
 
-  function getPackageName(packageId?: string): string {
-    if (!packageId) return '—';
-    return $dbStore.packages.find((p) => p.id === packageId)?.name || '—';
+  function getPackage(packageId?: string) {
+    if (!packageId) return null;
+    return $dbStore.packages.find((p) => p.id === packageId) || null;
   }
 
   function getJobFee(j: JobPost): number {
-    const pkg = $dbStore.packages.find((p) => p.id === j.packageId);
-    return pkg ? pkg.tentorFee : 100000;
+    const pkg = getPackage(j.packageId);
+    return pkg ? pkg.tentorFee : (j.tentorFee || 100000);
+  }
+
+  function getTransportAllowance(j: JobPost): number {
+    return (j as any).transportAllowance || 0;
+  }
+
+  function getStudentNames(j: JobPost): string {
+    const studentIds = (j as any).studentIds;
+    if (Array.isArray(studentIds) && studentIds.length > 0) {
+      const names = studentIds
+        .map((id: string) => $dbStore.users.find((u) => u.id === id)?.fullName)
+        .filter(Boolean);
+      if (names.length > 0) return names.join(', ');
+    }
+    return j.studentName || getUserName(j.studentId) || '—';
+  }
+
+  function getClassNames(j: JobPost): string {
+    const classIds = (j as any).classIds;
+    if (Array.isArray(classIds) && classIds.length > 0) {
+      const names = classIds
+        .map((id: string) => $dbStore.classes.find((c) => c.id === id)?.className)
+        .filter(Boolean);
+      if (names.length > 0) return names.join(', ');
+    }
+    return getClassName(j.classId);
+  }
+
+  function getSubjectNames(j: JobPost): string {
+    const subjectIds = (j as any).subjectIds;
+    if (Array.isArray(subjectIds) && subjectIds.length > 0) {
+      const names = subjectIds
+        .map((id: string) => $dbStore.subjects.find((s) => s.id === id)?.name)
+        .filter(Boolean);
+      if (names.length > 0) return names.join(', ');
+    }
+    return getSubjectName(j.subjectId);
   }
 
   function handleAppApprove(appId: string) {
@@ -60,7 +98,6 @@
     const updatedApps = $dbStore.applications.map((a) =>
       a.id === confirmRejectAppId ? { ...a, status: 'REJECTED' as const } : a
     );
-    // Persist via dbStore snapshot
     const snap = dbStore.getSnapshot();
     dbStore.importDatabaseJson(JSON.stringify({ ...snap, applications: updatedApps }));
     confirmRejectAppId = null;
@@ -82,48 +119,174 @@
   }
 </script>
 
-<Modal {open} {onClose} title="Kelola Lowongan" icon="tune" maxWidth="680px">
+<Modal {open} {onClose} title="Kelola Data Lowongan" icon="tune" maxWidth="720px">
   {#if job}
-    <div class="kv">
-      <dt>Judul</dt>
-      <dd>{job.title}</dd>
-      <dt>Siswa</dt>
-      <dd>{job.studentName || '—'}</dd>
-      <dt>Kelas · Mapel</dt>
-      <dd>{getClassName(job.classId)} · {getSubjectName(job.subjectId)}</dd>
-      <dt>Mode</dt>
-      <dd>
-        <span class="badge {job.mode === 'ONLINE' ? 'b-neutral' : 'b-available'}">{job.mode || 'OFFLINE'}</span>
-      </dd>
-      <dt>Paket Les</dt>
-      <dd>{getPackageName(job.packageId)}</dd>
-      <dt>Jadwal</dt>
-      <dd>{job.schedulePreference || `${(job.scheduleDays || []).join(' & ')} ${job.scheduleTime} WIB`}</dd>
-      <dt>Estimasi Honor/Sesi</dt>
-      <dd>{formatCurrencyIDR(getJobFee(job))}</dd>
-      <dt>Lokasi Les (GPS)</dt>
-      <dd>
-        {job.latitude !== null && job.latitude !== undefined && job.longitude !== null && job.longitude !== undefined
-          ? `${job.latitude}, ${job.longitude}`
-          : '—'}
-      </dd>
-      <dt>Status</dt>
-      <dd>
-        <span class="badge {getStatusBadgeClass(job.status)}">
-          {getStatusLabel(job.status, JOB_STATUS_LABEL)}
-        </span>
-      </dd>
-    </div>
+    {@const pkg = getPackage(job.packageId)}
+    {@const fee = getJobFee(job)}
+    {@const transport = getTransportAllowance(job)}
+    {@const totalHonor = fee + transport}
+    {@const isOffline = (job.mode || (job as any).jobMode || 'OFFLINE') !== 'ONLINE'}
 
-    <!-- Lamaran Masuk Card -->
-    <div class="card" style="border:1px solid var(--border);border-radius:12px;margin-bottom:14px">
-      <div class="card-head" style="padding:10px 14px;font-size:.85rem">
-        <Icon name="group" size="sm" /> Lamaran Masuk ({applications.length})
+    <div class="manage-container">
+      <!-- 1. Header Overview & Status -->
+      <div class="overview-box">
+        <div class="overview-main">
+          <h4 class="job-title">{job.title}</h4>
+          <div class="badge-row">
+            <span class="badge {getStatusBadgeClass(job.status)}">
+              {getStatusLabel(job.status, JOB_STATUS_LABEL)}
+            </span>
+            <span class="badge {isOffline ? 'b-available' : 'b-neutral'}">
+              <Icon name={isOffline ? 'location_on' : 'videocam'} size="xs" />
+              {isOffline ? 'Offline (Tatap Muka)' : 'Online (Daring)'}
+            </span>
+            {#if pkg}
+              <span class="badge {pkg.mode === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
+                <Icon name={pkg.mode === 'KELOMPOK' ? 'groups' : 'person'} size="xs" />
+                {pkg.mode === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
+              </span>
+            {/if}
+          </div>
+        </div>
+
+        {#if onEdit}
+          <Button
+            variant="outline"
+            size="sm"
+            icon="edit"
+            on:click={() => { if (job && onEdit) onEdit(job); }}
+          >
+            Ubah Data
+          </Button>
+        {/if}
       </div>
-      <div class="card-body flush">
+
+      <!-- 2. Rincian Data Lowongan Grid -->
+      <div class="section-card">
+        <div class="section-title">
+          <Icon name="description" size="sm" /> Informasi & Detail Lowongan
+        </div>
+
+        <div class="kv-grid">
+          <div class="kv-item">
+            <div class="kv-label">Paket Les & Tipe</div>
+            <div class="kv-value flex-wrap">
+              <strong>{pkg ? pkg.name : '—'}</strong>
+              {#if pkg}
+                <span class="badge {pkg.mode === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
+                  <Icon name={pkg.mode === 'KELOMPOK' ? 'groups' : 'person'} size="xs" />
+                  {pkg.mode === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
+                </span>
+                <span class="kv-sub">· Rp {pkg.price.toLocaleString('id-ID')}</span>
+              {/if}
+            </div>
+          </div>
+
+          <div class="kv-item">
+            <div class="kv-label">Siswa Terdaftar</div>
+            <div class="kv-value">
+              <Icon name="person" size="xs" />
+              <strong>{getStudentNames(job)}</strong>
+            </div>
+          </div>
+
+          <div class="kv-item">
+            <div class="kv-label">Kelas</div>
+            <div class="kv-value">
+              <Icon name="school" size="xs" />
+              {getClassNames(job)}
+            </div>
+          </div>
+
+          <div class="kv-item">
+            <div class="kv-label">Mata Pelajaran</div>
+            <div class="kv-value">
+              <Icon name="menu_book" size="xs" />
+              {getSubjectNames(job)}
+            </div>
+          </div>
+
+          <div class="kv-item">
+            <div class="kv-label">Jadwal Les</div>
+            <div class="kv-value">
+              <Icon name="calendar_month" size="xs" />
+              {(job.scheduleDays || []).join(', ') || 'Senin, Rabu'}
+            </div>
+          </div>
+
+          <div class="kv-item">
+            <div class="kv-label">Waktu & Durasi</div>
+            <div class="kv-value">
+              <Icon name="schedule" size="xs" />
+              {job.scheduleTime || '16:00'} – {(job as any).scheduleEndTime || '17:30'} WIB
+              <span class="kv-sub">({job.sessionDurationMinutes || 90} menit)</span>
+            </div>
+          </div>
+
+          <div class="kv-item full-width">
+            <div class="kv-label">Rincian Finansial Tentor</div>
+            <div class="financial-box">
+              <div class="fin-item">
+                <span class="fin-lbl">Honor Pokok / Sesi:</span>
+                <span class="fin-val">{formatCurrencyIDR(fee)}</span>
+              </div>
+              <div class="fin-item">
+                <span class="fin-lbl">Uang Transport / Sesi:</span>
+                <span class="fin-val">{transport > 0 ? formatCurrencyIDR(transport) : 'Rp 0'}</span>
+              </div>
+              <div class="fin-total">
+                <span class="fin-lbl">Total Honor Tentor / Sesi:</span>
+                <span class="fin-total-val">{formatCurrencyIDR(totalHonor)}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lokasi Les & Peta -->
+          <div class="kv-item full-width">
+            <div class="kv-label">Lokasi Les & Titik Koordinat</div>
+            <div class="kv-value mb-2">
+              <Icon name="place" size="xs" />
+              {job.location || 'Lokasi Les'}
+              {#if job.latitude && job.longitude}
+                <span class="kv-sub">({job.latitude}, {job.longitude})</span>
+              {/if}
+            </div>
+
+            {#if isOffline && job.latitude && job.longitude}
+              <div class="map-preview-box">
+                <LeafletMap
+                  latitude={job.latitude}
+                  longitude={job.longitude}
+                  height="220px"
+                  zoom={16}
+                  radius={50}
+                  readonly={true}
+                />
+              </div>
+            {/if}
+          </div>
+
+          {#if job.notes || job.additionalNotes}
+            <div class="kv-item full-width">
+              <div class="kv-label">Deskripsi / Catatan Tambahan</div>
+              <div class="notes-box">
+                {job.notes || job.additionalNotes}
+              </div>
+            </div>
+          {/if}
+        </div>
+      </div>
+
+      <!-- 3. Daftar Pelamar (Lamaran Masuk) -->
+      <div class="section-card">
+        <div class="section-title">
+          <Icon name="group" size="sm" /> Lamaran Masuk ({applications.length})
+        </div>
+
         {#if applications.length === 0}
-          <div style="padding:14px;font-size:.84rem;color:var(--muted-fg)">
-            Belum ada tentor yang melamar.
+          <div class="empty-state">
+            <Icon name="person_search" size="md" />
+            <p>Belum ada tentor yang melamar pada lowongan ini.</p>
           </div>
         {:else}
           <div class="table-wrap">
@@ -140,7 +303,7 @@
                   <tr>
                     <td>
                       <strong>{getUserName(a.tentorId)}</strong>
-                      <div class="sub">{a.notes || '—'}</div>
+                      <div class="sub">{a.notes || 'Tanpa catatan'}</div>
                     </td>
                     <td>
                       <span class="badge {getStatusBadgeClass(a.status)}">
@@ -176,23 +339,22 @@
           </div>
         {/if}
       </div>
-    </div>
 
-    <!-- Ubah Status Lowongan Card -->
-    <div class="card" style="border:1px solid var(--border);border-radius:12px">
-      <div class="card-head" style="padding:10px 14px;font-size:.85rem">
-        <Icon name="tune" size="sm" /> Ubah Status Lowongan
-      </div>
-      <div class="card-body">
-        {#if job.status === 'AVAILABLE'}
-          <p style="font-size:.85rem;color:var(--muted-fg);margin-bottom:10px">
-            Lowongan tersedia. Tentor bisa melamar dari feed lowongan.
-          </p>
-        {:else if job.status === 'NEGOTIATING'}
-          <p style="font-size:.85rem;color:var(--muted-fg);margin-bottom:10px">
-            Sedang dinegosiasikan. Setujui salah satu pelamar, atau kembalikan ke status Tersedia.
-          </p>
-          <div class="quick-actions">
+      <!-- 4. Ubah Status Lowongan -->
+      <div class="section-card">
+        <div class="section-title">
+          <Icon name="tune" size="sm" /> Kelola Status Lowongan
+        </div>
+
+        <div class="status-manage-body">
+          {#if job.status === 'AVAILABLE'}
+            <p class="status-desc">
+              Lowongan sedang berstatus <strong>Tersedia</strong>. Tentor aktif dapat melihat dan melamar dari feed lowongan.
+            </p>
+          {:else if job.status === 'NEGOTIATING'}
+            <p class="status-desc">
+              Sedang dalam proses <strong>Negosiasi</strong>. Setujui salah satu pelamar di atas atau kembalikan status ke Tersedia.
+            </p>
             <Button
               variant="outline"
               size="sm"
@@ -201,34 +363,32 @@
             >
               Kembalikan ke Tersedia
             </Button>
-          </div>
-        {:else if job.status === 'ASSIGNED'}
-          <p style="font-size:.85rem;color:var(--muted-fg);margin-bottom:10px">
-            Ditugaskan ke <strong>{getUserName(job.assignedTentorId)}</strong>. Job terkunci — tidak bisa dilamar tentor lain.
-          </p>
-          <Button
-            variant="danger"
-            size="sm"
-            on:click={() => { confirmCancelOpen = true; }}
-            icon="block"
-          >
-            Batalkan Lowongan
-          </Button>
-        {:else}
-          <p style="font-size:.85rem;color:var(--muted-fg);margin-bottom:10px">
-            Lowongan dibatalkan. Buka kembali lowongan ini agar tentor bisa melamar lagi.
-          </p>
-          <div class="quick-actions">
+          {:else if job.status === 'ASSIGNED'}
+            <p class="status-desc">
+              Lowongan telah <strong>Ditugaskan</strong> kepada <strong>{getUserName(job.assignedTentorId)}</strong>.
+            </p>
+            <Button
+              variant="danger"
+              size="sm"
+              on:click={() => { confirmCancelOpen = true; }}
+              icon="block"
+            >
+              Batalkan Lowongan
+            </Button>
+          {:else}
+            <p class="status-desc">
+              Lowongan berstatus <strong>Dibatalkan</strong>. Anda dapat mengaktifkannya kembali.
+            </p>
             <Button
               variant="outline"
               size="sm"
               on:click={() => handleSetStatus('AVAILABLE')}
               icon="undo"
             >
-              Kembalikan ke Tersedia
+              Buka Kembali Lowongan
             </Button>
-          </div>
-        {/if}
+          {/if}
+        </div>
       </div>
     </div>
   {/if}
@@ -262,3 +422,168 @@
   onConfirm={handleAppRejectConfirm}
   onCancel={() => { confirmRejectAppId = null; }}
 />
+
+<style>
+  .manage-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .overview-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+  }
+
+  .overview-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .job-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .section-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .kv-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .kv-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .kv-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .kv-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #64748b;
+  }
+
+  .kv-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88rem;
+    color: #1e293b;
+  }
+
+  .kv-sub {
+    font-size: 0.78rem;
+    color: #64748b;
+  }
+
+  .financial-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    margin-top: 4px;
+  }
+
+  .fin-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: #166534;
+  }
+
+  .fin-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px dashed #86efac;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #15803d;
+  }
+
+  .map-preview-box {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    margin-top: 6px;
+  }
+
+  .notes-box {
+    padding: 10px 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    color: #334155;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: #94a3b8;
+    gap: 6px;
+    font-size: 0.84rem;
+  }
+
+  .status-manage-body {
+    padding: 14px;
+  }
+
+  .status-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 10px;
+  }
+</style>

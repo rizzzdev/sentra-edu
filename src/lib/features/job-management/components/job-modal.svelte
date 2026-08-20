@@ -36,16 +36,19 @@
   $: selectedPackage = $dbStore.packages.find((p) => p.id === packageId);
   $: isGroupMode = selectedPackage?.mode === 'KELOMPOK';
 
-  // Student options based on enrollment
-  $: studentOptions = enrollments.map((e) => {
-    const u = $dbStore.users.find((user) => user.id === e.studentId);
-    const cls = $dbStore.classes.find((c) => c.id === e.classId);
-    const sub = $dbStore.subjects.find((s) => s.id === e.subjectId);
-    return {
-      value: e.studentId,
-      label: `${u?.fullName || 'Siswa'} — ${cls?.className || ''} ${sub?.name || ''}`
-    };
-  });
+  // Student options (from all active students in database)
+  $: studentOptions = $dbStore.users
+    .filter((u) => u.deletedAt === null && u.role === 'STUDENT' && u.isActive !== false)
+    .map((u) => {
+      const studentEnrollment = enrollments.find((e) => e.studentId === u.id);
+      const cls = studentEnrollment ? $dbStore.classes.find((c) => c.id === studentEnrollment.classId) : null;
+      const sub = studentEnrollment ? $dbStore.subjects.find((s) => s.id === studentEnrollment.subjectId) : null;
+      const extra = cls && sub ? ` — ${cls.className} (${sub.name})` : u.school ? ` — ${u.school}` : u.email ? ` — ${u.email}` : '';
+      return {
+        value: u.id,
+        label: `${u.fullName}${extra}`
+      };
+    });
 
   $: classOptions = $dbStore.classes
     .filter((c) => c.deletedAt === null)
@@ -57,19 +60,20 @@
 
   $: daySelectOptions = dayOptions.map((d) => ({ value: d, label: d }));
 
-  // Reset student selection when package mode changes
-  $: if (isGroupMode === false && selectedStudentIds.length > 1) {
-    selectedStudentIds = selectedStudentIds.slice(0, 1);
-  }
-
   // Initialize from editing job
   $: if (editingJob) {
     title = editingJob.title;
     packageId = editingJob.packageId || '';
     mode = editingJob.mode || editingJob.jobMode || 'OFFLINE';
-    selectedStudentIds = editingJob.studentId ? [editingJob.studentId] : [];
-    selectedClassIds = editingJob.classId ? [editingJob.classId] : [];
-    selectedSubjectIds = editingJob.subjectId ? [editingJob.subjectId] : [];
+    selectedStudentIds = (editingJob as any).studentIds && (editingJob as any).studentIds.length > 0
+      ? (editingJob as any).studentIds
+      : (editingJob.studentId ? [editingJob.studentId] : []);
+    selectedClassIds = (editingJob as any).classIds && (editingJob as any).classIds.length > 0
+      ? (editingJob as any).classIds
+      : (editingJob.classId ? [editingJob.classId] : []);
+    selectedSubjectIds = (editingJob as any).subjectIds && (editingJob as any).subjectIds.length > 0
+      ? (editingJob as any).subjectIds
+      : (editingJob.subjectId ? [editingJob.subjectId] : []);
     preferredDays = editingJob.scheduleDays || ['Senin', 'Rabu'];
     startTime = editingJob.scheduleTime || '16:00';
     endTime = (editingJob as any).scheduleEndTime || '17:30';
@@ -102,13 +106,19 @@
       toastStore.error('Pilih murid terlebih dahulu.');
       return;
     }
-    const enr = enrollments.find((e) => e.studentId === selectedStudentIds[0]);
-    if (enr && enr.latitude && enr.longitude) {
-      latitude = enr.latitude;
-      longitude = enr.longitude;
+    const studentId = selectedStudentIds[0];
+    const enr = enrollments.find((e) => e.studentId === studentId);
+    const stu = $dbStore.users.find((u) => u.id === studentId);
+    const lat = enr?.latitude ?? (stu as any)?.latitude;
+    const lng = enr?.longitude ?? (stu as any)?.longitude;
+    if (lat && lng) {
+      latitude = lat;
+      longitude = lng;
       toastStore.success('Lokasi GPS diambil dari data murid.');
+    } else if (stu?.address || enr?.address) {
+      toastStore.info(`Alamat murid: ${stu?.address || enr?.address}. Silakan gunakan pencarian pada peta.`);
     } else {
-      toastStore.error('Data GPS murid tidak tersedia.');
+      toastStore.error('Data koordinat GPS murid belum tersedia.');
     }
   }
 
@@ -138,9 +148,12 @@
       return;
     }
 
-    const firstStudentId = selectedStudentIds[0];
+    const studentUsers = selectedStudentIds
+      .map((id) => $dbStore.users.find((u) => u.id === id))
+      .filter(Boolean) as any[];
+    const studentNames = studentUsers.map((u) => u.fullName).join(', ');
+    const firstStudentId = selectedStudentIds[0] || null;
     const selectedEnr = enrollments.find((e) => e.studentId === firstStudentId);
-    const studentUser = selectedEnr ? $dbStore.users.find((u) => u.id === firstStudentId) : null;
 
     const payload: Partial<JobPost> = {
       id: editingJob ? editingJob.id : undefined,
@@ -152,14 +165,14 @@
       packageId,
       studentId: firstStudentId,
       enrollmentId: selectedEnr?.id || null,
-      studentName: studentUser?.fullName || 'Murid',
+      studentName: studentNames || 'Murid',
       scheduleDays: preferredDays,
       scheduleTime: startTime,
       schedulePreference: `${preferredDays.join(', ')} ${startTime}–${endTime} WIB`,
       tentorFee: selectedPackage ? selectedPackage.tentorFee : 100000,
       sessionDurationMinutes: calculateDuration(startTime, endTime),
-      studentCount: isGroupMode ? selectedStudentIds.length : 1,
-      location: selectedEnr?.address || 'Lokasi Les',
+      studentCount: selectedStudentIds.length,
+      location: selectedEnr?.address || studentUsers[0]?.address || 'Lokasi Les',
       latitude: mode === 'ONLINE' ? null : latitude,
       longitude: mode === 'ONLINE' ? null : longitude,
       notes: description.trim(),
@@ -170,6 +183,7 @@
     (payload as any).classIds = selectedClassIds;
     (payload as any).subjectIds = selectedSubjectIds;
     (payload as any).studentIds = selectedStudentIds;
+    (payload as any).studentNames = studentUsers.map((u) => u.fullName);
     (payload as any).transportAllowance = transportAllowance;
     (payload as any).scheduleEndTime = endTime;
 
@@ -234,22 +248,18 @@
       />
     </div>
 
-    <!-- 4. Siswa -->
+    <!-- 4. Siswa (Multi-select by default) -->
     <div class="field">
       <label for="f_students">
         Siswa <i class="req">*</i>
-        {#if isGroupMode}
-          <span class="help-inline">(mode kelompok — bisa pilih beberapa)</span>
-        {:else}
-          <span class="help-inline">(mode private — pilih satu)</span>
-        {/if}
+        <span class="help-inline">(bisa pilih satu atau lebih murid)</span>
       </label>
       <SelectSearch
         id="f_students"
         required
-        multiple={isGroupMode}
+        multiple={true}
         bind:value={selectedStudentIds}
-        placeholder={isGroupMode ? '— Pilih satu atau lebih siswa —' : '— Pilih satu siswa —'}
+        placeholder="— Pilih satu atau lebih siswa —"
         searchable={true}
         options={studentOptions}
       />
@@ -257,13 +267,16 @@
 
     <!-- 5. Kelas (multiple) -->
     <div class="field">
-      <label for="f_classes">Kelas <i class="req">*</i></label>
+      <label for="f_classes">
+        Kelas <i class="req">*</i>
+        <span class="help-inline">(bisa pilih satu atau lebih kelas)</span>
+      </label>
       <SelectSearch
         id="f_classes"
         required
         multiple={true}
         bind:value={selectedClassIds}
-        placeholder="— Pilih kelas —"
+        placeholder="— Pilih satu atau lebih kelas —"
         searchable={true}
         options={classOptions}
       />
@@ -271,13 +284,16 @@
 
     <!-- 6. Mata Pelajaran (multiple) -->
     <div class="field">
-      <label for="f_subjects">Mata Pelajaran <i class="req">*</i></label>
+      <label for="f_subjects">
+        Mata Pelajaran <i class="req">*</i>
+        <span class="help-inline">(bisa pilih satu atau lebih mata pelajaran)</span>
+      </label>
       <SelectSearch
         id="f_subjects"
         required
         multiple={true}
         bind:value={selectedSubjectIds}
-        placeholder="— Pilih mata pelajaran —"
+        placeholder="— Pilih satu atau lebih mata pelajaran —"
         searchable={true}
         options={subjectOptions}
       />

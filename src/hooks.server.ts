@@ -66,7 +66,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' https://fonts.gstatic.com; " +
     "img-src 'self' data: https:; " +
-    "connect-src 'self'; " +
+    "connect-src 'self' https://nominatim.openstreetmap.org https://photon.komoot.io https://*.google.com https://*.openstreetmap.org; " +
     "frame-ancestors 'none';"
   );
 

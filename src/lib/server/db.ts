@@ -188,7 +188,6 @@ export async function initDatabase() {
       class_id TEXT REFERENCES classes(id),
       subject_id TEXT REFERENCES subjects(id),
       package_id TEXT REFERENCES packages(id),
-      job_type TEXT DEFAULT 'REGULAR',
       job_mode TEXT DEFAULT 'OFFLINE',
       tentor_fee INTEGER DEFAULT 0,
       session_duration_minutes INTEGER DEFAULT 90,
@@ -323,5 +322,7 @@ export async function initDatabase() {
       updated_at TIMESTAMPTZ DEFAULT NOW(),
       deleted_at TIMESTAMPTZ
     );
+
+    ALTER TABLE jobs DROP COLUMN IF EXISTS job_type;
   `;
 }

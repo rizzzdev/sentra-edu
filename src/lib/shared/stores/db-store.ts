@@ -369,7 +369,40 @@ function createDatabaseStore() {
         apiPost('/api/jobs', jobPayload);
         return { error: false, statusCode: 200, message: 'Lowongan diperbarui.', data: updated };
       } else {
-        const newJob: JobPost = { id: generateEntityId('job'), title: (jobPayload.title || '').trim(), classId: jobPayload.classId || '', subjectId: jobPayload.subjectId || '', jobType: jobPayload.jobType || 'REGULAR', jobMode: jobPayload.jobMode || 'OFFLINE', tentorFee: Number(jobPayload.tentorFee) || 120000, sessionDurationMinutes: Number(jobPayload.sessionDurationMinutes) || 90, scheduleDays: jobPayload.scheduleDays || ['Senin'], scheduleTime: jobPayload.scheduleTime || '16:00', studentCount: Number(jobPayload.studentCount) || 1, location: jobPayload.location || '', latitude: jobPayload.latitude || null, longitude: jobPayload.longitude || null, status: 'AVAILABLE', assignedTentorId: null, studentId: jobPayload.studentId || null, enrollmentId: jobPayload.enrollmentId || null, notes: jobPayload.notes || '', createdAt: now, updatedAt: now, deletedAt: null };
+        const newJob: JobPost = {
+          id: generateEntityId('job'),
+          title: (jobPayload.title || '').trim(),
+          classId: jobPayload.classId || (jobPayload.classIds?.[0] || ''),
+          classIds: jobPayload.classIds || (jobPayload.classId ? [jobPayload.classId] : []),
+          subjectId: jobPayload.subjectId || (jobPayload.subjectIds?.[0] || ''),
+          subjectIds: jobPayload.subjectIds || (jobPayload.subjectId ? [jobPayload.subjectId] : []),
+          packageId: jobPayload.packageId || '',
+          jobMode: jobPayload.jobMode || jobPayload.mode || 'OFFLINE',
+          mode: jobPayload.mode || jobPayload.jobMode || 'OFFLINE',
+          tentorFee: Number(jobPayload.tentorFee) || 120000,
+          transportAllowance: Number(jobPayload.transportAllowance) || 0,
+          sessionDurationMinutes: Number(jobPayload.sessionDurationMinutes) || 90,
+          scheduleDays: jobPayload.scheduleDays || ['Senin'],
+          scheduleTime: jobPayload.scheduleTime || '16:00',
+          scheduleEndTime: jobPayload.scheduleEndTime || '17:30',
+          schedulePreference: jobPayload.schedulePreference || '',
+          studentCount: Number(jobPayload.studentCount) || (jobPayload.studentIds?.length || 1),
+          studentId: jobPayload.studentId || (jobPayload.studentIds?.[0] || null),
+          studentIds: jobPayload.studentIds || (jobPayload.studentId ? [jobPayload.studentId] : []),
+          studentName: jobPayload.studentName || '',
+          studentNames: jobPayload.studentNames || [],
+          location: jobPayload.location || '',
+          latitude: jobPayload.latitude ?? null,
+          longitude: jobPayload.longitude ?? null,
+          status: 'AVAILABLE',
+          assignedTentorId: null,
+          enrollmentId: jobPayload.enrollmentId || null,
+          notes: jobPayload.notes || '',
+          additionalNotes: jobPayload.additionalNotes || jobPayload.notes || '',
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null
+        };
         persistDatabase({ ...currentDb, jobs: [newJob, ...currentDb.jobs] });
         apiPost('/api/jobs', jobPayload);
         return { error: false, statusCode: 201, message: 'Lowongan baru berhasil dipublikasikan.', data: newJob };

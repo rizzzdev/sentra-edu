@@ -37,6 +37,30 @@
     return $dbStore.subjects.find((s) => s.id === subjectId)?.name || '—';
   }
 
+  function getClassesLabel(job: JobPosting): string {
+    if ((job as any).classIds && Array.isArray((job as any).classIds) && (job as any).classIds.length > 0) {
+      const names = (job as any).classIds.map((id: string) => getClassName(id)).filter((n: string) => n && n !== '—');
+      if (names.length > 0) return names.join(', ');
+    }
+    return getClassName(job.classId);
+  }
+
+  function getSubjectsLabel(job: JobPosting): string {
+    if ((job as any).subjectIds && Array.isArray((job as any).subjectIds) && (job as any).subjectIds.length > 0) {
+      const names = (job as any).subjectIds.map((id: string) => getSubjectName(id)).filter((n: string) => n && n !== '—');
+      if (names.length > 0) return names.join(', ');
+    }
+    return getSubjectName(job.subjectId);
+  }
+
+  function getStudentsLabel(job: JobPosting): string {
+    if ((job as any).studentIds && Array.isArray((job as any).studentIds) && (job as any).studentIds.length > 0) {
+      const names = (job as any).studentIds.map((id: string) => getUserName(id)).filter(Boolean);
+      if (names.length > 0) return names.join(', ');
+    }
+    return job.studentName || getUserName(job.studentId) || '—';
+  }
+
   function getPackageName(packageId?: string): string {
     if (!packageId) return '—';
     return $dbStore.packages.find((p) => p.id === packageId)?.name || '—';
@@ -54,7 +78,7 @@
 
   function getJobFee(job: JobPosting): number {
     const pkg = $dbStore.packages.find((p) => p.id === job.packageId);
-    return pkg ? pkg.tentorFee : 0;
+    return pkg ? pkg.tentorFee : (job.tentorFee || 0);
   }
 
   $: filteredJobs = allJobs.filter((j) => {
@@ -62,10 +86,10 @@
     const matchesSearch =
       !q ||
       j.title.toLowerCase().includes(q) ||
-      getClassName(j.classId).toLowerCase().includes(q) ||
-      getSubjectName(j.subjectId).toLowerCase().includes(q) ||
+      getClassesLabel(j).toLowerCase().includes(q) ||
+      getSubjectsLabel(j).toLowerCase().includes(q) ||
       getPackageName(j.packageId).toLowerCase().includes(q) ||
-      (j.studentName || '').toLowerCase().includes(q);
+      getStudentsLabel(j).toLowerCase().includes(q);
 
     const matchesStatus = !statusFilter || j.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -192,14 +216,20 @@
                     · {j.schedulePreference}
                   </div>
                   <div class="sub">
-                    <Icon name="group" size="xs" /> {j.studentName}
+                    <Icon name="group" size="xs" /> {getStudentsLabel(j)}
                   </div>
                 </td>
                 <td>
-                  {getClassName(j.classId)} · {getSubjectName(j.subjectId)}
+                  {getClassesLabel(j)} · {getSubjectsLabel(j)}
                 </td>
                 <td>
-                  <span class="sub">{getPackageMode(j.packageId)}</span> {getPackageName(j.packageId)}
+                  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <span class="badge {getPackageMode(j.packageId) === 'KELOMPOK' ? 'b-admin' : 'b-interviewed'}">
+                      <Icon name={getPackageMode(j.packageId) === 'KELOMPOK' ? 'groups' : 'person'} size="xs" />
+                      {getPackageMode(j.packageId) === 'KELOMPOK' ? 'Kelompok' : 'Privat'}
+                    </span>
+                    <span>{getPackageName(j.packageId)}</span>
+                  </div>
                 </td>
                 <td class="num">
                   {formatCurrencyIDR(getJobFee(j))}
@@ -288,7 +318,15 @@
 </div>
 
 <JobModal open={jobModalOpen} {editingJob} onClose={() => { jobModalOpen = false; }} />
-<JobManageModal open={assignModalOpen} job={assigningJob} onClose={() => { assignModalOpen = false; }} />
+<JobManageModal
+  open={assignModalOpen}
+  job={assigningJob}
+  onClose={() => { assignModalOpen = false; }}
+  onEdit={(j) => {
+    assignModalOpen = false;
+    handleOpenEdit(j);
+  }}
+/>
 <ConfirmationDialog
   open={deleteDialogOpen}
   title="Hapus Lowongan"

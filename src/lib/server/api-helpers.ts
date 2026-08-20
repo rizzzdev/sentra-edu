@@ -36,7 +36,7 @@ function mapEnrollmentRow(r: any) {
 }
 
 function mapJobRow(r: any) {
-  return { id: r.id, title: r.title, classId: r.class_id, subjectId: r.subject_id, packageId: r.package_id, jobType: r.job_type, jobMode: r.job_mode, tentorFee: r.tentor_fee, sessionDurationMinutes: r.session_duration_minutes, scheduleDays: r.schedule_days || [], scheduleTime: r.schedule_time, studentCount: r.student_count, location: r.location, latitude: r.latitude, longitude: r.longitude, status: r.status, assignedTentorId: r.assigned_tentor_id, studentId: r.student_id, enrollmentId: r.enrollment_id, notes: r.notes, createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at };
+  return { id: r.id, title: r.title, classId: r.class_id, subjectId: r.subject_id, packageId: r.package_id, jobMode: r.job_mode, mode: r.job_mode, tentorFee: r.tentor_fee, sessionDurationMinutes: r.session_duration_minutes, scheduleDays: r.schedule_days || [], scheduleTime: r.schedule_time, studentCount: r.student_count, location: r.location, latitude: r.latitude, longitude: r.longitude, status: r.status, assignedTentorId: r.assigned_tentor_id, studentId: r.student_id, enrollmentId: r.enrollment_id, notes: r.notes, createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at };
 }
 
 function mapApplicationRow(r: any) {

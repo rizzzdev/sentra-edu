@@ -90,34 +90,39 @@ export interface Enrollment extends BaseEntity {
 
 export type StudentEnrollment = Enrollment;
 
-export type JobType = 'REGULAR' | 'TEMPORARY_REPLACEMENT';
 export type JobMode = 'OFFLINE' | 'ONLINE';
 export type JobStatus = 'AVAILABLE' | 'NEGOTIATING' | 'ASSIGNED' | 'CANCELLED';
 
 export interface JobPost extends BaseEntity {
   title: string;
   classId: string;
+  classIds?: string[];
   subjectId: string;
+  subjectIds?: string[];
   packageId?: string;
-  jobType: JobType;
   jobMode: JobMode;
   mode?: JobMode;
   tentorFee: number;
+  transportAllowance?: number;
   sessionDurationMinutes: number;
   scheduleDays: string[];
   scheduleTime: string;
+  scheduleEndTime?: string;
   schedulePreference?: string;
   studentCount: number;
+  studentId: string | null;
+  studentIds?: string[];
   studentName?: string;
+  studentNames?: string[];
   location: string;
   latitude: number | null;
   longitude: number | null;
   status: JobStatus;
   assignedTentorId: string | null;
-  studentId: string | null;
   enrollmentId: string | null;
   notes?: string;
   additionalNotes?: string;
+  jobType?: string;
 }
 
 export type JobPosting = JobPost;
