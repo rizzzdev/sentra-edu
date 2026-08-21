@@ -1,14 +1,14 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import ConfirmationDialog from '$lib/components/organisms/confirmation-dialog.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
-  import { JOB_STATUS_LABEL, APPLICATION_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
-  import type { JobPost } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
+import { userStore, subjectStore, classStore, packageStore, applicationStore } from '$lib/api';
+  import { Modal } from '$lib/components/molecules';
+  import { Icon } from '$lib/components/atoms';
+  import { ConfirmationDialog } from '$lib/components/organisms';
+  import {toastStore} from '$lib/shared/stores';
+  import { APPLICATION_STATUS_LABEL, JOB_STATUS_LABEL, formatCurrencyIDR, getStatusBadgeClass, getStatusLabel } from '$lib/shared/utils';
+  import type { JobPost } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { LeafletMap } from '$lib/components/molecules';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
@@ -19,25 +19,25 @@
   let confirmRejectAppId: string | null = null;
 
   $: applications = job
-    ? $dbStore.applications.filter((applicationItem) => applicationItem.deletedAt === null && applicationItem.jobId === job?.id)
+    ? $applicationStore.filter((applicationItem) => applicationItem.deletedAt === null && applicationItem.jobId === job?.id)
     : [];
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
-    return $dbStore.users.find((userItem) => userItem.id === userId)?.fullName || '—';
+    return $userStore.find((userItem) => userItem.id === userId)?.fullName || '—';
   }
 
   function getClassName(classId: string): string {
-    return $dbStore.classes.find((classItem) => classItem.id === classId)?.className || '—';
+    return $classStore.find((classItem) => classItem.id === classId)?.className || '—';
   }
 
   function getSubjectName(subjectId: string): string {
-    return $dbStore.subjects.find((subjectItem) => subjectItem.id === subjectId)?.name || '—';
+    return $subjectStore.find((subjectItem) => subjectItem.id === subjectId)?.name || '—';
   }
 
   function getPackage(packageId?: string) {
     if (!packageId) return null;
-    return $dbStore.packages.find((pkg) => pkg.id === packageId) || null;
+    return $packageStore.find((pkg) => pkg.id === packageId) || null;
   }
 
   function getJobFee(jobPosting: JobPost): number {
@@ -53,7 +53,7 @@
     const studentIds = jobPosting.studentIds;
     if (Array.isArray(studentIds) && studentIds.length > 0) {
       const names = studentIds
-        .map((studentId: string) => $dbStore.users.find((user) => user.id === studentId)?.fullName)
+        .map((studentId: string) => $userStore.find((user) => user.id === studentId)?.fullName)
         .filter((name): name is string => typeof name === 'string' && name.length > 0);
       if (names.length > 0) return names.join(', ');
     }
@@ -64,7 +64,7 @@
     const classIds = jobPosting.classIds;
     if (Array.isArray(classIds) && classIds.length > 0) {
       const names = classIds
-        .map((classId: string) => $dbStore.classes.find((classLevel) => classLevel.id === classId)?.className)
+        .map((classId: string) => $classStore.find((classLevel) => classLevel.id === classId)?.className)
         .filter((name): name is string => typeof name === 'string' && name.length > 0);
       if (names.length > 0) return names.join(', ');
     }
@@ -75,17 +75,17 @@
     const subjectIds = jobPosting.subjectIds;
     if (Array.isArray(subjectIds) && subjectIds.length > 0) {
       const names = subjectIds
-        .map((subjectId: string) => $dbStore.subjects.find((subject) => subject.id === subjectId)?.name)
+        .map((subjectId: string) => $subjectStore.find((subject) => subject.id === subjectId)?.name)
         .filter((name): name is string => typeof name === 'string' && name.length > 0);
       if (names.length > 0) return names.join(', ');
     }
     return getSubjectName(jobPosting.subjectId);
   }
 
-  function handleAppApprove(applicationId: string) {
+  async function handleAppApprove(applicationId: string) {
     const app = applications.find((application) => application.id === applicationId);
     if (!app || !job) return;
-    const response = dbStore.assignTentorToJob(job.id, app.tentorId);
+    const response = await api.jobs.update(job.id, app.tentorId);
     if (!response.error) {
       toastStore.success('Pelamar berhasil disetujui dan ditugaskan.');
     } else {
@@ -93,21 +93,20 @@
     }
   }
 
-  function handleAppRejectConfirm() {
+  async function handleAppRejectConfirm() {
     if (!confirmRejectAppId) return;
-    const updatedApps = $dbStore.applications.map((application) =>
-      application.id === confirmRejectAppId ? { ...application, status: 'REJECTED' as const } : application
-    );
-    const snapshot = dbStore.getSnapshot();
-    dbStore.importDatabaseJson(JSON.stringify({ ...snapshot, applications: updatedApps }));
+    const response = await api.applications.update(confirmRejectAppId, { status: 'REJECTED' });
+    if (!response.error) {
+      toastStore.success('Lamaran ditolak.');
+    } else {
+      toastStore.error(response.message);
+    }
     confirmRejectAppId = null;
-    toastStore.success('Lamaran ditolak.');
   }
 
-  function handleSetStatus(newStatus: 'AVAILABLE' | 'CANCELLED') {
+  async function handleSetStatus(newStatus: 'AVAILABLE' | 'CANCELLED') {
     if (!job) return;
-    const response = dbStore.saveJobPost({
-      id: job.id,
+    const response = await api.jobs.update(job.id, {
       status: newStatus,
       assignedTentorId: newStatus === 'AVAILABLE' ? null : job.assignedTentorId
     });

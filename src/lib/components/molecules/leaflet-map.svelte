@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, tick } from 'svelte';
   import type * as L from 'leaflet';
-  import Icon from '$lib/components/atoms/icon.svelte';
+  import { Icon } from '$lib/components/atoms';
 
   export let latitude: number = -6.2;
   export let longitude: number = 106.8;

@@ -10,7 +10,7 @@ export const ROLE_LABEL: Record<string, string> = {
   SUPER_ADMIN: 'Super Admin',
   TENTOR: 'Tentor',
   STUDENT: 'Siswa',
-  WALI_MURID: 'Wali Murid'
+  PARENT: 'Orang Tua'
 };
 
 // ── Enrollment Status ───────────────────────────────────────

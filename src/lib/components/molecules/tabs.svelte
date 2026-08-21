@@ -8,7 +8,7 @@
 </script>
 
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
+  import { Icon } from '$lib/components/atoms';
 
   export let items: TabItem[] = [];
   export let activeId: string = '';

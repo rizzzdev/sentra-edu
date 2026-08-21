@@ -1,9 +1,7 @@
 <script lang="ts">
-  import Sidebar from '$lib/components/organisms/sidebar.svelte';
-  import Navbar from '$lib/components/organisms/navbar.svelte';
-  import NotificationDropdown from '$lib/components/organisms/notification-dropdown.svelte';
-  import ToastContainer from '$lib/components/molecules/toast-container.svelte';
-  import type { User } from '$lib/shared/types/common.types';
+  import { Navbar, NotificationDropdown, Sidebar } from '$lib/components/organisms';
+  import { ToastContainer } from '$lib/components/molecules';
+  import type { User } from '$lib/shared/types';
 
   export let currentUser: User;
   export let currentPath: string = '/dashboard';

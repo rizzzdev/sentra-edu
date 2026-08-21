@@ -1,20 +1,21 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
-  import type { JobPost } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
+import { userStore, classStore, notificationStore } from '$lib/api';
+  import { Modal } from '$lib/components/molecules';
+  import { Icon } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import { formatCurrencyIDR } from '$lib/shared/utils';
+  import type { JobPost } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
   export let onClose: () => void = () => {};
 
-  $: selectedJobClass = job ? $dbStore.classes.find((classItem) => classItem.id === job?.classId) : null;
+  $: selectedJobClass = job ? $classStore.find((classItem) => classItem.id === job?.classId) : null;
   $: selectedJobLevel = selectedJobClass ? selectedJobClass.educationLevelId : null;
 
-  $: matchingTentors = $dbStore.users.filter((userItem) => {
+  $: matchingTentors = $userStore.filter((userItem) => {
     if (userItem.role !== 'TENTOR' || userItem.deletedAt !== null) return false;
     if (!job) return false;
     const subjectMatch = (userItem.subjectIds || []).includes(job.subjectId);
@@ -22,7 +23,7 @@
     return subjectMatch && levelMatch;
   });
 
-  $: otherTentors = $dbStore.users.filter((userItem) => {
+  $: otherTentors = $userStore.filter((userItem) => {
     if (userItem.role !== 'TENTOR' || userItem.deletedAt !== null) return false;
     return !matchingTentors.some((matchingUser) => matchingUser.id === userItem.id);
   });
@@ -31,11 +32,11 @@
     return name.split(' ').filter(Boolean).slice(0, 2).map((word) => word[0].toUpperCase()).join('');
   }
 
-  function handleAssign(tentorId: string, tentorName: string) {
+  async function handleAssign(tentorId: string, tentorName: string) {
     if (!job) return;
-    const response = dbStore.assignTentorToJob(job.id, tentorId);
+    const response = await api.jobs.update(job.id, { assignedTentorId: tentorId });
     if (!response.error) {
-      dbStore.pushNotification(
+      notificationStore.pushNotification(
         tentorId,
         'Penugasan Lowongan Baru',
         `Anda telah ditugaskan untuk mengajar lowongan "${job.title}".`,

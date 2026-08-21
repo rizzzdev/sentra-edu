@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import Button from '$lib/components/atoms/button.svelte';
+  import { Modal } from '$lib/components/molecules';
+  import { Button, Icon } from '$lib/components/atoms';
 
   export let open: boolean = false;
   export let title: string = 'Konfirmasi';

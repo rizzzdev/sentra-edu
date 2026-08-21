@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import Icon from '$lib/components/atoms/icon.svelte';
+  import { toastStore } from '$lib/shared/stores';
+  import { Icon } from '$lib/components/atoms';
 
   const iconMap: Record<string, string> = {
     success: 'check_circle',

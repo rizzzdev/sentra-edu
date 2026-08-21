@@ -1,9 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { authStore } from '$lib/shared/stores/auth-store';
-  import type { User, UserRole } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
+  import { Button, Icon } from '$lib/components/atoms';
+  import { authStore } from '$lib/shared/stores';
+  import type { User, UserRole } from '$lib/shared/types';
+  import { ROLE_LABEL } from '$lib/shared/utils';
 
   export let currentUser: User;
   export let currentPath: string = '/dashboard';
@@ -24,17 +23,16 @@
       { path: '/admin/attendance', label: 'Verifikasi Presensi', icon: 'fact_check', group: 'Operasional' },
       { path: '/admin/payroll', label: 'Penggajian', icon: 'payments', group: 'Operasional' },
       { path: '/admin/invoices', label: 'Tagihan SPP', icon: 'receipt_long', group: 'Operasional' },
-      { path: '/admin/students', label: 'Data Murid', icon: 'school', group: 'Kelola Murid & Wali' },
-      { path: '/admin/students/parent', label: 'Data Wali Murid', icon: 'family_restroom', group: 'Kelola Murid & Wali' },
-      { path: '/admin/magic-links', label: 'Magic Link Pendaftaran', icon: 'link', group: 'Kelola Murid & Wali' },
+      { path: '/admin/students', label: 'Data Murid', icon: 'school', group: 'Kelola Murid & Orang Tua' },
+      { path: '/admin/parents', label: 'Data Orang Tua', icon: 'family_restroom', group: 'Kelola Murid & Orang Tua' },
+      { path: '/admin/student-parent-magic-links', label: 'Magic Link Pendaftaran', icon: 'link', group: 'Kelola Murid & Orang Tua' },
       { path: '/admin/tutors', label: 'Data Tentor', icon: 'badge', group: 'Kelola Tentor' },
-      { path: '/admin/tutors/magic-links', label: 'Magic Link Tentor', icon: 'link', group: 'Kelola Tentor' },
+      { path: '/admin/tutor-magic-links', label: 'Magic Link Tentor', icon: 'link', group: 'Kelola Tentor' },
       { path: '/admin/candidates', label: 'Rekrutmen & Pelamar', icon: 'person_search', group: 'Kelola Tentor' },
       { path: '/admin/classes', label: 'Kelas', icon: 'stairs', group: 'Master Data' },
       { path: '/admin/subjects', label: 'Mata Pelajaran', icon: 'menu_book', group: 'Master Data' },
       { path: '/admin/levels', label: 'Jenjang', icon: 'stairs', group: 'Master Data' },
       { path: '/admin/packages', label: 'Paket Les', icon: 'sell', group: 'Master Data' },
-      { path: '/admin/users', label: 'Akun Pengguna', icon: 'manage_accounts', group: 'Master Data' },
       { path: '/admin/analytics', label: 'Analitik', icon: 'monitoring', group: 'Insight' },
       { path: '/admin/reports-admin', label: 'Laporan', icon: 'summarize', group: 'Insight' },
       { path: '/admin/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
@@ -54,7 +52,7 @@
       { path: '/student/reports', label: 'Laporan Hasil Belajar', icon: 'summarize', group: 'Belajar' },
       { path: '/student/profile', label: 'Profil Saya', icon: 'person', group: 'Akun' }
     ],
-    WALI_MURID: [
+    PARENT: [
       { path: '/parent', label: 'Dashboard', icon: 'space_dashboard', group: 'Beranda' },
       { path: '/parent/children', label: 'Program Les Anak', icon: 'school', group: 'Monitoring Anak' },
       { path: '/parent/attendance', label: 'Presensi Anak', icon: 'fact_check', group: 'Monitoring Anak' },
@@ -70,13 +68,13 @@
     SUPER_ADMIN: 'b-admin',
     TENTOR: 'b-tentor',
     STUDENT: 'b-student',
-    WALI_MURID: 'b-neutral'
+    PARENT: 'b-neutral'
   };
   const roleIconMap: Record<string, string> = {
     SUPER_ADMIN: 'admin_panel_settings',
     TENTOR: 'school',
     STUDENT: 'school',
-    WALI_MURID: 'family_restroom'
+    PARENT: 'family_restroom'
   };
 
   $: initials = currentUser.fullName

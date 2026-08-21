@@ -1,13 +1,13 @@
+<!-- svelte-options runes=false -->
 <script lang="ts">
+import { subjectStore } from '$lib/api';
   import { page } from '$app/stores';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { themeStore } from '$lib/shared/stores/theme-store';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {themeStore} from '$lib/shared/stores';
   import { goto } from '$app/navigation';
-  import type { User } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+  import type { User } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { SelectSearch } from '$lib/components/molecules';
 
   $: token = $page.url.searchParams.get('token') || '';
 
@@ -26,9 +26,27 @@
   let errorMessage: string | null = null;
   let createdTentor: User | null = null;
 
-  $: tokenValidation = token
-    ? dbStore.validateMagicToken(token, $dbStore)
-    : { valid: false, message: 'Token pendaftaran tentor tidak ditemukan.', magicLink: null };
+  let tokenValidation: { valid: boolean; message: string; magicLink: any; isLoading: boolean } = { valid: false, message: 'Memuat token...', magicLink: null, isLoading: true };
+
+  async function validateMagicTokenValue(tokenStr: string) {
+    const res = await fetch(`/api/magic-links?token=${tokenStr}`);
+    const result = await res.json();
+    if (!result.error && result.data && result.data.length > 0) {
+      const link = result.data[0];
+      const expired = new Date(link.expiresAt) < new Date();
+      tokenValidation = {
+        valid: link.active && !expired && link.targetRole === 'TENTOR',
+        message: expired ? 'Token telah kadaluarsa.' : (!link.active ? 'Token tidak aktif.' : ''),
+        magicLink: link,
+        isLoading: false
+      };
+    } else {
+      tokenValidation = { valid: false, message: 'Token pendaftaran tentor tidak ditemukan.', magicLink: null, isLoading: false };
+    }
+  }
+
+  import { onMount } from 'svelte';
+  onMount(() => { if (token) validateMagicTokenValue(token); });
 
   function toggleSubject(id: string) {
     if (selectedSubjectIds.includes(id)) {
@@ -55,20 +73,25 @@
     currentStep = 2;
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     errorMessage = null;
     createdTentor = null;
 
-    const response = dbStore.registerTentorViaMagicLink({
-      token,
-      fullName: fullName.trim(),
-      email: email.trim(),
-      password,
-      phone: phone.trim(),
-      education: education.trim(),
-      subjectIds: selectedSubjectIds,
-      address: address.trim()
+    const fetchResponse = await fetch('/api/auth/register-tutor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token,
+        fullName: fullName.trim(),
+        email: email.trim(),
+        password,
+        phone: phone.trim(),
+        education: education.trim(),
+        subjectIds: selectedSubjectIds,
+        address: address.trim()
+      })
     });
+    const response = await fetchResponse.json();
 
     if (response.error || !response.data) {
       errorMessage = response.message;
@@ -280,7 +303,7 @@
               multiple
               bind:value={selectedSubjectIds}
               placeholder="Pilih mata pelajaran yang dikuasai..."
-              options={$dbStore.subjects.map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))}
+              options={$subjectStore.map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))}
             />
           </div>
 

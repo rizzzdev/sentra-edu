@@ -1,13 +1,14 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import type { User } from '$lib/shared/types/common.types';
+import { notificationStore } from '$lib/api';
+  import { Icon } from '$lib/components/atoms';
+  ;
+  import type { User } from '$lib/shared/types';
 
   export let open: boolean = false;
   export let currentUser: User;
   export let onClose: () => void = () => {};
 
-  $: userNotifications = ($dbStore.notifications || [])
+  $: userNotifications = ($notificationStore || [])
     .filter((notif) => notif.userId === currentUser.id)
     .sort((firstNotif, secondNotif) => new Date(secondNotif.createdAt).getTime() - new Date(firstNotif.createdAt).getTime());
 
@@ -64,7 +65,7 @@
               <button
                 type="button"
                 class="notif-item {notificationItem.read ? 'read' : 'unread'}"
-                on:click={() => dbStore.markNotificationAsRead(notificationItem.id)}
+                on:click={() => notificationStore.markNotificationAsRead(notificationItem.id)}
               >
                 <span class="n-ico">
                   <Icon name={notificationItem.icon || 'notifications'} size="md" />
@@ -91,7 +92,7 @@
           <button
             type="button"
             class="btn btn-soft"
-            on:click={() => dbStore.markAllNotificationsAsRead(currentUser.id)}
+            on:click={() => notificationStore.markAllNotificationsAsRead(currentUser.id)}
           >
             <Icon name="done_all" size="sm" /> Tandai Semua Dibaca ({unreadCount})
           </button>

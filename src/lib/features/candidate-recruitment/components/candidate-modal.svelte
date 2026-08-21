@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { RecruitmentCandidate } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+import { subjectStore, educationLevelStore } from '$lib/api';
+  import { Modal } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { RecruitmentCandidate } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { SelectSearch } from '$lib/components/molecules';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let editingCandidate: RecruitmentCandidate | null = null;
@@ -57,7 +57,7 @@
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!fullName.trim() || !email.trim()) {
       toastStore.error('Nama lengkap dan email wajib diisi.');
       return;
@@ -85,7 +85,7 @@
       source
     };
 
-    const response = dbStore.saveCandidate(payload);
+    const response = await api.candidates.create(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();
@@ -159,7 +159,7 @@
         Mapel yang Bisa Diajar (boleh lebih dari satu) <i class="req">*</i>
       </div>
       <div class="multi-group">
-        {#each $dbStore.subjects.filter((subjectItem) => subjectItem.deletedAt === null) as subjectItem}
+        {#each $subjectStore.filter((subjectItem) => subjectItem.deletedAt === null) as subjectItem}
           <label class="multi-opt">
             <input
               type="checkbox"
@@ -177,7 +177,7 @@
         Jenjang yang Bisa Diajar (boleh lebih dari satu) <i class="req">*</i>
       </div>
       <div class="multi-group">
-        {#each $dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null) as levelItem}
+        {#each $educationLevelStore.filter((levelItem) => levelItem.deletedAt === null) as levelItem}
           <label class="multi-opt">
             <input
               type="checkbox"

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import ToastContainer from '$lib/components/molecules/toast-container.svelte';
-  import { themeStore } from '$lib/shared/stores/theme-store';
+  import { Icon } from '$lib/components/atoms';
+  import { ToastContainer } from '$lib/components/molecules';
+  import { themeStore } from '$lib/shared/stores';
 </script>
 
 <div class="flex items-center justify-center min-h-screen p-4 sm:p-6 bg-bg transition-colors">

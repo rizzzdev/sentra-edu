@@ -1,13 +1,11 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { Enrollment } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
-  import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
+import { userStore, subjectStore, classStore, packageStore } from '$lib/api';
+  import { LeafletMap, Modal, SelectSearch } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { Enrollment } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let editingEnrollment: Enrollment | null = null;
@@ -23,7 +21,7 @@
   let latitude: number = -6.2;
   let longitude: number = 106.8;
 
-  $: students = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT');
+  $: students = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT');
 
   let previousOpen = false;
   let previousEnrollmentId: string | null = null;
@@ -41,9 +39,9 @@
       longitude = editingEnrollment.longitude || 106.8;
     } else {
       studentId = students[0]?.id || '';
-      classId = $dbStore.classes.filter((classItem) => classItem.deletedAt === null)[0]?.id || '';
-      subjectId = $dbStore.subjects.filter((subjectItem) => subjectItem.deletedAt === null)[0]?.id || '';
-      packageId = $dbStore.packages.filter((packageItem) => packageItem.deletedAt === null && packageItem.active !== false)[0]?.id || '';
+      classId = $classStore.filter((classItem) => classItem.deletedAt === null)[0]?.id || '';
+      subjectId = $subjectStore.filter((subjectItem) => subjectItem.deletedAt === null)[0]?.id || '';
+      packageId = $packageStore.filter((packageItem) => packageItem.deletedAt === null && packageItem.active !== false)[0]?.id || '';
       parentName = '';
       parentPhone = '';
       fullAddress = '';
@@ -57,7 +55,7 @@
     previousEnrollmentId = null;
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!studentId || !classId || !subjectId || !packageId || !fullAddress.trim()) {
       toastStore.error('Semua data wajib diisi.');
       return;
@@ -74,7 +72,7 @@
       longitude: Number(longitude)
     };
 
-    const response = dbStore.saveEnrollment(payload);
+    const response = await api.enrollments.create(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();
@@ -107,7 +105,7 @@
           bind:value={classId}
           options={[
             { value: '', label: '— Pilih kelas —' },
-            ...$dbStore.classes.filter((classItem) => classItem.deletedAt === null).map((classItem) => ({ value: classItem.id, label: classItem.className }))
+            ...$classStore.filter((classItem) => classItem.deletedAt === null).map((classItem) => ({ value: classItem.id, label: classItem.className }))
           ]}
         />
       </div>
@@ -120,7 +118,7 @@
           bind:value={subjectId}
           options={[
             { value: '', label: '— Pilih mapel —' },
-            ...$dbStore.subjects.filter((subjectItem) => subjectItem.deletedAt === null).map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))
+            ...$subjectStore.filter((subjectItem) => subjectItem.deletedAt === null).map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))
           ]}
         />
       </div>
@@ -134,24 +132,24 @@
         bind:value={packageId}
         options={[
           { value: '', label: '— Pilih paket les —' },
-          ...$dbStore.packages.filter((packageItem) => packageItem.deletedAt === null && packageItem.active).map((packageItem) => ({ value: packageItem.id, label: `${packageItem.name} (${packageItem.mode} · Rp ${packageItem.price.toLocaleString('id-ID')})` }))
+          ...$packageStore.filter((packageItem) => packageItem.deletedAt === null && packageItem.active).map((packageItem) => ({ value: packageItem.id, label: `${packageItem.name} (${packageItem.mode} · Rp ${packageItem.price.toLocaleString('id-ID')})` }))
         ]}
       />
     </div>
 
     <div class="form-grid">
       <div class="field">
-        <label for="f_parentName">Nama Wali</label>
+        <label for="f_parentName">Nama Orang Tua</label>
         <Input
           id="f_parentName"
           type="text"
-          placeholder="Nama orang tua / wali"
+          placeholder="Nama orang tua"
           bind:value={parentName}
         />
       </div>
 
       <div class="field">
-        <label for="f_parentPhone">Telepon Wali</label>
+        <label for="f_parentPhone">Telepon Orang Tua</label>
         <Input
           id="f_parentPhone"
           type="tel"

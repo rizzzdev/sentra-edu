@@ -1,11 +1,10 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { Subject } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
+  import { Modal } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { Subject } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let editingSubject: Subject | null = null;
@@ -22,7 +21,7 @@
     description = '';
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!name.trim()) {
       toastStore.error('Nama mata pelajaran wajib diisi.');
       return;
@@ -34,7 +33,7 @@
       description: description.trim()
     };
 
-    const response = dbStore.saveSubject(payload);
+    const response = await api.subjects.create(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();

@@ -1,6 +1,5 @@
 import { writable } from 'svelte/store';
-import type { User, UserRole } from '$lib/shared/types/common.types';
-import { dbStore } from '$lib/shared/stores/db-store';
+import type { User, UserRole } from '$lib/shared/types';
 import { goto } from '$app/navigation';
 
 export function getRoleDefaultPath(role?: UserRole | null): string {
@@ -8,12 +7,10 @@ export function getRoleDefaultPath(role?: UserRole | null): string {
     case 'SUPER_ADMIN': return '/admin';
     case 'TENTOR': return '/tutor';
     case 'STUDENT': return '/student';
-    case 'WALI_MURID': return '/parent';
+    case 'PARENT': return '/parent';
     default: return '/admin';
   }
 }
-
-// ── Session cookie reader ────────────────────────────────
 
 function readSessionCookie(): { id: string; email: string; fullName: string; role: UserRole } | null {
   if (typeof window === 'undefined') return null;
@@ -29,27 +26,23 @@ function readSessionCookie(): { id: string; email: string; fullName: string; rol
 function createAuthStore() {
   const currentUser = writable<User | null>(null);
 
-  // On init: read session cookie → load user from db-store
+  // On init: read session cookie → fetch user from API
   if (typeof window !== 'undefined') {
     const session = readSessionCookie();
     if (session?.id) {
-      // Use partial session data first to prevent premature login redirects
       currentUser.set(session as User);
-      
-      const dbSnapshot = dbStore.getSnapshot();
-      const user = dbSnapshot.users.find((userItem) => userItem.id === session.id && userItem.deletedAt === null);
-      if (user) currentUser.set(user);
+
+      // Fetch full user data from API
+      fetch('/api/users', { credentials: 'include' })
+        .then((r) => r.json())
+        .then((result) => {
+          if (!result.error && result.data) {
+            const user = result.data.find((u: any) => u.id === session.id && u.deletedAt === null);
+            if (user) currentUser.set(user);
+          }
+        });
     }
   }
-
-  // Re-derive user from db-store when it updates
-  dbStore.subscribe((databaseSnapshot) => {
-    const session = readSessionCookie();
-    if (session?.id) {
-      const user = databaseSnapshot.users.find((userItem) => userItem.id === session.id && userItem.deletedAt === null);
-      currentUser.set(user || (session as User));
-    }
-  });
 
   return {
     subscribe: currentUser.subscribe,
@@ -67,9 +60,7 @@ function createAuthStore() {
           return { error: true, statusCode: result.statusCode, message: result.message, data: null };
         }
 
-        // Set current user
         currentUser.set(result.data);
-
         return {
           error: false,
           statusCode: 200,
@@ -92,12 +83,14 @@ function createAuthStore() {
       }
     },
 
-    refreshFromCookie: () => {
+    refreshFromCookie: async () => {
       const session = readSessionCookie();
       if (session?.id) {
-        const dbSnapshot = dbStore.getSnapshot();
-        const user = dbSnapshot.users.find((userItem) => userItem.id === session.id && userItem.deletedAt === null);
-        currentUser.set(user || (session as User));
+        const result = await fetch('/api/users', { credentials: 'include' }).then((r) => r.json());
+        if (!result.error && result.data) {
+          const user = result.data.find((u: any) => u.id === session.id && u.deletedAt === null);
+          currentUser.set(user || (session as User));
+        }
       } else {
         currentUser.set(null);
       }

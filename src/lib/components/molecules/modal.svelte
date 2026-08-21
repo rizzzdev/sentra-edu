@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
+  import { Icon } from '$lib/components/atoms';
 
   export let title: string = '';
   export let icon: string = 'edit_note';

@@ -1,14 +1,12 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { authStore } from '$lib/shared/stores/auth-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
-  import type { User } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+import { userStore, subjectStore, packageStore, enrollmentStore, attendanceStore, payrollStore } from '$lib/api';
+  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {authStore, toastStore} from '$lib/shared/stores';
+  import { formatCurrencyIDR } from '$lib/shared/utils';
+  import type { User } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let tentor: User | null = null;
@@ -22,7 +20,7 @@
   let selectedMonth: string = String(now.getMonth() + 1);
   let selectedYear: number = now.getFullYear();
 
-  $: tentors = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'TENTOR' && userItem.isActive);
+  $: tentors = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'TENTOR' && userItem.isActive);
 
   $: if (tentor) {
     selectedTentorId = tentor.id;
@@ -51,17 +49,17 @@
   }));
 
   function getTentorSessionCount(targetTentorId: string): { count: number; total: number } {
-    const existingClaimedIds = $dbStore.payrollClaims
+    const existingClaimedIds = $payrollStore
       .filter((claimItem) => claimItem.deletedAt === null && claimItem.status !== 'REJECTED')
       .flatMap((claimItem) => claimItem.attendanceIds);
 
-    const attendances = $dbStore.attendances.filter(
+    const attendances = $attendanceStore.filter(
       (attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.tentorId === targetTentorId && attendanceItem.status === 'APPROVED' && !existingClaimedIds.includes(attendanceItem.id)
     );
 
     const total = attendances.reduce((sum, attendanceItem) => {
-      const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
-      const packagePlan = enrollmentItem ? $dbStore.packages.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
+      const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
+      const packagePlan = enrollmentItem ? $packageStore.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
       return sum + (packagePlan ? packagePlan.tentorFee : 100000);
     }, 0);
 
@@ -70,8 +68,8 @@
 
   // Detail sesi yang akan diklaim
   $: pendingAttendances = selectedTentorId
-    ? $dbStore.attendances.filter((attendanceItem) => {
-        const existingClaimedIds = $dbStore.payrollClaims
+    ? $attendanceStore.filter((attendanceItem) => {
+        const existingClaimedIds = $payrollStore
           .filter((claimItem) => claimItem.deletedAt === null && claimItem.status !== 'REJECTED')
           .flatMap((claimItem) => claimItem.attendanceIds);
         return attendanceItem.deletedAt === null && attendanceItem.tentorId === selectedTentorId && attendanceItem.status === 'APPROVED' && !existingClaimedIds.includes(attendanceItem.id);
@@ -79,32 +77,32 @@
     : [];
 
   $: sessionTotal = pendingAttendances.reduce((sum, attendanceItem) => {
-    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
-    const packagePlan = enrollmentItem ? $dbStore.packages.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
+    const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
+    const packagePlan = enrollmentItem ? $packageStore.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
     return sum + (packagePlan ? packagePlan.tentorFee : 100000);
   }, 0);
 
   function getStudentName(enrollmentId: string): string {
-    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === enrollmentId);
     if (!enrollmentItem) return '—';
-    const studentUser = $dbStore.users.find((userItem) => userItem.id === enrollmentItem.studentId);
+    const studentUser = $userStore.find((userItem) => userItem.id === enrollmentItem.studentId);
     return studentUser?.fullName || '—';
   }
 
   function getSubjectName(enrollmentId: string): string {
-    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
+    const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === enrollmentId);
     if (!enrollmentItem) return '—';
-    const subjectItem = $dbStore.subjects.find((subject) => subject.id === enrollmentItem.subjectId);
+    const subjectItem = $subjectStore.find((subject) => subject.id === enrollmentItem.subjectId);
     return subjectItem?.name || '—';
   }
 
   function getFee(enrollmentId: string): number {
-    const enrollmentItem = $dbStore.enrollments.find((enrollment) => enrollment.id === enrollmentId);
-    const packagePlan = enrollmentItem ? $dbStore.packages.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
+    const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === enrollmentId);
+    const packagePlan = enrollmentItem ? $packageStore.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
     return packagePlan ? packagePlan.tentorFee : 100000;
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!selectedTentorId) {
       toastStore.error('Pilih tentor terlebih dahulu.');
       return;
@@ -127,7 +125,7 @@
       attendanceIds
     };
 
-    const response = dbStore.submitPayrollClaim(payload);
+    const response = await api.payroll.create(payload);
     if (!response.error) {
       toastStore.success('Klaim honor berhasil dibuat. Segera proses pembayaran.');
       onClose();

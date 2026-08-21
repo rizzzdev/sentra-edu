@@ -1,13 +1,12 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { MagicLinkRegistration } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
-  import { MagicLinkSchema } from '$lib/features/student-enrollment/schemas/student-enrollment.schema';
+import { classStore, packageStore } from '$lib/api';
+  import { Icon, Input } from '$lib/components/atoms';
+  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import {toastStore} from '$lib/shared/stores';
+  import type { MagicLinkRegistration } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { MagicLinkSchema } from '$lib/features/student-enrollment';
+  import { api } from '$lib/api/client';
   import { ZodError } from 'zod';
 
   export let open: boolean = false;
@@ -32,7 +31,7 @@
     }
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     try {
       const payload = MagicLinkSchema.parse({
         title: title.trim(),
@@ -42,7 +41,7 @@
         packageId: selectedPackageId || undefined,
       });
 
-      const response = dbStore.createMagicLink(payload);
+      const response = await api.magicLinks.create(payload);
 
       if (!response.error && response.data) {
         generatedLink = response.data;
@@ -183,7 +182,7 @@
               bind:value={selectedClassId}
               options={[
                 { value: '', label: '-- Semua Kelas (Terbuka) --' },
-                ...$dbStore.classes.map((classItem) => ({ value: classItem.id, label: classItem.className }))
+                ...$classStore.map((classItem) => ({ value: classItem.id, label: classItem.className }))
               ]}
             />
           </div>
@@ -195,7 +194,7 @@
               bind:value={selectedPackageId}
               options={[
                 { value: '', label: '-- Tanpa Preset Paket --' },
-                ...$dbStore.packages.map((packageItem) => ({ value: packageItem.id, label: `${packageItem.name} (${packageItem.mode})` }))
+                ...$packageStore.map((packageItem) => ({ value: packageItem.id, label: `${packageItem.name} (${packageItem.mode})` }))
               ]}
             />
           </div>

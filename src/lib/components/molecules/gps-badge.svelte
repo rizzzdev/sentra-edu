@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
+  import { Icon } from '$lib/components/atoms';
 
   export let distanceInMeters: number | null = null;
   export let isValidRadius: boolean = true;

@@ -1,13 +1,11 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { ClassLevel } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import CurrencyInput from '$lib/components/atoms/currency-input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+import { educationLevelStore } from '$lib/api';
+  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { ClassLevel } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let editingClass: ClassLevel | null = null;
@@ -15,22 +13,19 @@
 
   let className: string = '';
   let educationLevelId: string = '';
-  let baseRatePer90Min: number = 100000;
   let description: string = '';
 
   $: if (editingClass) {
     className = editingClass.className;
     educationLevelId = editingClass.educationLevelId;
-    baseRatePer90Min = editingClass.baseRatePer90Min;
     description = editingClass.description || '';
   } else {
     className = '';
-    educationLevelId = $dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null)[0]?.id || '';
-    baseRatePer90Min = 100000;
+    educationLevelId = $educationLevelStore.filter((levelItem) => levelItem.deletedAt === null)[0]?.id || '';
     description = '';
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!className.trim() || !educationLevelId) {
       toastStore.error('Nama kelas dan jenjang wajib diisi.');
       return;
@@ -40,11 +35,10 @@
       id: editingClass ? editingClass.id : undefined,
       className: className.trim(),
       educationLevelId,
-      baseRatePer90Min: Number(baseRatePer90Min),
       description: description.trim()
     };
 
-    const response = dbStore.saveClassLevel(payload);
+    const response = await api.classes.create(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();
@@ -54,7 +48,7 @@
   }
 </script>
 
-<Modal {open} {onClose} title={editingClass ? 'Ubah Honor Kelas' : 'Tambah Kelas'} icon="school" maxWidth="500px">
+<Modal {open} {onClose} title={editingClass ? 'Ubah Kelas' : 'Tambah Kelas'} icon="school" maxWidth="500px">
   <form id="form-class" on:submit|preventDefault={handleSubmit}>
     <div class="field">
       <label for="f_className">Nama Kelas <i class="req">*</i></label>
@@ -75,16 +69,8 @@
         bind:value={educationLevelId}
         options={[
           { value: '', label: '— Pilih jenjang —' },
-          ...$dbStore.educationLevels.filter((levelItem) => levelItem.deletedAt === null).map((levelItem) => ({ value: levelItem.id, label: levelItem.levelName }))
+          ...$educationLevelStore.filter((levelItem) => levelItem.deletedAt === null).map((levelItem) => ({ value: levelItem.id, label: levelItem.levelName }))
         ]}
-      />
-    </div>
-
-    <div class="field">
-      <label for="f_baseRatePer90Min">Tarif Dasar / 90 Menit (Rp) <i class="req">*</i></label>
-      <CurrencyInput
-        id="f_baseRatePer90Min"
-        bind:value={baseRatePer90Min}
       />
     </div>
 

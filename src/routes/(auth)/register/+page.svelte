@@ -1,16 +1,15 @@
+<!-- svelte-options runes=false -->
 <script lang="ts">
   import { page } from '$app/stores';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { themeStore } from '$lib/shared/stores/theme-store';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {themeStore} from '$lib/shared/stores';
   import { goto } from '$app/navigation';
-  import type { User } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
+  import type { User } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
 
   $: token = $page.url.searchParams.get('token') || '';
 
-  // Stepper State: Step 1 (Student Data) -> Step 2 (Wali Murid Data)
+  // Stepper State: Step 1 (Student Data) -> Step 2 (Orang Tua Data)
   let currentStep: 1 | 2 = 1;
 
   // Student Form Fields
@@ -20,21 +19,39 @@
   let studentPhone: string = '';
   let school: string = '';
 
-  // Wali Murid Form Fields
-  let isExistingWali: boolean = false;
-  let waliFullName: string = '';
-  let waliEmail: string = '';
-  let waliPassword: string = '';
-  let waliPhone: string = '';
-  let waliOccupation: string = '';
+  // Orang Tua Form Fields
+  let isExistingParent: boolean = false;
+  let parentFullName: string = '';
+  let parentEmail: string = '';
+  let parentPassword: string = '';
+  let parentPhone: string = '';
+  let parentOccupation: string = '';
   let address: string = '';
 
   let errorMessage: string | null = null;
-  let createdAccounts: { student: User; wali: User } | null = null;
+  let createdAccounts: { student: User; parent: User } | null = null;
 
-  $: tokenValidation = token
-    ? dbStore.validateMagicToken(token, $dbStore)
-    : { valid: false, message: 'Token pendaftaran tidak ditemukan.', magicLink: null };
+  let tokenValidation: { valid: boolean; message: string; magicLink: any; isLoading: boolean } = { valid: false, message: 'Memuat token...', magicLink: null, isLoading: true };
+
+  async function validateMagicTokenValue(tokenStr: string) {
+    const response = await fetch(`/api/magic-links?token=${tokenStr}`);
+    const result = await response.json();
+    if (!result.error && result.data && result.data.length > 0) {
+      const link = result.data[0];
+      const expired = new Date(link.expiresAt) < new Date();
+      tokenValidation = {
+        valid: link.active && !expired && link.targetRole === 'STUDENT',
+        message: expired ? 'Token telah kadaluarsa.' : (!link.active ? 'Token tidak aktif.' : ''),
+        magicLink: link,
+        isLoading: false
+      };
+    } else {
+      tokenValidation = { valid: false, message: 'Token pendaftaran tidak ditemukan.', magicLink: null, isLoading: false };
+    }
+  }
+
+  import { onMount } from 'svelte';
+  onMount(() => { if (token) validateMagicTokenValue(token); });
 
   function handleNextToStep2() {
     errorMessage = null;
@@ -53,32 +70,35 @@
     currentStep = 2;
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     errorMessage = null;
     createdAccounts = null;
 
-    if (!waliEmail.trim()) {
-      errorMessage = 'Email wali murid wajib diisi.';
+    if (!parentEmail.trim()) {
+      errorMessage = 'Email orang tua wajib diisi.';
       return;
     }
 
-    if (!isExistingWali) {
-      if (!waliFullName.trim()) {
-        errorMessage = 'Nama lengkap wali murid wajib diisi.';
+    if (!isExistingParent) {
+      if (!parentFullName.trim()) {
+        errorMessage = 'Nama lengkap orang tua wajib diisi.';
         return;
       }
-      if (!waliPassword || waliPassword.length < 4) {
-        errorMessage = 'Password akun wali murid minimal 4 karakter.';
+      if (!parentPassword || parentPassword.length < 4) {
+        errorMessage = 'Password akun orang tua minimal 4 karakter.';
         return;
       }
     }
 
-    if (studentEmail.trim().toLowerCase() === waliEmail.trim().toLowerCase()) {
-      errorMessage = 'Email siswa dan email wali murid harus berbeda.';
+    if (studentEmail.trim().toLowerCase() === parentEmail.trim().toLowerCase()) {
+      errorMessage = 'Email siswa dan email orang tua harus berbeda.';
       return;
     }
 
-    const response = dbStore.registerStudentViaMagicLink({
+    const response = await fetch('/api/auth/register-student', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
       token,
       studentFullName: studentFullName.trim(),
       studentEmail: studentEmail.trim(),
@@ -86,18 +106,20 @@
       studentPhone: studentPhone.trim(),
       school: school.trim(),
       address: address.trim(),
-      isExistingWali,
-      waliFullName: waliFullName.trim(),
-      waliEmail: waliEmail.trim(),
-      waliPassword,
-      waliPhone: waliPhone.trim(),
-      waliOccupation: waliOccupation.trim()
+      isExistingParent,
+      parentFullName: parentFullName.trim(),
+      parentEmail: parentEmail.trim(),
+      parentPassword,
+      parentPhone: parentPhone.trim(),
+      parentOccupation: parentOccupation.trim()
+    })
     });
+    const result = await response.json();
 
-    if (response.error || !response.data) {
-      errorMessage = response.message;
+    if (result.error || !result.data) {
+      errorMessage = result.message;
     } else {
-      createdAccounts = response.data;
+      createdAccounts = result.data;
     }
   }
 </script>
@@ -146,10 +168,10 @@
         <div>
           <h2 class="text-xl font-extrabold">Pendaftaran Berhasil!</h2>
           <p class="text-muted-fg text-sm mt-1.5">
-            {#if isExistingWali}
-              Siswa <strong>{createdAccounts.student.fullName}</strong> berhasil didaftarkan dan ditautkan ke Wali Murid <strong>{createdAccounts.wali.fullName}</strong>.
+            {#if isExistingParent}
+              Siswa <strong>{createdAccounts.student.fullName}</strong> berhasil didaftarkan dan ditautkan ke Orang Tua <strong>{createdAccounts.parent.fullName}</strong>.
             {:else}
-              Akun Siswa & Akun Wali Murid Baru telah berhasil dibuat.
+              Akun Siswa & Akun Orang Tua Baru telah berhasil dibuat.
             {/if}
             <br/><span class="text-warn font-semibold">Akun Anda sedang menunggu verifikasi dari admin sebelum bisa digunakan.</span>
           </p>
@@ -166,10 +188,10 @@
 
           <div class="p-3.5 bg-accent-soft rounded-xl">
             <div class="flex items-center gap-1.5 text-accent-strong font-bold text-xs">
-              <Icon name="family_restroom" size="xs" /> Akun Wali Murid
+              <Icon name="family_restroom" size="xs" /> Akun Orang Tua
             </div>
-            <div class="font-bold text-sm mt-1 truncate">{createdAccounts.wali.fullName}</div>
-            <div class="text-muted-fg text-xs font-mono truncate">{createdAccounts.wali.email}</div>
+            <div class="font-bold text-sm mt-1 truncate">{createdAccounts.parent.fullName}</div>
+            <div class="text-muted-fg text-xs font-mono truncate">{createdAccounts.parent.email}</div>
           </div>
         </div>
 
@@ -303,85 +325,85 @@
         </form>
 
       {:else}
-        <!-- STEP 2: DATA WALI MURID -->
+        <!-- STEP 2: DATA ORANG TUA -->
         <form on:submit|preventDefault={handleRegister} novalidate>
           <div class="pb-2 mb-3 border-b border-border">
-            <h3 class="text-base font-bold">Selanjutnya, Data Orang Tua / Wali.</h3>
-            <p class="text-muted-fg text-xs mt-0.5">Pilih status akun wali murid untuk penautan.</p>
+            <h3 class="text-base font-bold">Selanjutnya, Data Orang Tua.</h3>
+            <p class="text-muted-fg text-xs mt-0.5">Pilih status akun orang tua untuk penautan.</p>
           </div>
 
           <!-- Radio Choice Selector -->
           <div class="grid grid-cols-2 gap-2.5 mb-3.5">
             <label
-              class="flex items-center justify-center text-center px-3.5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all {isExistingWali === false ? 'border-primary bg-primary-soft text-primary-strong' : 'border-border bg-surface text-muted-fg hover:bg-muted'}"
+              class="flex items-center justify-center text-center px-3.5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all {isExistingParent === false ? 'border-primary bg-primary-soft text-primary-strong' : 'border-border bg-surface text-muted-fg hover:bg-muted'}"
             >
               <input
                 type="radio"
-                name="wali-mode"
+                name="parent-mode"
                 class="sr-only"
-                checked={isExistingWali === false}
-                on:change={() => { isExistingWali = false; }}
+                checked={isExistingParent === false}
+                on:change={() => { isExistingParent = false; }}
               />
-              Wali Baru (Buat Akun)
+              Orang Tua Baru (Buat Akun)
             </label>
 
             <label
-              class="flex items-center justify-center text-center px-3.5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all {isExistingWali === true ? 'border-primary bg-primary-soft text-primary-strong' : 'border-border bg-surface text-muted-fg hover:bg-muted'}"
+              class="flex items-center justify-center text-center px-3.5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all {isExistingParent === true ? 'border-primary bg-primary-soft text-primary-strong' : 'border-border bg-surface text-muted-fg hover:bg-muted'}"
             >
               <input
                 type="radio"
-                name="wali-mode"
+                name="parent-mode"
                 class="sr-only"
-                checked={isExistingWali === true}
-                on:change={() => { isExistingWali = true; }}
+                checked={isExistingParent === true}
+                on:change={() => { isExistingParent = true; }}
               />
-              Wali Sudah Punya Akun
+              Orang Tua Sudah Punya Akun
             </label>
           </div>
 
-          {#if isExistingWali}
+          {#if isExistingParent}
             <div class="field">
-              <label for="reg-existing-wali-email">Email Akun Wali Murid Terdaftar <i class="req">*</i></label>
+              <label for="reg-existing-parent-email">Email Akun Orang Tua Terdaftar <i class="req">*</i></label>
               <Input
                 type="email"
-                id="reg-existing-wali-email"
-                placeholder="Masukkan email wali terdaftar..."
-                bind:value={waliEmail}
+                id="reg-existing-parent-email"
+                placeholder="Masukkan email orang tua terdaftar..."
+                bind:value={parentEmail}
                 required
               />
-              <span class="help">Siswa ini akan ditautkan secara otomatis ke akun Wali Murid tersebut.</span>
+              <span class="help">Siswa ini akan ditautkan secara otomatis ke akun Orang Tua tersebut.</span>
             </div>
           {:else}
             <div class="field">
-              <label for="reg-wali-name">Nama Lengkap Wali Murid <i class="req">*</i></label>
+              <label for="reg-parent-name">Nama Lengkap Orang Tua <i class="req">*</i></label>
               <Input
                 type="text"
-                id="reg-wali-name"
-                placeholder="Nama ayah / ibu / wali..."
-                bind:value={waliFullName}
+                id="reg-parent-name"
+                placeholder="Nama ayah / ibu..."
+                bind:value={parentFullName}
                 required
               />
             </div>
 
             <div class="form-grid">
               <div class="field">
-                <label for="reg-wali-email">Email Login Wali <i class="req">*</i></label>
+                <label for="reg-parent-email">Email Login Orang Tua <i class="req">*</i></label>
                 <Input
                   type="email"
-                  id="reg-wali-email"
-                  placeholder="wali@sentraedu.id"
-                  bind:value={waliEmail}
+                  id="reg-parent-email"
+                  placeholder="parent@sentraedu.id"
+                  bind:value={parentEmail}
                   required
                 />
               </div>
 
               <div class="field">
-                <label for="reg-wali-password">Password Akun Wali <i class="req">*</i></label>
+                <label for="reg-parent-password">Password Akun Orang Tua <i class="req">*</i></label>
                 <Input
                   type="password"
-                  id="reg-wali-password"
+                  id="reg-parent-password"
                   placeholder="••••••••"
-                  bind:value={waliPassword}
+                  bind:value={parentPassword}
                   required
                 />
               </div>
@@ -389,22 +411,22 @@
 
             <div class="form-grid">
               <div class="field">
-                <label for="reg-wali-phone">No. HP / WhatsApp Wali</label>
+                <label for="reg-parent-phone">No. HP / WhatsApp Orang Tua</label>
                 <Input
                   type="text"
-                  id="reg-wali-phone"
+                  id="reg-parent-phone"
                   placeholder="081298765432"
-                  bind:value={waliPhone}
+                  bind:value={parentPhone}
                 />
               </div>
 
               <div class="field">
-                <label for="reg-wali-occ">Pekerjaan Wali Murid</label>
+                <label for="reg-parent-occ">Pekerjaan Orang Tua</label>
                 <Input
                   type="text"
-                  id="reg-wali-occ"
+                  id="reg-parent-occ"
                   placeholder="misal: Wirausaha"
-                  bind:value={waliOccupation}
+                  bind:value={parentOccupation}
                 />
               </div>
             </div>

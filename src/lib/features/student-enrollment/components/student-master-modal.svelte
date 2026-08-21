@@ -1,13 +1,12 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { User } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
-  import { StudentMasterSchema } from '$lib/features/student-enrollment/schemas/student-enrollment.schema';
+import { userStore } from '$lib/api';
+  import { Icon, Input } from '$lib/components/atoms';
+  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import {toastStore} from '$lib/shared/stores';
+  import type { User } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { StudentMasterSchema } from '$lib/features/student-enrollment';
+  import { api } from '$lib/api/client';
   import { ZodError } from 'zod';
 
   export let open: boolean = false;
@@ -19,9 +18,9 @@
   let phone: string = '';
   let school: string = '';
   let address: string = '';
-  let waliUserId: string = '';
+  let parentId: string = '';
 
-  $: waliList = $dbStore.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'WALI_MURID');
+  $: parentList = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'PARENT');
 
   $: if (open) {
     if (editingStudent) {
@@ -30,18 +29,18 @@
       phone = editingStudent.phone || '';
       school = editingStudent.school || '';
       address = editingStudent.address || '';
-      waliUserId = editingStudent.waliUserId || '';
+      parentId = editingStudent.parentId || '';
     } else {
       fullName = '';
       email = '';
       phone = '';
       school = '';
       address = '';
-      waliUserId = '';
+      parentId = '';
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     try {
       const payload = StudentMasterSchema.parse({
         id: editingStudent ? editingStudent.id : undefined,
@@ -50,10 +49,10 @@
         phone: phone.trim(),
         school: school.trim(),
         address: address.trim(),
-        waliUserId: waliUserId || undefined,
+        parentId: parentId || undefined,
       });
 
-      const response = dbStore.saveStudentMaster({
+      const response = await api.users.create({
         ...payload,
         email: payload.email.toLowerCase(),
       });
@@ -126,12 +125,12 @@
       </div>
 
       <div class="field">
-        <label for="sm-wali">Wali Murid (Master)</label>
+        <label for="sm-parent">Orang Tua (Master)</label>
         <SelectSearch
-          id="sm-wali"
-          bind:value={waliUserId}
-          placeholder="-- Tanpa Wali / Belum Ditautkan --"
-          options={waliList.map((waliUser) => ({ value: waliUser.id, label: `${waliUser.fullName} (${waliUser.phone || waliUser.email})` }))}
+          id="sm-parent"
+          bind:value={parentId}
+          placeholder="-- Tanpa Orang Tua / Belum Ditautkan --"
+          options={parentList.map((parentUser) => ({ value: parentUser.id, label: `${parentUser.fullName} (${parentUser.phone || parentUser.email})` }))}
         />
       </div>
     </div>

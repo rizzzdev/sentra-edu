@@ -1,82 +1,49 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { sql } from '$lib/server/db';
-import { getCached, setCache, invalidateCache } from '$lib/server/cache';
-import { mapApplicationRow, generateEntityId } from '$lib/server/api-helpers';
-import { isValidId, sanitizeInput } from '$lib/server/security';
+import { applicationService, requireAdmin, isValidId } from '$lib/api';
+import { generateEntityId } from '$lib/shared/utils';
 
 export const GET: RequestHandler = async ({ url }) => {
-  try {
-    const cached = getCached('applications');
-    if (cached) return json({ error: false, statusCode: 200, data: cached });
-    const rows = await sql`SELECT * FROM applications WHERE deleted_at IS NULL ORDER BY created_at DESC`;
-    const list = rows.map(mapApplicationRow);
-    setCache('applications', list);
-    return json({ error: false, statusCode: 200, data: list });
-  } catch (err_raw) {
-    const err = err_raw as Error;
-    return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
+  const page = Number(url.searchParams.get('page')) || 1;
+  const limit = Number(url.searchParams.get('limit')) || 50;
+  const result = await applicationService.findAll(page, limit);
+  return json(result);
+};
+
+export const POST: RequestHandler = async ({ request, cookies }) => {
+  const auth = requireAdmin(cookies);
+  if (!auth.allowed) return auth.error!;
+
+  const body = (await request.json()) as Record<string, any>;
+  const now = new Date();
+
+  if (body.id) {
+    const id = String(body.id);
+    if (!isValidId(id)) return json({ error: true, statusCode: 400, message: 'ID tidak valid.', data: null }, { status: 400 });
+    const result = await applicationService.update(id, { ...body, updatedAt: now });
+    return json(result);
+  } else {
+    const result = await applicationService.create({
+      id: generateEntityId('app'),
+      jobId: String(body.jobId ?? ''),
+      tentorId: String(body.tentorId ?? ''),
+      notes: body.notes ? String(body.notes) : undefined,
+      status: 'PENDING',
+      appliedAt: now.toISOString(),
+      createdAt: now,
+      updatedAt: now
+    });
+    return json(result);
   }
 };
 
-export const POST: RequestHandler = async ({ request }) => {
-  try {
-    const body = (await request.json()) as Record<string, string | number | boolean | null | undefined>;
-    const now = new Date().toISOString();
+export const DELETE: RequestHandler = async ({ url, cookies }) => {
+  const auth = requireAdmin(cookies);
+  if (!auth.allowed) return auth.error!;
 
-    if (body.id) {
-      const appId = String(body.id);
-      if (!isValidId(appId)) return json({ error: true, statusCode: 400, message: 'ID tidak valid.', data: null }, { status: 400 });
+  const id = url.searchParams.get('id');
+  if (!id || !isValidId(id)) return json({ error: true, statusCode: 400, message: 'ID wajib.', data: null }, { status: 400 });
 
-      await sql`UPDATE applications SET
-        status=${body.status ?? 'PENDING'},
-        notes=${sanitizeInput(String(body.notes ?? ''))},
-        updated_at=${now}
-      WHERE id=${appId}`;
-
-      const rows = await sql`SELECT * FROM applications WHERE id=${appId}`;
-      invalidateCache();
-      return json({ error: false, statusCode: 200, message: 'Lamaran diperbarui.', data: rows[0] ? mapApplicationRow(rows[0]) : null });
-    } else {
-      const jobId = String(body.jobId || '');
-      const tentorId = String(body.tentorId || '');
-
-      if (!jobId || !tentorId) {
-        return json({ error: true, statusCode: 400, message: 'Job ID dan Tentor ID wajib diisi.', data: null }, { status: 400 });
-      }
-
-      // Check for existing active application
-      const existing = await sql`SELECT id FROM applications WHERE job_id=${jobId} AND tentor_id=${tentorId} AND deleted_at IS NULL`;
-      if (existing.length > 0) {
-        return json({ error: true, statusCode: 409, message: 'Anda sudah pernah melamar lowongan ini.', data: null }, { status: 409 });
-      }
-
-      const id = generateEntityId('app');
-      const notes = sanitizeInput(String(body.notes ?? ''));
-
-      await sql`INSERT INTO applications (id, job_id, tentor_id, status, applied_at, notes, created_at, updated_at)
-        VALUES (${id}, ${jobId}, ${tentorId}, 'PENDING', ${now}, ${notes}, ${now}, ${now})`;
-
-      const rows = await sql`SELECT * FROM applications WHERE id=${id}`;
-      invalidateCache();
-      return json({ error: false, statusCode: 201, message: 'Lamaran berhasil dikirim.', data: rows[0] ? mapApplicationRow(rows[0]) : null });
-    }
-  } catch (err_raw) {
-    const err = err_raw as Error;
-    return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
-  }
-};
-
-export const DELETE: RequestHandler = async ({ url }) => {
-  try {
-    const id = url.searchParams.get('id');
-    if (!id || !isValidId(id)) return json({ error: true, statusCode: 400, message: 'ID wajib dan harus valid.', data: null }, { status: 400 });
-    const now = new Date().toISOString();
-    await sql`UPDATE applications SET deleted_at=${now}, updated_at=${now} WHERE id=${id}`;
-    invalidateCache();
-    return json({ error: false, statusCode: 200, message: 'Lamaran dibatalkan.', data: null });
-  } catch (err_raw) {
-    const err = err_raw as Error;
-    return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
-  }
+  const result = await applicationService.softDelete(id);
+  return json(result);
 };

@@ -1,8 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Skeleton from '$lib/components/atoms/skeleton.svelte';
-  import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
+  import { Button, Icon, Skeleton } from '$lib/components/atoms';
+  import { AlertBanner } from '$lib/components/molecules';
 
   export let loading: boolean = false;
   export let error: string | null = null;

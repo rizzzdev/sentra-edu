@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
-  import type { InvoiceRecord, User } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
+import { userStore, subjectStore, enrollmentStore } from '$lib/api';
+  import { Modal } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import { formatCurrencyIDR } from '$lib/shared/utils';
+  import type { InvoiceRecord, User } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let invoice: InvoiceRecord | null = null;
@@ -15,13 +15,13 @@
 
   let paymentProofUrl: string = '';
 
-  $: enrollment = invoice ? $dbStore.enrollments.find((enrollmentItem) => enrollmentItem.id === invoice?.enrollmentId) : null;
-  $: student = enrollment ? $dbStore.users.find((userItem) => userItem.id === enrollment?.studentId) : null;
-  $: subject = enrollment ? $dbStore.subjects.find((subjectItem) => subjectItem.id === enrollment?.subjectId) : null;
+  $: enrollment = invoice ? $enrollmentStore.find((enrollmentItem) => enrollmentItem.id === invoice?.enrollmentId) : null;
+  $: student = enrollment ? $userStore.find((userItem) => userItem.id === enrollment?.studentId) : null;
+  $: subject = enrollment ? $subjectStore.find((subjectItem) => subjectItem.id === enrollment?.subjectId) : null;
 
-  function handleConfirmPayment() {
+  async function handleConfirmPayment() {
     if (!invoice) return;
-    const response = dbStore.confirmInvoicePayment(invoice.id, paymentProofUrl.trim() || 'https://');
+    const response = await api.invoices.update(invoice.id, paymentProofUrl.trim() || 'https://');
     if (!response.error) {
       toastStore.success('Pembayaran tagihan SPP berhasil dikonfirmasi lunas!');
       onClose();

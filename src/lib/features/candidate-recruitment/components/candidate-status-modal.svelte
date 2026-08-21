@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { RecruitmentCandidate, CandidateStatus } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+  import { Modal } from '$lib/components/molecules';
+  import { Icon } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { RecruitmentCandidate, CandidateStatus } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { SelectSearch } from '$lib/components/molecules';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let candidate: RecruitmentCandidate | null = null;
@@ -19,10 +19,10 @@
     notes = candidate.notes || '';
   }
 
-  function handleUpdateStatus() {
+  async function handleUpdateStatus() {
     if (!candidate) return;
-    const response = dbStore.saveCandidate({
-      ...candidate,
+    const response = await api.candidates.update({
+      id: candidate.id,
       status: status as CandidateStatus,
       notes: notes.trim()
     });
@@ -34,9 +34,14 @@
     }
   }
 
-  function handleConvertToTentor() {
+  async function handleConvertToTentor() {
     if (!candidate) return;
-    const response = dbStore.convertCandidateToTentorUser(candidate.id);
+    const response = await api.users.create({
+      fullName: candidate.fullName,
+      email: candidate.email,
+      role: 'TENTOR',
+      password: 'tentor123'
+    });
     if (!response.error) {
       toastStore.success(response.message);
       onClose();

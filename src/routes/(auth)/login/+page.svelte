@@ -1,11 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { authStore, getRoleDefaultPath } from '$lib/shared/stores/auth-store';
-  import { themeStore } from '$lib/shared/stores/theme-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
+  import { Icon, Input } from '$lib/components/atoms';
+  import { authStore, getRoleDefaultPath, themeStore, toastStore } from '$lib/shared/stores';
   import { goto } from '$app/navigation';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
+  import { Button } from '$lib/components/atoms';
 
   let emailInput: string = '';
   let passwordInput: string = '';

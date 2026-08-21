@@ -1,13 +1,11 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { User, UserRole } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
-  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
+  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { User, UserRole } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { ROLE_LABEL } from '$lib/shared/utils';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let editingUser: User | null = null;
@@ -36,7 +34,7 @@
     isActive = 'true';
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!fullName.trim() || !email.trim()) {
       toastStore.error('Nama lengkap dan email wajib diisi.');
       return;
@@ -57,7 +55,7 @@
       payload.password = 'password123';
     }
 
-    const response = dbStore.saveUser(payload);
+    const response = await api.users.create(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();

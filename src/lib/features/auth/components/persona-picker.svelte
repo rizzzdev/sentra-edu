@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { authStore } from '$lib/shared/stores/auth-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
+  import { Icon } from '$lib/components/atoms';
+  import { authStore, toastStore } from '$lib/shared/stores';
   import { goto } from '$app/navigation';
 
   interface PersonaOption {
@@ -39,11 +38,11 @@
       toneColor: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800'
     },
     {
-      role: 'WALI_MURID',
+      role: 'PARENT',
       icon: 'family_restroom',
-      label: 'Wali Murid',
+      label: 'Orang Tua',
       description: 'Pantau les anak & bayar tagihan SPP',
-      email: 'wali.raka@sentraedu.id',
+      email: 'parent.raka@sentraedu.id',
       toneColor: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800'
     }
   ];

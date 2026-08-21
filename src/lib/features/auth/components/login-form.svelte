@@ -1,11 +1,9 @@
 <script lang="ts">
-  import FormField from '$lib/components/molecules/form-field.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import Button from '$lib/components/atoms/button.svelte';
-  import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
-  import { authStore } from '$lib/shared/stores/auth-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import { LoginSchema } from '$lib/features/auth/schemas/login.schema';
+  import { FormField } from '$lib/components/molecules';
+  import { Button, Input } from '$lib/components/atoms';
+  import { AlertBanner } from '$lib/components/molecules';
+  import { authStore, toastStore } from '$lib/shared/stores';
+  import { LoginSchema } from '$lib/features/auth';
   import { goto } from '$app/navigation';
 
   let emailInput: string = '';

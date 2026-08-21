@@ -1,13 +1,12 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { User } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
-  import { TentorMasterSchema } from '$lib/features/master-data/schemas/master-data.schema';
+import { subjectStore } from '$lib/api';
+  import { Icon, Input } from '$lib/components/atoms';
+  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import {toastStore} from '$lib/shared/stores';
+  import type { User } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { TentorMasterSchema } from '$lib/features/master-data';
+  import { api } from '$lib/api/client';
   import { ZodError } from 'zod';
 
   export let open: boolean = false;
@@ -39,7 +38,7 @@
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     try {
       const payload = TentorMasterSchema.parse({
         id: editingTentor ? editingTentor.id : undefined,
@@ -51,7 +50,7 @@
         address: address.trim(),
       });
 
-      const response = dbStore.saveTentorMaster({
+      const response = await api.users.create({
         ...payload,
         email: payload.email.toLowerCase(),
       });
@@ -129,7 +128,7 @@
         multiple
         bind:value={selectedSubjectIds}
         placeholder="Pilih mata pelajaran..."
-        options={$dbStore.subjects.map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))}
+        options={$subjectStore.map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))}
       />
     </div>
 

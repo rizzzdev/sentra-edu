@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
-  import type { PayrollClaim } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
+import { userStore, notificationStore } from '$lib/api';
+  import { Modal } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import { formatCurrencyIDR } from '$lib/shared/utils';
+  import type { PayrollClaim } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let claim: PayrollClaim | null = null;
@@ -14,14 +14,14 @@
 
   let transferProofUrl: string = '';
 
-  $: tentor = claim ? $dbStore.users.find((userItem) => userItem.id === claim?.tentorId) : null;
+  $: tentor = claim ? $userStore.find((userItem) => userItem.id === claim?.tentorId) : null;
 
-  function handleProcessPayment() {
+  async function handleProcessPayment() {
     if (!claim) return;
-    const response = dbStore.processPayrollPayment(claim.id, transferProofUrl.trim() || 'https://');
+    const response = await api.payroll.update(claim.id, { id: claim.id, transferProofUrl: transferProofUrl.trim() || 'https://' });
     if (!response.error) {
       if (tentor) {
-        dbStore.pushNotification(
+        notificationStore.pushNotification(
           tentor.id,
           'Honor Sesi Telah Ditransfer',
           `Klaim honor ${claim.claimNumber} sebesar ${formatCurrencyIDR(claim.totalAmount)} telah berhasil dibayarkan.`,

@@ -1,16 +1,16 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { themeStore } from '$lib/shared/stores/theme-store';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import type { User } from '$lib/shared/types/common.types';
-  import { ROLE_LABEL } from '$lib/shared/utils/status-map';
+import { notificationStore } from '$lib/api';
+  import { Icon } from '$lib/components/atoms';
+  import {themeStore} from '$lib/shared/stores';
+  import type { User } from '$lib/shared/types';
+  import { ROLE_LABEL } from '$lib/shared/utils';
 
   export let currentUser: User;
   export let title: string = 'Dashboard';
   export let onToggleMobileMenu: () => void = () => {};
   export let onOpenNotifications: () => void = () => {};
 
-  $: unreadCount = ($dbStore.notifications || []).filter(
+  $: unreadCount = ($notificationStore || []).filter(
     (item) => item.userId === currentUser.id && !item.read
   ).length;
 </script>

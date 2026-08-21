@@ -1,13 +1,12 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { User, JobPost, Enrollment } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
-  import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
+import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '$lib/api';
+  import { LeafletMap, Modal } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { User, JobPost, Enrollment } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { SelectSearch } from '$lib/components/molecules';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let tentor: User;
@@ -37,7 +36,7 @@
     const seenJobIds = new Set<string>();
 
     // 1. Assigned Jobs
-    const assignedJobs = $dbStore.jobs.filter(
+    const assignedJobs = $jobStore.filter(
       (jobItem) => jobItem.deletedAt === null && jobItem.assignedTentorId === tentor.id && jobItem.status === 'ASSIGNED'
     );
 
@@ -57,7 +56,7 @@
         : (job.studentId ? [job.studentId] : []);
       const studentNames = Array.isArray(job.studentNames) && job.studentNames.length > 0
         ? job.studentNames
-        : ($dbStore.users.filter((userItem) => studentIds.includes(userItem.id)).map((userItem) => userItem.fullName));
+        : ($userStore.filter((userItem) => studentIds.includes(userItem.id)).map((userItem) => userItem.fullName));
 
       const isOfflineMode = Boolean(job.location && !job.location.toLowerCase().includes('online'));
 
@@ -81,12 +80,12 @@
     }
 
     // 2. Direct Active Enrollments
-    const directEnrollments = $dbStore.enrollments.filter(
+    const directEnrollments = $enrollmentStore.filter(
       (enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.tentorId === tentor.id && enrollmentItem.status === 'ACTIVE'
     );
     for (const enr of directEnrollments) {
       if (enr.id && seenJobIds.has(enr.id)) continue;
-      const student = $dbStore.users.find((userItem) => userItem.id === enr.studentId);
+      const student = $userStore.find((userItem) => userItem.id === enr.studentId);
       const isOfflineMode = Boolean(enr.latitude !== null && enr.longitude !== null);
 
       list.push({
@@ -153,27 +152,27 @@
   $: subjectOptions = (() => {
     if (!currentJobOption) return [];
     if (currentJobOption.subjectIds.length > 0) {
-      return $dbStore.subjects
+      return $subjectStore
         .filter((subjectItem) => currentJobOption?.subjectIds.includes(subjectItem.id))
         .map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }));
     }
-    return $dbStore.subjects.map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }));
+    return $subjectStore.map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }));
   })();
 
   $: classOptions = (() => {
     if (!currentJobOption) return [];
     if (currentJobOption.classIds.length > 0) {
-      return $dbStore.classes
+      return $classStore
         .filter((classItem) => currentJobOption?.classIds.includes(classItem.id))
         .map((classItem) => ({ value: classItem.id, label: classItem.className }));
     }
-    return $dbStore.classes.map((classItem) => ({ value: classItem.id, label: classItem.className }));
+    return $classStore.map((classItem) => ({ value: classItem.id, label: classItem.className }));
   })();
 
   $: studentOptions = (() => {
     if (!currentJobOption) return [];
     if (currentJobOption.studentIds.length > 0) {
-      return $dbStore.users
+      return $userStore
         .filter((userItem) => currentJobOption?.studentIds.includes(userItem.id))
         .map((userItem) => ({ value: userItem.id, label: userItem.fullName }));
     }
@@ -221,7 +220,7 @@
     );
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!currentJobOption) {
       toastStore.error('Pilih lowongan les terlebih dahulu.');
       return;
@@ -248,7 +247,7 @@
     const studentIdsResolved: string[] = [];
 
     for (const val of selectedStudentIds) {
-      const userFound = $dbStore.users.find((userItem) => userItem.id === val);
+      const userFound = $userStore.find((userItem) => userItem.id === val);
       if (userFound) {
         studentIdsResolved.push(userFound.id);
         studentNamesResolved.push(userFound.fullName);
@@ -277,7 +276,7 @@
       isRadiusValid: true
     };
 
-    const response = dbStore.submitAttendance(payload);
+    const response = await api.attendances.create(payload);
     if (!response.error) {
       toastStore.success('Presensi les berhasil dikirim untuk verifikasi admin.');
       onClose();

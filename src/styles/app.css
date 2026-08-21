@@ -33,6 +33,13 @@
   --color-teal-soft: var(--teal-soft);
   --color-topbar-bg: var(--topbar-bg);
   --color-row-hover: var(--row-hover);
+
+  /* 4px Grid Radius Tokens (PRD §7.1) */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
 }
 
 /* ============================================================
@@ -55,6 +62,7 @@
   --border: #E2E8F0;
   --danger: #E11D48;
   --danger-soft: #FFE4E6;
+  --danger-hover: #FECDD3;
   --success: #059669;
   --success-soft: #D1FAE5;
   --warn: #D97706;
@@ -63,18 +71,11 @@
   --violet-soft: #EDE9FE;
   --teal: #0D9488;
   --teal-soft: #CCFBF1;
-  --radius: 14px;
-  --radius-xs: 8px;
-  --radius-sm: 10px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --topbar-bg: rgba(255,255,255,.85);
+  --row-hover: #FAFCFF;
   --shadow-sm: 0 1px 2px rgba(15,23,42,.05);
   --shadow-md: 0 6px 20px rgba(15,23,42,.08);
   --shadow-lg: 0 24px 60px rgba(15,23,42,.25);
-  --topbar-bg: rgba(255,255,255,.85);
-  --row-hover: #FAFCFF;
-  --danger-hover: #FECDD3;
-  --warn-strong: #92400E;
   color-scheme: light;
 }
 
@@ -175,6 +176,45 @@ body {
   font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 .mat.filled { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+
+/* ============================================================
+   @utility — Grouped Tailwind Utilities (PRD §7.2, DRY Principle)
+   ============================================================ */
+
+/* Container Responsive */
+@utility container-responsive {
+  @apply w-full px-4 mx-auto sm:px-6 md:px-8 lg:max-w-6xl xl:max-w-7xl;
+}
+
+/* Card Base */
+@utility card-base {
+  @apply bg-surface border border-border rounded-xl p-4 sm:p-6 shadow-sm;
+}
+
+/* Button Primary Layout */
+@utility button-primary-layout {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+/* Input Field Base */
+@utility input-field-base {
+  @apply w-full h-10 px-3 py-2 text-sm bg-surface border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+/* Table Row (4px padding) */
+@utility table-row-base {
+  @apply py-3 px-4 border-b border-muted align-middle;
+}
+
+/* Action Button Group (right-aligned, PRD §7.5) */
+@utility action-buttons {
+  @apply flex gap-1 justify-end;
+}
+
+/* Empty State (PRD §7.5 — consistent empty state pattern) */
+@utility empty-state-display {
+  @apply text-center py-12 px-4 text-muted-fg;
+}
 
 /* ============================================================
    SHARED COMPOSITE COMPONENT CLASSES (Grouped Tailwind Utilities)
@@ -423,10 +463,10 @@ table.tbl { @apply w-full border-collapse text-sm; }
 
 /* Modal */
 .modal-overlay {
-  @apply fixed inset-0 bg-black/45 z-50 flex items-start justify-center p-4 sm:p-8 overflow-y-auto;
+  @apply fixed inset-0 bg-black/45 z-50 flex items-center justify-center p-4 sm:p-8 md:p-12 lg:p-16 overflow-y-auto;
 }
 .modal {
-  @apply bg-surface rounded-2xl w-full shadow-lg;
+  @apply bg-surface rounded-2xl w-full shadow-lg my-auto;
 }
 .modal-head {
   @apply flex items-center justify-between p-4 px-5 border-b border-muted;
@@ -434,7 +474,7 @@ table.tbl { @apply w-full border-collapse text-sm; }
 .modal-title { @apply flex items-center gap-2.5 font-bold text-base; }
 .modal-title .mat { @apply text-primary; }
 .modal-x { @apply bg-transparent border-0 text-muted-fg p-1 rounded-lg cursor-pointer hover:bg-muted hover:text-fg; }
-.modal-body { @apply p-5 max-h-[62vh] overflow-y-auto; }
+.modal-body { @apply p-5 max-h-[70vh] overflow-y-auto; }
 .modal-foot {
   @apply flex justify-end gap-3 p-4 px-5 border-t border-muted;
 }

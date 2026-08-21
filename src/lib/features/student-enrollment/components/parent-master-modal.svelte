@@ -1,16 +1,15 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { User } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import { WaliMasterSchema } from '$lib/features/student-enrollment/schemas/student-enrollment.schema';
+  import { Icon, Input } from '$lib/components/atoms';
+  import { Modal } from '$lib/components/molecules';
+  import {toastStore} from '$lib/shared/stores';
+  import type { User } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
+  import { ParentMasterSchema } from '$lib/features/student-enrollment';
   import { ZodError } from 'zod';
 
   export let open: boolean = false;
-  export let editingWali: User | null = null;
+  export let editingParent: User | null = null;
   export let onClose: () => void = () => {};
 
   let fullName: string = '';
@@ -20,12 +19,12 @@
   let address: string = '';
 
   $: if (open) {
-    if (editingWali) {
-      fullName = editingWali.fullName;
-      email = editingWali.email;
-      phone = editingWali.phone || '';
-      occupation = editingWali.occupation || '';
-      address = editingWali.address || '';
+    if (editingParent) {
+      fullName = editingParent.fullName;
+      email = editingParent.email;
+      phone = editingParent.phone || '';
+      occupation = editingParent.occupation || '';
+      address = editingParent.address || '';
     } else {
       fullName = '';
       email = '';
@@ -35,10 +34,10 @@
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     try {
-      const payload = WaliMasterSchema.parse({
-        id: editingWali ? editingWali.id : undefined,
+      const payload = ParentMasterSchema.parse({
+        id: editingParent ? editingParent.id : undefined,
         fullName: fullName.trim(),
         email: email.trim(),
         phone: phone.trim(),
@@ -46,9 +45,10 @@
         address: address.trim(),
       });
 
-      const response = dbStore.saveWaliMaster({
+      const response = await api.users.create({
         ...payload,
         email: payload.email.toLowerCase(),
+        role: 'PARENT'
       });
 
       if (!response.error) {
@@ -69,12 +69,12 @@
 
 <Modal
   {open}
-  title={editingWali ? 'Ubah Data Wali Murid' : 'Tambah Data Wali Murid'}
+  title={editingParent ? 'Ubah Data Orang Tua' : 'Tambah Data Orang Tua'}
   {onClose}
 >
   <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-5 py-2">
     <div class="field">
-      <label for="wm-name">Nama Lengkap Wali Murid <i class="req">*</i></label>
+      <label for="wm-name">Nama Lengkap Orang Tua <i class="req">*</i></label>
       <Input
         type="text"
         id="wm-name"
@@ -86,11 +86,11 @@
 
     <div class="form-grid">
       <div class="field">
-        <label for="wm-email">Email Wali Murid <i class="req">*</i></label>
+        <label for="wm-email">Email Orang Tua <i class="req">*</i></label>
         <Input
           type="email"
           id="wm-email"
-          placeholder="wali@sentraedu.id"
+          placeholder="parent@sentraedu.id"
           bind:value={email}
           required
         />
@@ -122,7 +122,7 @@
       <Input
         type="text"
         id="wm-address"
-        placeholder="Alamat tempat tinggal wali murid..."
+        placeholder="Alamat tempat tinggal orang tua..."
         bind:value={address}
       />
     </div>
@@ -132,7 +132,7 @@
         Batal
       </Button>
       <Button type="submit" variant="primary" icon="save">
-        {editingWali ? 'Simpan Perubahan' : 'Tambah Wali Murid'}
+        {editingParent ? 'Simpan Perubahan' : 'Tambah Orang Tua'}
       </Button>
     </div>
   </form>

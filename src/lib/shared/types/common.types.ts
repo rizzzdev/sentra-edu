@@ -15,7 +15,7 @@ export interface Pagination {
 }
 
 // User & Role Domain Types
-export type UserRole = 'SUPER_ADMIN' | 'TENTOR' | 'STUDENT' | 'WALI_MURID';
+export type UserRole = 'SUPER_ADMIN' | 'TENTOR' | 'STUDENT' | 'PARENT';
 
 export interface BaseEntity {
   id: string;
@@ -41,7 +41,7 @@ export interface User extends BaseEntity {
   latitude?: number | null;
   longitude?: number | null;
   occupation?: string;
-  waliUserId?: string;
+  parentId?: string;
   isActive?: boolean;
   candidateStatus?: CandidateStatus;
 }
@@ -54,7 +54,6 @@ export interface EducationLevel extends BaseEntity {
 export interface ClassLevel extends BaseEntity {
   className: string;
   educationLevelId: string;
-  baseRatePer90Min: number;
   description: string;
 }
 
@@ -87,7 +86,7 @@ export interface Enrollment extends BaseEntity {
   address?: string;
   latitude?: number;
   longitude?: number;
-  waliUserId?: string;
+  parentId?: string;
 }
 
 export type StudentEnrollment = Enrollment;

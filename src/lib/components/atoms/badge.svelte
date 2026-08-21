@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
+  import { Icon } from '$lib/components/atoms';
 
   export let variant:
     | 'primary'
@@ -11,7 +11,7 @@
     | 'role-admin'
     | 'role-tentor'
     | 'role-student'
-    | 'role-wali' = 'neutral';
+    | 'role-parent' = 'neutral';
   export let size: 'sm' | 'md' = 'sm';
   export let icon: string | undefined = undefined;
   export let className: string = '';
@@ -26,7 +26,7 @@
     'role-admin': 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold',
     'role-tentor': 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold',
     'role-student': 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold',
-    'role-wali': 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold'
+    'role-parent': 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold'
   };
 
   const sizeClassMap: Record<string, string> = {

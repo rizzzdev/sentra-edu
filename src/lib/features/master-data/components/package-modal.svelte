@@ -1,13 +1,10 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { PackagePlan } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import CurrencyInput from '$lib/components/atoms/currency-input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { CurrencyInput, Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { PackagePlan } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let editingPackage: PackagePlan | null = null;
@@ -45,7 +42,7 @@
     description = '';
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!name.trim()) {
       toastStore.error('Nama paket wajib diisi.');
       return;
@@ -64,7 +61,7 @@
       description: description.trim()
     };
 
-    const response = dbStore.savePackagePlan(payload);
+    const response = await api.packages.create(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();
@@ -117,12 +114,12 @@
 
     <div class="form-grid">
       <div class="field">
-        <label for="f_price">Biaya Wali Murid (Rp) <i class="req">*</i></label>
+        <label for="f_price">Biaya Orang Tua (Rp) <i class="req">*</i></label>
         <CurrencyInput
           id="f_price"
           bind:value={price}
         />
-        <div class="help">Harga paket yang dibayar wali murid (SPP).</div>
+        <div class="help">Harga paket yang dibayar orang tua (SPP).</div>
       </div>
 
       <div class="field">

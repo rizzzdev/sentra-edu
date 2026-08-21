@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
+  import { Icon } from '$lib/components/atoms';
 
   export let type: 'button' | 'submit' | 'reset' = 'button';
   export let variant: 'primary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'accent' | 'secondary' = 'primary';

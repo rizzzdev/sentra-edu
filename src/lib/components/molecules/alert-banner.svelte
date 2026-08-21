@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import Button from '$lib/components/atoms/button.svelte';
+  import { Button, Icon } from '$lib/components/atoms';
 
   export let variant: 'destructive' | 'warning' | 'info' | 'success' = 'destructive';
   export let title: string | undefined = undefined;

@@ -1,12 +1,11 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { JobPost, User } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import { getScheduleDaysList } from '$lib/shared/utils/status-map';
-  import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
+  import { Modal } from '$lib/components/molecules';
+  import { Icon } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { JobPost, User } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { formatCurrencyIDR, getScheduleDaysList } from '$lib/shared/utils';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let job: JobPost | null = null;
@@ -15,13 +14,13 @@
 
   let notes: string = '';
 
-  function handleApply() {
+  async function handleApply() {
     if (!job) return;
     if (!tentor?.id) {
       toastStore.error('Sesi pengajar tidak ditemukan. Silakan login kembali.');
       return;
     }
-    const response = dbStore.applyToJob(job.id, tentor.id, notes.trim());
+    const response = await api.applications.create({ jobId: job.id, tentorId: tentor.id, notes: notes.trim() });
     if (!response.error) {
       toastStore.success('Lamaran lowongan les berhasil dikirim ke admin.');
       notes = '';

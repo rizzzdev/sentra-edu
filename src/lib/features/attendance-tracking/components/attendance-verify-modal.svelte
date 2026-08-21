@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import { authStore } from '$lib/shared/stores/auth-store';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
-  import type { AttendanceRecord } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
+import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '$lib/api';
+  import { Modal } from '$lib/components/molecules';
+  import {authStore, toastStore} from '$lib/shared/stores';
+  import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils';
+  import type { AttendanceRecord } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { LeafletMap } from '$lib/components/molecules';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let attendance: AttendanceRecord | null = null;
@@ -17,23 +17,23 @@
 
   $: canVerify = $authStore?.role === 'SUPER_ADMIN';
   $: job = attendance?.jobId
-    ? $dbStore.jobs.find((jobItem) => jobItem.id === attendance?.jobId)
-    : (attendance?.enrollmentId ? $dbStore.jobs.find((jobItem) => jobItem.enrollmentId === attendance?.enrollmentId) : null);
+    ? $jobStore.find((jobItem) => jobItem.id === attendance?.jobId)
+    : (attendance?.enrollmentId ? $jobStore.find((jobItem) => jobItem.enrollmentId === attendance?.enrollmentId) : null);
 
-  $: enrollment = attendance?.enrollmentId ? $dbStore.enrollments.find((enrollmentItem) => enrollmentItem.id === attendance?.enrollmentId) : null;
-  $: tentor = attendance ? $dbStore.users.find((userItem) => userItem.id === attendance?.tentorId) : null;
+  $: enrollment = attendance?.enrollmentId ? $enrollmentStore.find((enrollmentItem) => enrollmentItem.id === attendance?.enrollmentId) : null;
+  $: tentor = attendance ? $userStore.find((userItem) => userItem.id === attendance?.tentorId) : null;
 
   // Resolved Subject Names
   $: subjectNames = (() => {
     if (!attendance) return '—';
     if (attendance.subjectIds && attendance.subjectIds.length > 0) {
-      return $dbStore.subjects
+      return $subjectStore
         .filter((subjectItem) => attendance?.subjectIds?.includes(subjectItem.id))
         .map((subjectItem) => subjectItem.name)
         .join(', ') || '—';
     }
     if (enrollment?.subjectId) {
-      return $dbStore.subjects.find((subjectItem) => subjectItem.id === enrollment?.subjectId)?.name || '—';
+      return $subjectStore.find((subjectItem) => subjectItem.id === enrollment?.subjectId)?.name || '—';
     }
     return '—';
   })();
@@ -42,13 +42,13 @@
   $: classNames = (() => {
     if (!attendance) return '—';
     if (attendance.classIds && attendance.classIds.length > 0) {
-      return $dbStore.classes
+      return $classStore
         .filter((classItem) => attendance?.classIds?.includes(classItem.id))
         .map((classItem) => classItem.className)
         .join(', ') || '—';
     }
     if (enrollment?.classId) {
-      return $dbStore.classes.find((classItem) => classItem.id === enrollment?.classId)?.className || '—';
+      return $classStore.find((classItem) => classItem.id === enrollment?.classId)?.className || '—';
     }
     return '—';
   })();
@@ -60,13 +60,13 @@
       return attendance.studentNames.join(', ');
     }
     if (attendance.studentIds && attendance.studentIds.length > 0) {
-      return $dbStore.users
+      return $userStore
         .filter((userItem) => attendance?.studentIds?.includes(userItem.id))
         .map((userItem) => userItem.fullName)
         .join(', ') || '—';
     }
     if (enrollment?.studentId) {
-      return $dbStore.users.find((userItem) => userItem.id === enrollment?.studentId)?.fullName || '—';
+      return $userStore.find((userItem) => userItem.id === enrollment?.studentId)?.fullName || '—';
     }
     return '—';
   })();
@@ -85,9 +85,9 @@
     return isoOrTimeString;
   }
 
-  function handleApprove() {
+  async function handleApprove() {
     if (!attendance || !canVerify) return;
-    const response = dbStore.verifyAttendance(attendance.id, 'APPROVED');
+    const response = await api.attendances.update(attendance.id, 'APPROVED');
     if (!response.error) {
       toastStore.success('Presensi berhasil diverifikasi dan disetujui.');
       onClose();
@@ -96,12 +96,12 @@
     }
   }
 
-  function handleRejectSubmit() {
+  async function handleRejectSubmit() {
     if (!attendance || !canVerify || !rejectionReason.trim()) {
       toastStore.error('Alasan penolakan wajib diisi.');
       return;
     }
-    const response = dbStore.verifyAttendance(attendance.id, 'REJECTED', rejectionReason.trim());
+    const response = await api.attendances.update(attendance.id, 'REJECTED', rejectionReason.trim());
     if (!response.error) {
       toastStore.success('Presensi ditolak.');
       rejectionModalOpen = false;

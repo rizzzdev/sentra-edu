@@ -1,13 +1,12 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
+import { userStore, subjectStore, classStore, packageStore, enrollmentStore } from '$lib/api';
+  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import { Button } from '$lib/components/atoms';
 
-  import type { Enrollment } from '$lib/shared/types/common.types';
+  import type { Enrollment } from '$lib/shared/types';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let onClose: () => void = () => {};
@@ -17,16 +16,16 @@
   let selectedMonth: string = String(now.getMonth() + 1);
   let selectedYear: number = now.getFullYear();
 
-  $: enrollments = $dbStore.enrollments.filter((enrollment) => enrollment.deletedAt === null);
+  $: enrollments = $enrollmentStore.filter((enrollment) => enrollment.deletedAt === null);
 
   $: if (enrollments.length > 0 && !selectedStudentId) {
     selectedStudentId = enrollments[0].studentId;
   }
 
   function getStudentEnrollmentLabel(enrollment: Enrollment): string {
-    const student = $dbStore.users.find((user) => user.id === enrollment.studentId);
-    const classLevel = $dbStore.classes.find((classItem) => classItem.id === enrollment.classId);
-    const subject = $dbStore.subjects.find((subjectItem) => subjectItem.id === enrollment.subjectId);
+    const student = $userStore.find((user) => user.id === enrollment.studentId);
+    const classLevel = $classStore.find((classItem) => classItem.id === enrollment.classId);
+    const subject = $subjectStore.find((subjectItem) => subjectItem.id === enrollment.subjectId);
     return `${student?.fullName || 'Siswa'} — ${classLevel?.className || ''} ${subject?.name || ''}`;
   }
 
@@ -35,7 +34,7 @@
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!selectedStudentId) {
       toastStore.error('Pilih murid terlebih dahulu.');
       return;
@@ -47,7 +46,7 @@
       return;
     }
 
-    const packagePlan = $dbStore.packages.find((pkg) => pkg.id === enrollment.packageId);
+    const packagePlan = $packageStore.find((pkg) => pkg.id === enrollment.packageId);
     const amount = packagePlan ? packagePlan.price : 1000000;
 
     const payload = {
@@ -59,7 +58,7 @@
       notes: `Tagihan SPP Periode ${monthNames[Number(selectedMonth) - 1]} ${selectedYear}`
     };
 
-    const response = dbStore.createInvoice(payload);
+    const response = await api.invoices.create(payload);
     if (!response.error) {
       toastStore.success('Tagihan SPP berhasil diterbitkan.');
       onClose();

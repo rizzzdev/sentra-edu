@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { authStore, getRoleDefaultPath } from '$lib/shared/stores/auth-store';
+  import { authStore, getRoleDefaultPath } from '$lib/shared/stores';
   import { goto } from '$app/navigation';
 
   onMount(() => {

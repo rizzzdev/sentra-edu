@@ -1,4 +1,4 @@
-import type { DatabaseSchema } from '$lib/shared/types/common.types';
+import type { DatabaseSchema } from '$lib/shared/types';
 
 export interface UnifiedProgram {
   id: string;
@@ -214,7 +214,7 @@ export function getStudentPrograms(
  * Returns all active tutoring programs for a parent's children
  */
 export function getParentPrograms(database: DatabaseSchema, parentId: string): UnifiedProgram[] {
-  const children = database.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.waliUserId === parentId);
+  const children = database.users.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.parentId === parentId);
   const allPrograms: UnifiedProgram[] = [];
   const processedProgramIds = new Set<string>();
 
@@ -228,9 +228,9 @@ export function getParentPrograms(database: DatabaseSchema, parentId: string): U
     }
   }
 
-  // Also check enrollments directly tagged with waliUserId
-  const directWaliEnrollments = database.enrollments.filter((enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.waliUserId === parentId);
-  for (const enroll of directWaliEnrollments) {
+  // Also check enrollments directly tagged with parentId
+  const directParentEnrollments = database.enrollments.filter((enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.parentId === parentId);
+  for (const enroll of directParentEnrollments) {
     if (!processedProgramIds.has(enroll.id)) {
       const studentUser = database.users.find((userItem) => userItem.id === enroll.studentId);
       const studentPrograms = getStudentPrograms(database, enroll.studentId, studentUser?.fullName);

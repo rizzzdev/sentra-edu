@@ -1,109 +1,56 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { sql } from '$lib/server/db';
-import { getCached, setCache, invalidateCache } from '$lib/server/cache';
-import { mapAttendanceRow, generateEntityId } from '$lib/server/api-helpers';
-import { requireAdmin, isValidId, sanitizeInput } from '$lib/server/security';
+import { attendanceService, requireAdmin, isValidId } from '$lib/api';
+import { generateEntityId } from '$lib/shared/utils';
 
-export const GET: RequestHandler = async () => {
-  try {
-    const cached = getCached('attendances');
-    if (cached) return json({ error: false, statusCode: 200, data: cached });
-    const rows = await sql`SELECT * FROM attendances WHERE deleted_at IS NULL ORDER BY created_at DESC`;
-    const list = rows.map(mapAttendanceRow);
-    setCache('attendances', list);
-    return json({ error: false, statusCode: 200, data: list });
-  } catch (err_raw) {
-    const err = err_raw as Error;
-    return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
-  }
+export const GET: RequestHandler = async ({ url }) => {
+  const page = Number(url.searchParams.get('page')) || 1;
+  const limit = Number(url.searchParams.get('limit')) || 50;
+  const result = await attendanceService.findAll(page, limit);
+  return json(result);
 };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-  try {
-    const body = (await request.json()) as Record<string, string | number | boolean | null | undefined | string[]>;
-    const now = new Date().toISOString();
+  const auth = requireAdmin(cookies);
+  if (!auth.allowed) return auth.error!;
 
-    if (body.id) {
-      const attId = String(body.id);
-      if (!isValidId(attId)) return json({ error: true, statusCode: 400, message: 'ID tidak valid.', data: null }, { status: 400 });
+  const body = (await request.json()) as Record<string, any>;
+  const now = new Date();
 
-      // Only Admin can verify/approve/reject attendance
-      if (body.status === 'APPROVED' || body.status === 'REJECTED') {
-        const authCheck = requireAdmin(cookies);
-        if (!authCheck.allowed && authCheck.error) {
-          return authCheck.error;
-        }
-      }
-
-      await sql`UPDATE attendances SET
-        status=${(body.status as string) ?? 'SUBMITTED'},
-        review_notes=${sanitizeInput(String(body.reviewNotes ?? ''))},
-        student_confirmed=${Boolean(body.studentConfirmed ?? false)},
-        student_rating=${body.studentRating ? Number(body.studentRating) : null},
-        student_feedback=${sanitizeInput(String(body.studentFeedback ?? ''))},
-        updated_at=${now}
-      WHERE id=${attId}`;
-
-      const rows = await sql`SELECT * FROM attendances WHERE id=${attId}`;
-      invalidateCache();
-      return json({ error: false, statusCode: 200, message: 'Presensi diperbarui.', data: rows[0] ? mapAttendanceRow(rows[0]) : null });
-    } else {
-      const id = generateEntityId('att');
-      const subjectIds = Array.isArray(body.subjectIds) ? (body.subjectIds as string[]) : [];
-      const classIds = Array.isArray(body.classIds) ? (body.classIds as string[]) : [];
-      const studentIds = Array.isArray(body.studentIds) ? (body.studentIds as string[]) : [];
-      const studentNames = Array.isArray(body.studentNames) ? (body.studentNames as string[]) : [];
-      const durationMinutes = body.durationMinutes ? Number(body.durationMinutes) : 90;
-      const sessionsCount = body.sessionsCount ? Number(body.sessionsCount) : 1;
-      const jobId = body.jobId ? String(body.jobId) : null;
-      const enrollmentId = body.enrollmentId ? String(body.enrollmentId) : null;
-
-      await sql`INSERT INTO attendances (
-        id, job_id, enrollment_id, tentor_id, subject_ids, class_ids, student_ids, student_names,
-        session_date, start_time, end_time, duration_minutes, sessions_count, topic, student_notes,
-        status, latitude_check_in, longitude_check_in, is_radius_valid, proof_photo_url, student_confirmed,
-        created_at, updated_at
-      ) VALUES (
-        ${id}, ${jobId}, ${enrollmentId}, ${body.tentorId ? String(body.tentorId) : null},
-        ${subjectIds}, ${classIds}, ${studentIds}, ${studentNames},
-        ${body.sessionDate ? String(body.sessionDate) : null}, ${body.startTime ? String(body.startTime) : ''}, ${body.endTime ? String(body.endTime) : ''},
-        ${durationMinutes}, ${sessionsCount},
-        ${sanitizeInput(String(body.topic ?? ''))}, ${sanitizeInput(String(body.studentNotes ?? ''))},
-        ${(body.status as string) ?? 'SUBMITTED'},
-        ${body.latitudeCheckIn !== null && body.latitudeCheckIn !== undefined ? Number(body.latitudeCheckIn) : null},
-        ${body.longitudeCheckIn !== null && body.longitudeCheckIn !== undefined ? Number(body.longitudeCheckIn) : null},
-        ${Boolean(body.isRadiusValid ?? false)},
-        ${body.proofPhotoUrl ? String(body.proofPhotoUrl) : null},
-        ${Boolean(body.studentConfirmed ?? false)},
-        ${now}, ${now}
-      )`;
-
-      const rows = await sql`SELECT * FROM attendances WHERE id=${id}`;
-      invalidateCache();
-      return json({ error: false, statusCode: 201, message: 'Presensi dibuat.', data: rows[0] ? mapAttendanceRow(rows[0]) : null });
-    }
-  } catch (err_raw) {
-    const err = err_raw as Error;
-    return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
+  if (body.id) {
+    const id = String(body.id);
+    if (!isValidId(id)) return json({ error: true, statusCode: 400, message: 'ID tidak valid.', data: null }, { status: 400 });
+    const result = await attendanceService.update(id, { ...body, updatedAt: now });
+    return json(result);
+  } else {
+    const result = await attendanceService.create({
+      id: generateEntityId('att'),
+      jobId: body.jobId ? String(body.jobId) : undefined,
+      enrollmentId: body.enrollmentId ? String(body.enrollmentId) : undefined,
+      tentorId: String(body.tentorId ?? ''),
+      sessionDate: String(body.sessionDate ?? ''),
+      startTime: String(body.startTime ?? ''),
+      endTime: String(body.endTime ?? ''),
+      topic: String(body.topic ?? ''),
+      studentNotes: body.studentNotes ? String(body.studentNotes) : undefined,
+      latitudeCheckIn: body.latitudeCheckIn ? Number(body.latitudeCheckIn) : undefined,
+      longitudeCheckIn: body.longitudeCheckIn ? Number(body.longitudeCheckIn) : undefined,
+      isRadiusValid: body.isRadiusValid !== undefined ? Boolean(body.isRadiusValid) : undefined,
+      status: 'SUBMITTED',
+      createdAt: now,
+      updatedAt: now
+    });
+    return json(result);
   }
 };
 
 export const DELETE: RequestHandler = async ({ url, cookies }) => {
-  try {
-    const auth = requireAdmin(cookies);
-    if (!auth.allowed) {
-      return auth.error || json({ error: true, statusCode: 401, message: 'Unauthorized', data: null }, { status: 401 });
-    }
+  const auth = requireAdmin(cookies);
+  if (!auth.allowed) return auth.error!;
 
-    const id = url.searchParams.get('id');
-    if (!id || !isValidId(id)) return json({ error: true, statusCode: 400, message: 'ID wajib dan harus valid.', data: null }, { status: 400 });
-    const now = new Date().toISOString();
-    await sql`UPDATE attendances SET deleted_at=${now},updated_at=${now} WHERE id=${id}`;
-    invalidateCache();
-    return json({ error: false, statusCode: 200, message: 'Presensi dihapus.', data: null });
-  } catch (err_raw) {
-    const err = err_raw as Error;
-    return json({ error: true, statusCode: 500, message: err.message, data: null }, { status: 500 });
-  }
+  const id = url.searchParams.get('id');
+  if (!id || !isValidId(id)) return json({ error: true, statusCode: 400, message: 'ID wajib.', data: null }, { status: 400 });
+
+  const result = await attendanceService.softDelete(id);
+  return json(result);
 };

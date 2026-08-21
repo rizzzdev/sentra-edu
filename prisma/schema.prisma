@@ -1,0 +1,419 @@
+// ── SentraEdu — Prisma Schema ────────────────────────────
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Enums ─────────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  TENTOR
+  STUDENT
+  PARENT
+}
+
+enum JobMode {
+  OFFLINE
+  ONLINE
+}
+
+enum JobStatus {
+  AVAILABLE
+  NEGOTIATING
+  ASSIGNED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
+enum AttendanceStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PAID
+  OVERDUE
+}
+
+enum PayrollStatus {
+  DRAFT
+  REQUESTED
+  PAID
+  REJECTED
+}
+
+enum CandidateStatus {
+  REGISTERED
+  TEST_SCHEDULED
+  TESTED
+  INTERVIEW_SCHEDULED
+  INTERVIEWED
+  ACCEPTED
+  REJECTED
+  INTERVIEW
+  MICROTEACHING
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+// ── Models ────────────────────────────────────────────────
+
+model User {
+  id              String          @id @default(uuid())
+  email           String          @unique
+  password        String?
+  fullName        String          @map("full_name")
+  phone           String          @default("")
+  role            UserRole        @default(STUDENT)
+  position        String?
+  education       String?
+  experienceYears Int?            @map("experience_years")
+  school          String?
+  address         String?
+  occupation      String?
+  isActive        Boolean         @default(true) @map("is_active")
+  candidateStatus CandidateStatus? @map("candidate_status")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  deletedAt       DateTime?       @map("deleted_at")
+
+  // Parent (self-referential)
+  parentId String? @map("parent_id")
+  parent   User?   @relation("ParentChildren", fields: [parentId], references: [id])
+  children User[]  @relation("ParentChildren")
+
+  // Relations
+  assignedJobs      Job[]              @relation("AssignedJobs")
+  studentJobs       Job[]              @relation("StudentJobs")
+  enrollments       Enrollment[]       @relation("Enrollments")
+  tentorEnrollments Enrollment[]      @relation("TentorEnrollments")
+  parentEnrollments Enrollment[]      @relation("ParentEnrollments")
+  applications      JobApplication[]   @relation("Applications")
+  attendances       Attendance[]       @relation("Attendances")
+  payrollClaims     PayrollClaim[]     @relation("PayrollClaims")
+  notifications     Notification[]     @relation("Notifications")
+  magicLinks        MagicLink[]        @relation("MagicLinkCreators")
+
+  @@index([parentId])
+  @@map("users")
+}
+
+model EducationLevel {
+  id          String    @id @default(uuid())
+  levelName   String    @map("level_name")
+  description String    @default("")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  classes ClassLevel[] @relation("LevelClasses")
+
+  @@map("education_levels")
+}
+
+model ClassLevel {
+  id               String    @id @default(uuid())
+  className        String    @map("class_name")
+  educationLevelId String    @map("education_level_id")
+  description      String    @default("")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  level       EducationLevel? @relation("LevelClasses", fields: [educationLevelId], references: [id])
+  enrollments Enrollment[]
+  jobs        Job[]
+  magicLinks  MagicLink[]
+
+  @@index([educationLevelId])
+  @@map("classes")
+}
+
+model Subject {
+  id          String    @id @default(uuid())
+  name        String
+  description String    @default("")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  enrollments Enrollment[]
+  jobs        Job[]
+
+  @@map("subjects")
+}
+
+model Package {
+  id               String    @id @default(uuid())
+  name             String
+  mode             String    @default("PRIVATE")
+  period           String    @default("BULANAN")
+  price            Int       @default(0)
+  sessionsPerPeriod Int      @default(1) @map("sessions_per_period")
+  maxStudents      Int       @default(1) @map("max_students")
+  tentorFee        Int       @default(0) @map("tentor_fee")
+  description      String    @default("")
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  enrollments Enrollment[]
+  jobs        Job[]
+  magicLinks  MagicLink[]
+
+  @@map("packages")
+}
+
+model Enrollment {
+  id           String           @id @default(uuid())
+  studentId    String           @map("student_id")
+  subjectId    String           @map("subject_id")
+  classId      String           @map("class_id")
+  packageId    String           @map("package_id")
+  tentorId     String?          @map("tentor_id")
+  scheduleDay  String           @default("") @map("schedule_day")
+  scheduleTime String           @default("") @map("schedule_time")
+  status       EnrollmentStatus @default(ACTIVE)
+  address      String?
+  latitude     Float?
+  longitude    Float?
+  parentId     String?          @map("parent_id")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  deletedAt    DateTime?        @map("deleted_at")
+
+  student  User          @relation("Enrollments", fields: [studentId], references: [id])
+  subject  Subject       @relation(fields: [subjectId], references: [id])
+  class    ClassLevel    @relation(fields: [classId], references: [id])
+  package  Package       @relation(fields: [packageId], references: [id])
+  tentor   User?         @relation("TentorEnrollments", fields: [tentorId], references: [id])
+  parent   User?         @relation("ParentEnrollments", fields: [parentId], references: [id])
+  jobs     Job[]
+  attendances Attendance[]
+  invoices Invoice[]
+
+  @@index([studentId])
+  @@index([parentId])
+  @@map("enrollments")
+}
+
+model Job {
+  id                     String     @id @default(uuid())
+  title                  String
+  classId                String?    @map("class_id")
+  subjectId              String?    @map("subject_id")
+  packageId              String?    @map("package_id")
+  jobMode                JobMode    @default(OFFLINE) @map("job_mode")
+  tentorFee              Int        @default(0) @map("tentor_fee")
+  transportAllowance     Int        @default(0) @map("transport_allowance")
+  sessionDurationMinutes Int        @default(90) @map("session_duration_minutes")
+  scheduleDays           String[]   @default([]) @map("schedule_days")
+  scheduleTime           String     @default("") @map("schedule_time")
+  scheduleEndTime        String     @default("") @map("schedule_end_time")
+  studentCount           Int        @default(1) @map("student_count")
+  location               String     @default("")
+  latitude               Float?
+  longitude              Float?
+  status                 JobStatus  @default(AVAILABLE)
+  assignedTentorId       String?    @map("assigned_tentor_id")
+  studentId              String?    @map("student_id")
+  enrollmentId           String?    @map("enrollment_id")
+  notes                  String     @default("")
+  additionalNotes        String     @default("") @map("additional_notes")
+  createdAt              DateTime   @default(now()) @map("created_at")
+  updatedAt              DateTime   @updatedAt @map("updated_at")
+  deletedAt              DateTime?  @map("deleted_at")
+
+  class         ClassLevel?   @relation(fields: [classId], references: [id])
+  subject       Subject?      @relation(fields: [subjectId], references: [id])
+  package       Package?      @relation(fields: [packageId], references: [id])
+  assignedTentor User?        @relation("AssignedJobs", fields: [assignedTentorId], references: [id])
+  student       User?         @relation("StudentJobs", fields: [studentId], references: [id])
+  enrollment    Enrollment?   @relation(fields: [enrollmentId], references: [id])
+  applications  JobApplication[]
+  attendances   Attendance[]
+
+  @@index([assignedTentorId])
+  @@index([studentId])
+  @@map("jobs")
+}
+
+model JobApplication {
+  id        String            @id @default(uuid())
+  jobId     String            @map("job_id")
+  tentorId  String            @map("tentor_id")
+  status    ApplicationStatus @default(PENDING)
+  appliedAt DateTime          @default(now()) @map("applied_at")
+  notes     String            @default("")
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+  deletedAt DateTime?         @map("deleted_at")
+
+  job    Job  @relation(fields: [jobId], references: [id])
+  tentor User @relation("Applications", fields: [tentorId], references: [id])
+
+  @@index([jobId])
+  @@index([tentorId])
+  @@map("applications")
+}
+
+model Attendance {
+  id               String           @id @default(uuid())
+  jobId            String?          @map("job_id")
+  enrollmentId     String           @map("enrollment_id")
+  tentorId         String           @map("tentor_id")
+  subjectIds       String[]         @default([]) @map("subject_ids")
+  classIds         String[]         @default([]) @map("class_ids")
+  sessionDate      DateTime         @map("session_date") @db.Date
+  startTime        String           @default("") @map("start_time")
+  endTime          String           @default("") @map("end_time")
+  durationMinutes  Int              @default(90) @map("duration_minutes")
+  sessionsCount    Float            @default(1) @map("sessions_count")
+  topic            String           @default("")
+  studentNotes     String           @default("") @map("student_notes")
+  status           AttendanceStatus @default(SUBMITTED)
+  latitudeCheckIn  Float?           @map("latitude_check_in")
+  longitudeCheckIn Float?           @map("longitude_check_in")
+  isRadiusValid    Boolean          @default(false) @map("is_radius_valid")
+  proofPhotoUrl    String?          @map("proof_photo_url")
+  studentConfirmed Boolean          @default(false) @map("student_confirmed")
+  studentRating    Int?             @map("student_rating")
+  studentFeedback  String?          @map("student_feedback")
+  reviewNotes      String?          @map("review_notes")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  deletedAt        DateTime?        @map("deleted_at")
+
+  job        Job?        @relation(fields: [jobId], references: [id])
+  enrollment Enrollment  @relation(fields: [enrollmentId], references: [id])
+  tentor     User        @relation("Attendances", fields: [tentorId], references: [id])
+
+  @@index([enrollmentId])
+  @@index([tentorId])
+  @@map("attendances")
+}
+
+model Invoice {
+  id              String        @id @default(uuid())
+  enrollmentId    String        @map("enrollment_id")
+  invoiceNumber   String        @map("invoice_number")
+  amount          Int           @default(0)
+  dueDate         DateTime      @map("due_date") @db.Date
+  status          InvoiceStatus @default(UNPAID)
+  paidAt          DateTime?     @map("paid_at")
+  paymentProofUrl String?       @map("payment_proof_url")
+  periodMonth     Int           @map("period_month")
+  periodYear      Int           @map("period_year")
+  notes           String        @default("")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  deletedAt       DateTime?     @map("deleted_at")
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id])
+
+  @@index([enrollmentId])
+  @@map("invoices")
+}
+
+model PayrollClaim {
+  id               String        @id @default(uuid())
+  tentorId         String        @map("tentor_id")
+  claimNumber      String        @map("claim_number")
+  periodStart      DateTime      @map("period_start") @db.Date
+  periodEnd        DateTime      @map("period_end") @db.Date
+  periodMonth      Int?          @map("period_month")
+  periodYear       Int?          @map("period_year")
+  totalAmount      Int           @default(0) @map("total_amount")
+  attendanceIds    String[]      @default([]) @map("attendance_ids")
+  status           PayrollStatus @default(REQUESTED)
+  paidAt           DateTime?     @map("paid_at")
+  transferProofUrl String?       @map("transfer_proof_url")
+  rejectionReason  String?       @map("rejection_reason")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  deletedAt        DateTime?     @map("deleted_at")
+
+  tentor User @relation("PayrollClaims", fields: [tentorId], references: [id])
+
+  @@index([tentorId])
+  @@map("payroll_claims")
+}
+
+model Candidate {
+  id              String          @id @default(uuid())
+  fullName        String          @map("full_name")
+  email           String
+  phone           String          @default("")
+  education       String          @default("")
+  experienceYears Int             @default(0) @map("experience_years")
+  subjectIds      String[]        @default([]) @map("subject_ids")
+  levelIds        String[]        @default([]) @map("level_ids")
+  cvUrl           String?         @map("cv_url")
+  source          String?
+  status          CandidateStatus @default(REGISTERED)
+  notes           String          @default("")
+  interviewDate   DateTime?       @map("interview_date")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  deletedAt       DateTime?       @map("deleted_at")
+
+  @@map("candidates")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  title     String    @default("")
+  message   String    @default("")
+  icon      String    @default("notifications")
+  read      Boolean   @default(false)
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation("Notifications", fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model MagicLink {
+  id         String    @id @default(uuid())
+  token      String
+  title      String    @default("")
+  daysValid  Int       @default(7) @map("days_valid")
+  expiresAt  DateTime  @map("expires_at")
+  usedCount  Int       @default(0) @map("used_count")
+  active     Boolean   @default(true)
+  targetRole String?   @map("target_role")
+  classId    String?   @map("class_id")
+  packageId  String?   @map("package_id")
+  createdBy  String?   @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  class   ClassLevel? @relation(fields: [classId], references: [id])
+  package Package?    @relation(fields: [packageId], references: [id])
+  creator User?       @relation("MagicLinkCreators", fields: [createdBy], references: [id])
+
+  @@map("magic_links")
+}

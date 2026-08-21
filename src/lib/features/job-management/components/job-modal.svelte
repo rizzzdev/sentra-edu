@@ -1,15 +1,12 @@
 <script lang="ts">
-  import Modal from '$lib/components/molecules/modal.svelte';
-  import Icon from '$lib/components/atoms/icon.svelte';
-  import { dbStore } from '$lib/shared/stores/db-store';
-  import { toastStore } from '$lib/shared/stores/toast-store';
-  import type { JobPost, JobMode } from '$lib/shared/types/common.types';
-  import Button from '$lib/components/atoms/button.svelte';
-  import Input from '$lib/components/atoms/input.svelte';
-  import CurrencyInput from '$lib/components/atoms/currency-input.svelte';
-  import SelectSearch from '$lib/components/molecules/select-search.svelte';
-  import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
-  import { DAY_OPTIONS, getScheduleDaysList } from '$lib/shared/utils/status-map';
+import { userStore, subjectStore, classStore, packageStore, enrollmentStore } from '$lib/api';
+  import { LeafletMap, Modal, SelectSearch } from '$lib/components/molecules';
+  import { CurrencyInput, Icon, Input } from '$lib/components/atoms';
+  import {toastStore} from '$lib/shared/stores';
+  import type { JobPost, JobMode } from '$lib/shared/types';
+  import { Button } from '$lib/components/atoms';
+  import { DAY_OPTIONS, getScheduleDaysList } from '$lib/shared/utils';
+  import { api } from '$lib/api/client';
 
   export let open: boolean = false;
   export let editingJob: JobPost | null = null;
@@ -32,14 +29,14 @@
   let description: string = '';
 
   // Derived data
-  $: enrollments = $dbStore.enrollments.filter((enrollmentItem) => enrollmentItem.deletedAt === null);
-  $: selectedPackage = $dbStore.packages.find((packageItem) => packageItem.id === packageId);
+  $: enrollments = $enrollmentStore.filter((enrollmentItem) => enrollmentItem.deletedAt === null);
+  $: selectedPackage = $packageStore.find((packageItem) => packageItem.id === packageId);
   $: isGroupMode = selectedPackage?.mode === 'KELOMPOK';
 
   // Package options
   $: packageOptions = [
     { value: '', label: '— Pilih paket les —' },
-    ...$dbStore.packages
+    ...$packageStore
       .filter((packageItem) => packageItem.deletedAt === null && packageItem.active !== false)
       .map((packageItem) => ({
         value: packageItem.id,
@@ -48,12 +45,12 @@
   ];
 
   // Student options (from all active students in database)
-  $: studentOptions = $dbStore.users
+  $: studentOptions = $userStore
     .filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.isActive !== false)
     .map((userItem) => {
       const studentEnrollment = enrollments.find((enrollmentItem) => enrollmentItem.studentId === userItem.id);
-      const cls = studentEnrollment ? $dbStore.classes.find((classItem) => classItem.id === studentEnrollment.classId) : null;
-      const sub = studentEnrollment ? $dbStore.subjects.find((subjectItem) => subjectItem.id === studentEnrollment.subjectId) : null;
+      const cls = studentEnrollment ? $classStore.find((classItem) => classItem.id === studentEnrollment.classId) : null;
+      const sub = studentEnrollment ? $subjectStore.find((subjectItem) => subjectItem.id === studentEnrollment.subjectId) : null;
       const extra = cls && sub ? ` — ${cls.className} (${sub.name})` : userItem.school ? ` — ${userItem.school}` : userItem.email ? ` — ${userItem.email}` : '';
       return {
         value: userItem.id,
@@ -61,11 +58,11 @@
       };
     });
 
-  $: classOptions = $dbStore.classes
+  $: classOptions = $classStore
     .filter((classItem) => classItem.deletedAt === null)
     .map((classItem) => ({ value: classItem.id, label: classItem.className }));
 
-  $: subjectOptions = $dbStore.subjects
+  $: subjectOptions = $subjectStore
     .filter((subjectItem) => subjectItem.deletedAt === null)
     .map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }));
 
@@ -111,7 +108,7 @@
 
   function resetForm() {
     title = '';
-    const activePackages = $dbStore.packages.filter((pkg) => pkg.deletedAt === null && pkg.active !== false);
+    const activePackages = $packageStore.filter((pkg) => pkg.deletedAt === null && pkg.active !== false);
     packageId = activePackages[0]?.id || '';
     mode = 'OFFLINE';
     selectedStudentIds = [];
@@ -134,7 +131,7 @@
     }
     const studentId = selectedStudentIds[0];
     const enrollment = enrollments.find((enr) => enr.studentId === studentId);
-    const studentUser = $dbStore.users.find((user) => user.id === studentId);
+    const studentUser = $userStore.find((user) => user.id === studentId);
     const studentLat = enrollment?.latitude ?? studentUser?.latitude;
     const studentLng = enrollment?.longitude ?? studentUser?.longitude;
     if (studentLat && studentLng) {
@@ -150,7 +147,7 @@
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!title.trim()) {
       toastStore.error('Judul lowongan wajib diisi.');
       return;
@@ -177,7 +174,7 @@
     }
 
     const studentUsers = selectedStudentIds
-      .map((studentId) => $dbStore.users.find((user) => user.id === studentId))
+      .map((studentId) => $userStore.find((user) => user.id === studentId))
       .filter((user): user is NonNullable<typeof user> => user !== undefined && user !== null);
     const studentNames = studentUsers.map((user) => user.fullName).join(', ');
     const firstStudentId = selectedStudentIds[0] || null;
@@ -213,7 +210,7 @@
       additionalNotes: description.trim()
     };
 
-    const response = dbStore.saveJobPost(payload);
+    const response = await api.jobs.create(payload);
     if (!response.error) {
       toastStore.success(response.message);
       onClose();
