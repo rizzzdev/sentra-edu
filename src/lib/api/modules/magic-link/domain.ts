@@ -10,13 +10,17 @@ import type { MagicLink } from '$generated/prisma/client';
 
 /** Schema for creating a new MagicLink */
 export const CreateMagicLinkSchema = z.object({
+  id: z.string().optional(),
   token: z.string().trim().min(1, 'Token wajib diisi'),
   title: z.string().trim().max(100, 'Judul maksimal 100 karakter').optional().default(''),
-  daysValid: z.number().min(1, 'Durasi valid minimal 1 hari').max(365, 'Durasi valid maksimal 365 hari'),
+  daysValid: z.number().min(1, 'Durasi valid minimal 1 hari').max(365, 'Durasi valid maksimal 365 hari').optional().default(7),
+  expiresAt: z.union([z.string(), z.date()]).transform((val) => typeof val === 'string' ? new Date(val) : val).optional().default(() => new Date(Date.now() + 7 * 86400000)),
+  usedCount: z.number().optional().default(0),
+  active: z.boolean().optional().default(true),
   targetRole: z.enum(['STUDENT', 'TENTOR']).optional().default('STUDENT'),
-  classId: z.string().optional(),
-  packageId: z.string().optional(),
-  createdBy: z.string().optional(),
+  classId: z.string().nullable().optional(),
+  packageId: z.string().nullable().optional(),
+  createdBy: z.string().nullable().optional(),
 });
 
 /** Schema for updating an existing MagicLink (all fields optional) */

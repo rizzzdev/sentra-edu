@@ -1,52 +1,59 @@
 <script lang="ts">
 import { userStore, subjectStore, packageStore, enrollmentStore, attendanceStore, payrollStore } from '$lib/api';
-  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { SelectSearch } from '$lib/components/molecules';
   import { Icon, Input } from '$lib/components/atoms';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {authStore, toastStore} from '$lib/shared/stores';
   import { formatCurrencyIDR } from '$lib/shared/utils';
   import type { User } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let tentor: User | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    tentor = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    tentor?: User | null;
+    onClose?: () => void;
+  } = $props();
 
-  $: currentUser = $authStore;
-  $: isAdmin = currentUser?.role === 'SUPER_ADMIN';
+  let currentUser = $derived($authStore);
+  let isAdmin = $derived(currentUser?.role === 'SUPER_ADMIN');
 
   const now = new Date();
-  let selectedTentorId: string = tentor ? tentor.id : '';
-  let selectedMonth: string = String(now.getMonth() + 1);
-  let selectedYear: number = now.getFullYear();
+  let selectedTentorId = $state('');
+  let selectedMonth = $state(String(now.getMonth() + 1));
+  let selectedYear = $state(now.getFullYear());
 
-  $: tentors = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'TENTOR' && userItem.isActive);
+  let tentors = $derived($userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'TENTOR' && userItem.isActive));
 
-  $: if (tentor) {
-    selectedTentorId = tentor.id;
-  } else if (!selectedTentorId && tentors.length > 0) {
-    selectedTentorId = tentors[0].id;
-  }
+  $effect(() => {
+    if (tentor) {
+      selectedTentorId = tentor.id;
+    } else if (!selectedTentorId && tentors.length > 0) {
+      selectedTentorId = tentors[0].id;
+    }
+  });
 
   const monthNames = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
 
-  // Tentor options for SelectSearch
-  $: tentorOptions = tentors.map((tentorUser) => {
+  let tentorOptions = $derived(tentors.map((tentorUser) => {
     const info = getTentorSessionCount(tentorUser.id);
     return {
       value: tentorUser.id,
       label: `${tentorUser.fullName} (${info.count} sesi · ${formatCurrencyIDR(info.total)})`
     };
-  });
+  }));
 
-  // Month options
-  $: monthOptions = monthNames.map((monthName, index) => ({
+  let monthOptions = $derived(monthNames.map((monthName, index) => ({
     value: String(index + 1),
     label: `${monthName} ${selectedYear}`
-  }));
+  })));
 
   function getTentorSessionCount(targetTentorId: string): { count: number; total: number } {
     const existingClaimedIds = $payrollStore
@@ -66,21 +73,22 @@ import { userStore, subjectStore, packageStore, enrollmentStore, attendanceStore
     return { count: attendances.length, total };
   }
 
-  // Detail sesi yang akan diklaim
-  $: pendingAttendances = selectedTentorId
-    ? $attendanceStore.filter((attendanceItem) => {
-        const existingClaimedIds = $payrollStore
-          .filter((claimItem) => claimItem.deletedAt === null && claimItem.status !== 'REJECTED')
-          .flatMap((claimItem) => claimItem.attendanceIds);
-        return attendanceItem.deletedAt === null && attendanceItem.tentorId === selectedTentorId && attendanceItem.status === 'APPROVED' && !existingClaimedIds.includes(attendanceItem.id);
-      })
-    : [];
+  let pendingAttendances = $derived(
+    selectedTentorId
+      ? $attendanceStore.filter((attendanceItem) => {
+          const existingClaimedIds = $payrollStore
+            .filter((claimItem) => claimItem.deletedAt === null && claimItem.status !== 'REJECTED')
+            .flatMap((claimItem) => claimItem.attendanceIds);
+          return attendanceItem.deletedAt === null && attendanceItem.tentorId === selectedTentorId && attendanceItem.status === 'APPROVED' && !existingClaimedIds.includes(attendanceItem.id);
+        })
+      : []
+  );
 
-  $: sessionTotal = pendingAttendances.reduce((sum, attendanceItem) => {
+  let sessionTotal = $derived(pendingAttendances.reduce((sum, attendanceItem) => {
     const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
     const packagePlan = enrollmentItem ? $packageStore.find((packageItem) => packageItem.id === enrollmentItem.packageId) : null;
     return sum + (packagePlan ? packagePlan.tentorFee : 100000);
-  }, 0);
+  }, 0));
 
   function getStudentName(enrollmentId: string): string {
     const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === enrollmentId);
@@ -136,7 +144,7 @@ import { userStore, subjectStore, packageStore, enrollmentStore, attendanceStore
 </script>
 
 <Modal {open} {onClose} title="Buat Klaim Honor" icon="payments" maxWidth="640px">
-  <form id="form-claim" on:submit|preventDefault={handleSubmit}>
+  <form id="form-claim" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     {#if isAdmin}
       <div class="field">
         <span>Tentor <i class="req">*</i></span>
@@ -170,7 +178,6 @@ import { userStore, subjectStore, packageStore, enrollmentStore, attendanceStore
       </div>
     </div>
 
-    <!-- Detail sesi yang akan diklaim -->
     {#if selectedTentorId && pendingAttendances.length > 0}
       <div class="alert alert-success mt-1">
         <Icon name="check_circle" size="sm" />
@@ -210,12 +217,12 @@ import { userStore, subjectStore, packageStore, enrollmentStore, attendanceStore
     {/if}
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-claim" icon="payments" disabled={!selectedTentorId || pendingAttendances.length === 0}>
       Buat Klaim
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

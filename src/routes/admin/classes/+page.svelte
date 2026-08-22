@@ -8,26 +8,26 @@
 import { educationLevelStore, classStore, enrollmentStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let levelFilter: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  let searchQuery = $state('');
+  let levelFilter = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
-  let classModalOpen: boolean = false;
-  let editingClass: ClassLevel | null = null;
-  let deleteDialogOpen: boolean = false;
-  let deletingClassId: string | null = null;
+  let classModalOpen = $state(false);
+  let editingClass = $state<ClassLevel | null>(null);
+  let deleteDialogOpen = $state(false);
+  let deletingClassId = $state<string | null>(null);
 
-  $: allLevels = $educationLevelStore.filter((levelItem) => levelItem.deletedAt === null);
+  const allLevels = $derived($educationLevelStore.filter((levelItem) => levelItem.deletedAt === null));
 
-  $: levelFilterOptions = [
+  const levelFilterOptions = $derived([
     { value: '', label: 'Semua Jenjang' },
     ...allLevels.map((levelItem) => ({ value: levelItem.id, label: levelItem.levelName }))
-  ];
+  ]);
 
-  $: allClasses = $classStore.filter((classItem) => classItem.deletedAt === null);
+  const allClasses = $derived($classStore.filter((classItem) => classItem.deletedAt === null));
 
-  $: filteredClasses = allClasses.filter((classItem) => {
+  const filteredClasses = $derived(allClasses.filter((classItem) => {
     if (levelFilter && classItem.educationLevelId !== levelFilter) return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -38,13 +38,13 @@ import { educationLevelStore, classStore, enrollmentStore } from '$lib/api';
       );
     }
     return true;
-  });
+  }));
 
-  $: paginatedClasses = filteredClasses.slice(
+  const paginatedClasses = $derived(filteredClasses.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
-  $: totalPages = Math.max(1, Math.ceil(filteredClasses.length / itemsPerPage));
+  ));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredClasses.length / itemsPerPage)));
 
   function getLevelName(levelId: string): string {
     return $educationLevelStore.find((levelItem) => levelItem.id === levelId)?.levelName || '—';
@@ -82,7 +82,7 @@ import { educationLevelStore, classStore, enrollmentStore } from '$lib/api';
     <h3><Icon name="stairs" size="lg" /> Kelas</h3>
     <div class="desc">Daftar kelas per jenjang beserta tarif dasar per 90 menit.</div>
   </div>
-  <button type="button" class="btn btn-primary" on:click={handleOpenCreate}>
+  <button type="button" class="btn btn-primary" onclick={handleOpenCreate}>
     <Icon name="add" size="sm" /> Tambah Kelas
   </button>
 </div>
@@ -135,7 +135,7 @@ import { educationLevelStore, classStore, enrollmentStore } from '$lib/api';
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEdit(classItem)}
+                      onclick={() => handleOpenEdit(classItem)}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -143,7 +143,7 @@ import { educationLevelStore, classStore, enrollmentStore } from '$lib/api';
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => {
+                      onclick={() => {
                         deletingClassId = classItem.id;
                         deleteDialogOpen = true;
                       }}
@@ -169,7 +169,7 @@ import { educationLevelStore, classStore, enrollmentStore } from '$lib/api';
             type="button"
             class="page-btn"
             disabled={currentPage <= 1}
-            on:click={() => currentPage--}
+            onclick={() => currentPage--}
           >
             &laquo;
           </button>
@@ -177,7 +177,7 @@ import { educationLevelStore, classStore, enrollmentStore } from '$lib/api';
             <button
               type="button"
               class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-              on:click={() => { currentPage = pageNumber; }}
+              onclick={() => { currentPage = pageNumber; }}
             >
               {pageNumber}
             </button>
@@ -186,7 +186,7 @@ import { educationLevelStore, classStore, enrollmentStore } from '$lib/api';
             type="button"
             class="page-btn"
             disabled={currentPage >= totalPages}
-            on:click={() => currentPage++}
+            onclick={() => currentPage++}
           >
             &raquo;
           </button>

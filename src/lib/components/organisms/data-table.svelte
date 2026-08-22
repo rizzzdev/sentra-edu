@@ -1,38 +1,57 @@
 <script lang="ts">
-  import { Button, Icon, Skeleton } from '$lib/components/atoms';
-  import { AlertBanner } from '$lib/components/molecules';
+  import { Button } from '$lib/components/atoms';
+  import Icon from '$lib/components/atoms/icon.svelte';
+  import Skeleton from '$lib/components/atoms/skeleton.svelte';
+  import AlertBanner from '../molecules/alert-banner.svelte';
+  import type { Snippet } from 'svelte';
 
-  export let loading: boolean = false;
-  export let error: string | null = null;
-  export let emptyMessage: string = 'Belum ada data.';
-  export let emptyIcon: string = 'inventory_2';
-  export let onRetry: (() => void) | undefined = undefined;
-  export let emptyActionText: string | undefined = undefined;
-  export let onEmptyAction: (() => void) | undefined = undefined;
-  export let totalItems: number = 0;
-  export let currentPage: number = 1;
-  export let dataPerPage: number = 10;
-  export let onPageChange: (newPage: number) => void = () => {};
+  interface DataTableProps {
+    loading?: boolean;
+    error?: string | null;
+    emptyMessage?: string;
+    emptyIcon?: string;
+    onRetry?: () => void;
+    emptyActionText?: string;
+    onEmptyAction?: () => void;
+    totalItems?: number;
+    currentPage?: number;
+    dataPerPage?: number;
+    onPageChange?: (page: number) => void;
+    header?: Snippet;
+    body?: Snippet;
+  }
 
-  $: totalPages = Math.max(1, Math.ceil(totalItems / dataPerPage));
-  $: startItem = totalItems === 0 ? 0 : (currentPage - 1) * dataPerPage + 1;
-  $: endItem = Math.min(currentPage * dataPerPage, totalItems);
+  let {
+    loading = false,
+    error = null,
+    emptyMessage = 'Belum ada data.',
+    emptyIcon = 'inventory_2',
+    onRetry = undefined,
+    emptyActionText = undefined,
+    onEmptyAction = undefined,
+    totalItems = 0,
+    currentPage = 1,
+    dataPerPage = 10,
+    onPageChange = () => {},
+    header,
+    body
+  }: DataTableProps = $props();
 
-  function getPageNumbers(current: number, max: number): (number | string)[] {
-    if (max <= 7) {
-      return Array.from({ length: max }, (_, index) => index + 1);
+  const totalPages = $derived(Math.max(1, Math.ceil(totalItems / dataPerPage)));
+  const startItem = $derived(totalItems === 0 ? 0 : (currentPage - 1) * dataPerPage + 1);
+  const endItem = $derived(Math.min(currentPage * dataPerPage, totalItems));
+
+  function getPageNumbers(current: number, total: number): (number | string)[] {
+    if (total <= 5) {
+      return Array.from({ length: total }, (_, index) => index + 1);
     }
-    const pageItems: (number | string)[] = [1];
-    const startRange = Math.max(2, current - 2);
-    const endRange = Math.min(max - 1, current + 2);
-
-    if (startRange > 2) pageItems.push('…');
-    for (let pageNumber = startRange; pageNumber <= endRange; pageNumber++) {
-      pageItems.push(pageNumber);
+    if (current <= 3) {
+      return [1, 2, 3, 4, '…', total];
     }
-    if (endRange < max - 1) pageItems.push('…');
-    pageItems.push(max);
-    return pageItems;
+    if (current >= total - 2) {
+      return [1, '…', total - 3, total - 2, total - 1, total];
+    }
+    return [1, '…', current - 1, current, current + 1, '…', total];
   }
 </script>
 
@@ -70,7 +89,7 @@
         Tidak ada catatan yang ditemukan untuk kriteria atau filter saat ini.
       </p>
       {#if emptyActionText && onEmptyAction}
-        <Button variant="primary" size="sm" on:click={onEmptyAction}>
+        <Button variant="primary" size="sm" onclick={onEmptyAction}>
           {emptyActionText}
         </Button>
       {/if}
@@ -81,10 +100,10 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-sm border-collapse">
         <thead class="bg-muted border-b border-border text-xs font-bold uppercase tracking-wider text-muted-fg">
-          <slot name="header" />
+          {#if header}{@render header()}{/if}
         </thead>
         <tbody class="divide-y divide-border">
-          <slot name="body" />
+          {#if body}{@render body()}{/if}
         </tbody>
       </table>
     </div>
@@ -100,7 +119,7 @@
           variant="outline"
           disabled={currentPage <= 1}
           ariaLabel="Halaman sebelumnya"
-          on:click={() => onPageChange(currentPage - 1)}
+          onclick={() => onPageChange(currentPage - 1)}
         >
           <Icon name="chevron_left" size="xs" />
         </Button>
@@ -112,7 +131,7 @@
             <button
               type="button"
               class="w-8 h-8 rounded-lg font-semibold text-xs border transition-colors duration-150 cursor-pointer {currentPage === pageNum ? 'bg-primary text-white border-primary' : 'bg-surface text-fg border-border hover:bg-muted'}"
-              on:click={() => onPageChange(Number(pageNum))}
+              onclick={() => onPageChange(Number(pageNum))}
             >
               {pageNum}
             </button>
@@ -124,7 +143,7 @@
           variant="outline"
           disabled={currentPage >= totalPages}
           ariaLabel="Halaman berikutnya"
-          on:click={() => onPageChange(currentPage + 1)}
+          onclick={() => onPageChange(currentPage + 1)}
         >
           <Icon name="chevron_right" size="xs" />
         </Button>

@@ -1,26 +1,32 @@
 <script lang="ts">
 import { userStore, subjectStore, classStore, packageStore, enrollmentStore } from '$lib/api';
-  import { Modal, SelectSearch } from '$lib/components/molecules';
-  import { Icon, Input } from '$lib/components/atoms';
+  import { SelectSearch } from '$lib/components/molecules';
+  import { Input } from '$lib/components/atoms';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {toastStore} from '$lib/shared/stores';
+  import type { Enrollment } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
 
-  import type { Enrollment } from '$lib/shared/types';
-  import { api } from '$lib/api/client';
-
-  export let open: boolean = false;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    onClose?: () => void;
+  } = $props();
 
   const now = new Date();
-  let selectedStudentId: string = '';
-  let selectedMonth: string = String(now.getMonth() + 1);
-  let selectedYear: number = now.getFullYear();
+  let selectedStudentId = $state('');
+  let selectedMonth = $state(String(now.getMonth() + 1));
+  let selectedYear = $state(now.getFullYear());
 
-  $: enrollments = $enrollmentStore.filter((enrollment) => enrollment.deletedAt === null);
+  let enrollments = $derived($enrollmentStore.filter((enrollment) => enrollment.deletedAt === null));
 
-  $: if (enrollments.length > 0 && !selectedStudentId) {
-    selectedStudentId = enrollments[0].studentId;
-  }
+  $effect(() => {
+    if (enrollments.length > 0 && !selectedStudentId) {
+      selectedStudentId = enrollments[0].studentId;
+    }
+  });
 
   function getStudentEnrollmentLabel(enrollment: Enrollment): string {
     const student = $userStore.find((user) => user.id === enrollment.studentId);
@@ -58,6 +64,7 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
       notes: `Tagihan SPP Periode ${monthNames[Number(selectedMonth) - 1]} ${selectedYear}`
     };
 
+    const { api } = await import('$lib/api/client');
     const response = await api.invoices.create(payload);
     if (!response.error) {
       toastStore.success('Tagihan SPP berhasil diterbitkan.');
@@ -70,11 +77,11 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
 
 <Modal {open} {onClose} title="Generate Tagihan SPP" icon="receipt_long" maxWidth="540px">
   <div class="alert alert-info -mt-1">
-    <Icon name="auto_awesome" size="sm" />
+    <span class="material-symbols-rounded" style="font-size:1rem;">auto_awesome</span>
     <span>Total dihitung otomatis dari sesi APPROVED murid pada periode terpilih.</span>
   </div>
 
-  <form id="form-gen-invoice" on:submit|preventDefault={handleSubmit}>
+  <form id="form-gen-invoice" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <div class="field">
       <label for="f_studentId">Murid <i class="req">*</i></label>
       <SelectSearch 
@@ -103,12 +110,12 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-gen-invoice" icon="receipt_long">
       Terbitkan Tagihan
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

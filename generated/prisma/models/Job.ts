@@ -28,7 +28,6 @@ export type AggregateJob = {
 
 export type JobAvgAggregateOutputType = {
   tentorFee: number | null
-  transportAllowance: number | null
   sessionDurationMinutes: number | null
   studentCount: number | null
   latitude: number | null
@@ -37,7 +36,6 @@ export type JobAvgAggregateOutputType = {
 
 export type JobSumAggregateOutputType = {
   tentorFee: number | null
-  transportAllowance: number | null
   sessionDurationMinutes: number | null
   studentCount: number | null
   latitude: number | null
@@ -50,22 +48,20 @@ export type JobMinAggregateOutputType = {
   classId: string | null
   subjectId: string | null
   packageId: string | null
-  jobMode: $Enums.JobMode | null
+  jobMode: string | null
+  jobType: string | null
   tentorFee: number | null
-  transportAllowance: number | null
   sessionDurationMinutes: number | null
   scheduleTime: string | null
-  scheduleEndTime: string | null
   studentCount: number | null
   location: string | null
   latitude: number | null
   longitude: number | null
-  status: $Enums.JobStatus | null
+  status: string | null
   assignedTentorId: string | null
   studentId: string | null
   enrollmentId: string | null
   notes: string | null
-  additionalNotes: string | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -77,22 +73,20 @@ export type JobMaxAggregateOutputType = {
   classId: string | null
   subjectId: string | null
   packageId: string | null
-  jobMode: $Enums.JobMode | null
+  jobMode: string | null
+  jobType: string | null
   tentorFee: number | null
-  transportAllowance: number | null
   sessionDurationMinutes: number | null
   scheduleTime: string | null
-  scheduleEndTime: string | null
   studentCount: number | null
   location: string | null
   latitude: number | null
   longitude: number | null
-  status: $Enums.JobStatus | null
+  status: string | null
   assignedTentorId: string | null
   studentId: string | null
   enrollmentId: string | null
   notes: string | null
-  additionalNotes: string | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -105,12 +99,11 @@ export type JobCountAggregateOutputType = {
   subjectId: number
   packageId: number
   jobMode: number
+  jobType: number
   tentorFee: number
-  transportAllowance: number
   sessionDurationMinutes: number
   scheduleDays: number
   scheduleTime: number
-  scheduleEndTime: number
   studentCount: number
   location: number
   latitude: number
@@ -120,7 +113,6 @@ export type JobCountAggregateOutputType = {
   studentId: number
   enrollmentId: number
   notes: number
-  additionalNotes: number
   createdAt: number
   updatedAt: number
   deletedAt: number
@@ -130,7 +122,6 @@ export type JobCountAggregateOutputType = {
 
 export type JobAvgAggregateInputType = {
   tentorFee?: true
-  transportAllowance?: true
   sessionDurationMinutes?: true
   studentCount?: true
   latitude?: true
@@ -139,7 +130,6 @@ export type JobAvgAggregateInputType = {
 
 export type JobSumAggregateInputType = {
   tentorFee?: true
-  transportAllowance?: true
   sessionDurationMinutes?: true
   studentCount?: true
   latitude?: true
@@ -153,11 +143,10 @@ export type JobMinAggregateInputType = {
   subjectId?: true
   packageId?: true
   jobMode?: true
+  jobType?: true
   tentorFee?: true
-  transportAllowance?: true
   sessionDurationMinutes?: true
   scheduleTime?: true
-  scheduleEndTime?: true
   studentCount?: true
   location?: true
   latitude?: true
@@ -167,7 +156,6 @@ export type JobMinAggregateInputType = {
   studentId?: true
   enrollmentId?: true
   notes?: true
-  additionalNotes?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -180,11 +168,10 @@ export type JobMaxAggregateInputType = {
   subjectId?: true
   packageId?: true
   jobMode?: true
+  jobType?: true
   tentorFee?: true
-  transportAllowance?: true
   sessionDurationMinutes?: true
   scheduleTime?: true
-  scheduleEndTime?: true
   studentCount?: true
   location?: true
   latitude?: true
@@ -194,7 +181,6 @@ export type JobMaxAggregateInputType = {
   studentId?: true
   enrollmentId?: true
   notes?: true
-  additionalNotes?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -207,12 +193,11 @@ export type JobCountAggregateInputType = {
   subjectId?: true
   packageId?: true
   jobMode?: true
+  jobType?: true
   tentorFee?: true
-  transportAllowance?: true
   sessionDurationMinutes?: true
   scheduleDays?: true
   scheduleTime?: true
-  scheduleEndTime?: true
   studentCount?: true
   location?: true
   latitude?: true
@@ -222,7 +207,6 @@ export type JobCountAggregateInputType = {
   studentId?: true
   enrollmentId?: true
   notes?: true
-  additionalNotes?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -321,23 +305,21 @@ export type JobGroupByOutputType = {
   classId: string | null
   subjectId: string | null
   packageId: string | null
-  jobMode: $Enums.JobMode
+  jobMode: string
+  jobType: string | null
   tentorFee: number
-  transportAllowance: number
   sessionDurationMinutes: number
   scheduleDays: string[]
   scheduleTime: string
-  scheduleEndTime: string
   studentCount: number
   location: string
   latitude: number | null
   longitude: number | null
-  status: $Enums.JobStatus
+  status: string
   assignedTentorId: string | null
   studentId: string | null
   enrollmentId: string | null
   notes: string
-  additionalNotes: string
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -372,23 +354,21 @@ export type JobWhereInput = {
   classId?: Prisma.StringNullableFilter<"Job"> | string | null
   subjectId?: Prisma.StringNullableFilter<"Job"> | string | null
   packageId?: Prisma.StringNullableFilter<"Job"> | string | null
-  jobMode?: Prisma.EnumJobModeFilter<"Job"> | $Enums.JobMode
+  jobMode?: Prisma.StringFilter<"Job"> | string
+  jobType?: Prisma.StringNullableFilter<"Job"> | string | null
   tentorFee?: Prisma.IntFilter<"Job"> | number
-  transportAllowance?: Prisma.IntFilter<"Job"> | number
   sessionDurationMinutes?: Prisma.IntFilter<"Job"> | number
   scheduleDays?: Prisma.StringNullableListFilter<"Job">
   scheduleTime?: Prisma.StringFilter<"Job"> | string
-  scheduleEndTime?: Prisma.StringFilter<"Job"> | string
   studentCount?: Prisma.IntFilter<"Job"> | number
   location?: Prisma.StringFilter<"Job"> | string
   latitude?: Prisma.FloatNullableFilter<"Job"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Job"> | number | null
-  status?: Prisma.EnumJobStatusFilter<"Job"> | $Enums.JobStatus
+  status?: Prisma.StringFilter<"Job"> | string
   assignedTentorId?: Prisma.StringNullableFilter<"Job"> | string | null
   studentId?: Prisma.StringNullableFilter<"Job"> | string | null
   enrollmentId?: Prisma.StringNullableFilter<"Job"> | string | null
   notes?: Prisma.StringFilter<"Job"> | string
-  additionalNotes?: Prisma.StringFilter<"Job"> | string
   createdAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Job"> | Date | string | null
@@ -399,7 +379,6 @@ export type JobWhereInput = {
   student?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   enrollment?: Prisma.XOR<Prisma.EnrollmentNullableScalarRelationFilter, Prisma.EnrollmentWhereInput> | null
   applications?: Prisma.JobApplicationListRelationFilter
-  attendances?: Prisma.AttendanceListRelationFilter
 }
 
 export type JobOrderByWithRelationInput = {
@@ -409,12 +388,11 @@ export type JobOrderByWithRelationInput = {
   subjectId?: Prisma.SortOrderInput | Prisma.SortOrder
   packageId?: Prisma.SortOrderInput | Prisma.SortOrder
   jobMode?: Prisma.SortOrder
+  jobType?: Prisma.SortOrderInput | Prisma.SortOrder
   tentorFee?: Prisma.SortOrder
-  transportAllowance?: Prisma.SortOrder
   sessionDurationMinutes?: Prisma.SortOrder
   scheduleDays?: Prisma.SortOrder
   scheduleTime?: Prisma.SortOrder
-  scheduleEndTime?: Prisma.SortOrder
   studentCount?: Prisma.SortOrder
   location?: Prisma.SortOrder
   latitude?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -424,7 +402,6 @@ export type JobOrderByWithRelationInput = {
   studentId?: Prisma.SortOrderInput | Prisma.SortOrder
   enrollmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrder
-  additionalNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -435,7 +412,6 @@ export type JobOrderByWithRelationInput = {
   student?: Prisma.UserOrderByWithRelationInput
   enrollment?: Prisma.EnrollmentOrderByWithRelationInput
   applications?: Prisma.JobApplicationOrderByRelationAggregateInput
-  attendances?: Prisma.AttendanceOrderByRelationAggregateInput
 }
 
 export type JobWhereUniqueInput = Prisma.AtLeast<{
@@ -447,23 +423,21 @@ export type JobWhereUniqueInput = Prisma.AtLeast<{
   classId?: Prisma.StringNullableFilter<"Job"> | string | null
   subjectId?: Prisma.StringNullableFilter<"Job"> | string | null
   packageId?: Prisma.StringNullableFilter<"Job"> | string | null
-  jobMode?: Prisma.EnumJobModeFilter<"Job"> | $Enums.JobMode
+  jobMode?: Prisma.StringFilter<"Job"> | string
+  jobType?: Prisma.StringNullableFilter<"Job"> | string | null
   tentorFee?: Prisma.IntFilter<"Job"> | number
-  transportAllowance?: Prisma.IntFilter<"Job"> | number
   sessionDurationMinutes?: Prisma.IntFilter<"Job"> | number
   scheduleDays?: Prisma.StringNullableListFilter<"Job">
   scheduleTime?: Prisma.StringFilter<"Job"> | string
-  scheduleEndTime?: Prisma.StringFilter<"Job"> | string
   studentCount?: Prisma.IntFilter<"Job"> | number
   location?: Prisma.StringFilter<"Job"> | string
   latitude?: Prisma.FloatNullableFilter<"Job"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Job"> | number | null
-  status?: Prisma.EnumJobStatusFilter<"Job"> | $Enums.JobStatus
+  status?: Prisma.StringFilter<"Job"> | string
   assignedTentorId?: Prisma.StringNullableFilter<"Job"> | string | null
   studentId?: Prisma.StringNullableFilter<"Job"> | string | null
   enrollmentId?: Prisma.StringNullableFilter<"Job"> | string | null
   notes?: Prisma.StringFilter<"Job"> | string
-  additionalNotes?: Prisma.StringFilter<"Job"> | string
   createdAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Job"> | Date | string | null
@@ -474,7 +448,6 @@ export type JobWhereUniqueInput = Prisma.AtLeast<{
   student?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   enrollment?: Prisma.XOR<Prisma.EnrollmentNullableScalarRelationFilter, Prisma.EnrollmentWhereInput> | null
   applications?: Prisma.JobApplicationListRelationFilter
-  attendances?: Prisma.AttendanceListRelationFilter
 }, "id">
 
 export type JobOrderByWithAggregationInput = {
@@ -484,12 +457,11 @@ export type JobOrderByWithAggregationInput = {
   subjectId?: Prisma.SortOrderInput | Prisma.SortOrder
   packageId?: Prisma.SortOrderInput | Prisma.SortOrder
   jobMode?: Prisma.SortOrder
+  jobType?: Prisma.SortOrderInput | Prisma.SortOrder
   tentorFee?: Prisma.SortOrder
-  transportAllowance?: Prisma.SortOrder
   sessionDurationMinutes?: Prisma.SortOrder
   scheduleDays?: Prisma.SortOrder
   scheduleTime?: Prisma.SortOrder
-  scheduleEndTime?: Prisma.SortOrder
   studentCount?: Prisma.SortOrder
   location?: Prisma.SortOrder
   latitude?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -499,7 +471,6 @@ export type JobOrderByWithAggregationInput = {
   studentId?: Prisma.SortOrderInput | Prisma.SortOrder
   enrollmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrder
-  additionalNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -519,23 +490,21 @@ export type JobScalarWhereWithAggregatesInput = {
   classId?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   subjectId?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   packageId?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
-  jobMode?: Prisma.EnumJobModeWithAggregatesFilter<"Job"> | $Enums.JobMode
+  jobMode?: Prisma.StringWithAggregatesFilter<"Job"> | string
+  jobType?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   tentorFee?: Prisma.IntWithAggregatesFilter<"Job"> | number
-  transportAllowance?: Prisma.IntWithAggregatesFilter<"Job"> | number
   sessionDurationMinutes?: Prisma.IntWithAggregatesFilter<"Job"> | number
   scheduleDays?: Prisma.StringNullableListFilter<"Job">
   scheduleTime?: Prisma.StringWithAggregatesFilter<"Job"> | string
-  scheduleEndTime?: Prisma.StringWithAggregatesFilter<"Job"> | string
   studentCount?: Prisma.IntWithAggregatesFilter<"Job"> | number
   location?: Prisma.StringWithAggregatesFilter<"Job"> | string
   latitude?: Prisma.FloatNullableWithAggregatesFilter<"Job"> | number | null
   longitude?: Prisma.FloatNullableWithAggregatesFilter<"Job"> | number | null
-  status?: Prisma.EnumJobStatusWithAggregatesFilter<"Job"> | $Enums.JobStatus
+  status?: Prisma.StringWithAggregatesFilter<"Job"> | string
   assignedTentorId?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   studentId?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   enrollmentId?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   notes?: Prisma.StringWithAggregatesFilter<"Job"> | string
-  additionalNotes?: Prisma.StringWithAggregatesFilter<"Job"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Job"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Job"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Job"> | Date | string | null
@@ -544,20 +513,18 @@ export type JobScalarWhereWithAggregatesInput = {
 export type JobCreateInput = {
   id?: string
   title: string
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -568,7 +535,6 @@ export type JobCreateInput = {
   student?: Prisma.UserCreateNestedOneWithoutStudentJobsInput
   enrollment?: Prisma.EnrollmentCreateNestedOneWithoutJobsInput
   applications?: Prisma.JobApplicationCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateInput = {
@@ -577,47 +543,42 @@ export type JobUncheckedCreateInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -628,7 +589,6 @@ export type JobUpdateInput = {
   student?: Prisma.UserUpdateOneWithoutStudentJobsNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneWithoutJobsNestedInput
   applications?: Prisma.JobApplicationUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateInput = {
@@ -637,28 +597,25 @@ export type JobUncheckedUpdateInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobCreateManyInput = {
@@ -667,23 +624,21 @@ export type JobCreateManyInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -692,20 +647,18 @@ export type JobCreateManyInput = {
 export type JobUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -717,23 +670,21 @@ export type JobUncheckedUpdateManyInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -749,14 +700,6 @@ export type JobOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type StringNullableListFilter<$PrismaModel = never> = {
-  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
-  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
-  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
-  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
-  isEmpty?: boolean
-}
-
 export type JobCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
@@ -764,12 +707,11 @@ export type JobCountOrderByAggregateInput = {
   subjectId?: Prisma.SortOrder
   packageId?: Prisma.SortOrder
   jobMode?: Prisma.SortOrder
+  jobType?: Prisma.SortOrder
   tentorFee?: Prisma.SortOrder
-  transportAllowance?: Prisma.SortOrder
   sessionDurationMinutes?: Prisma.SortOrder
   scheduleDays?: Prisma.SortOrder
   scheduleTime?: Prisma.SortOrder
-  scheduleEndTime?: Prisma.SortOrder
   studentCount?: Prisma.SortOrder
   location?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
@@ -779,7 +721,6 @@ export type JobCountOrderByAggregateInput = {
   studentId?: Prisma.SortOrder
   enrollmentId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
-  additionalNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -787,7 +728,6 @@ export type JobCountOrderByAggregateInput = {
 
 export type JobAvgOrderByAggregateInput = {
   tentorFee?: Prisma.SortOrder
-  transportAllowance?: Prisma.SortOrder
   sessionDurationMinutes?: Prisma.SortOrder
   studentCount?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
@@ -801,11 +741,10 @@ export type JobMaxOrderByAggregateInput = {
   subjectId?: Prisma.SortOrder
   packageId?: Prisma.SortOrder
   jobMode?: Prisma.SortOrder
+  jobType?: Prisma.SortOrder
   tentorFee?: Prisma.SortOrder
-  transportAllowance?: Prisma.SortOrder
   sessionDurationMinutes?: Prisma.SortOrder
   scheduleTime?: Prisma.SortOrder
-  scheduleEndTime?: Prisma.SortOrder
   studentCount?: Prisma.SortOrder
   location?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
@@ -815,7 +754,6 @@ export type JobMaxOrderByAggregateInput = {
   studentId?: Prisma.SortOrder
   enrollmentId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
-  additionalNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -828,11 +766,10 @@ export type JobMinOrderByAggregateInput = {
   subjectId?: Prisma.SortOrder
   packageId?: Prisma.SortOrder
   jobMode?: Prisma.SortOrder
+  jobType?: Prisma.SortOrder
   tentorFee?: Prisma.SortOrder
-  transportAllowance?: Prisma.SortOrder
   sessionDurationMinutes?: Prisma.SortOrder
   scheduleTime?: Prisma.SortOrder
-  scheduleEndTime?: Prisma.SortOrder
   studentCount?: Prisma.SortOrder
   location?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
@@ -842,7 +779,6 @@ export type JobMinOrderByAggregateInput = {
   studentId?: Prisma.SortOrder
   enrollmentId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
-  additionalNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -850,7 +786,6 @@ export type JobMinOrderByAggregateInput = {
 
 export type JobSumOrderByAggregateInput = {
   tentorFee?: Prisma.SortOrder
-  transportAllowance?: Prisma.SortOrder
   sessionDurationMinutes?: Prisma.SortOrder
   studentCount?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
@@ -860,11 +795,6 @@ export type JobSumOrderByAggregateInput = {
 export type JobScalarRelationFilter = {
   is?: Prisma.JobWhereInput
   isNot?: Prisma.JobWhereInput
-}
-
-export type JobNullableScalarRelationFilter = {
-  is?: Prisma.JobWhereInput | null
-  isNot?: Prisma.JobWhereInput | null
 }
 
 export type JobCreateNestedManyWithoutAssignedTentorInput = {
@@ -1123,17 +1053,9 @@ export type JobCreatescheduleDaysInput = {
   set: string[]
 }
 
-export type EnumJobModeFieldUpdateOperationsInput = {
-  set?: $Enums.JobMode
-}
-
 export type JobUpdatescheduleDaysInput = {
   set?: string[]
   push?: string | string[]
-}
-
-export type EnumJobStatusFieldUpdateOperationsInput = {
-  set?: $Enums.JobStatus
 }
 
 export type JobCreateNestedOneWithoutApplicationsInput = {
@@ -1150,39 +1072,21 @@ export type JobUpdateOneRequiredWithoutApplicationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.JobUpdateToOneWithWhereWithoutApplicationsInput, Prisma.JobUpdateWithoutApplicationsInput>, Prisma.JobUncheckedUpdateWithoutApplicationsInput>
 }
 
-export type JobCreateNestedOneWithoutAttendancesInput = {
-  create?: Prisma.XOR<Prisma.JobCreateWithoutAttendancesInput, Prisma.JobUncheckedCreateWithoutAttendancesInput>
-  connectOrCreate?: Prisma.JobCreateOrConnectWithoutAttendancesInput
-  connect?: Prisma.JobWhereUniqueInput
-}
-
-export type JobUpdateOneWithoutAttendancesNestedInput = {
-  create?: Prisma.XOR<Prisma.JobCreateWithoutAttendancesInput, Prisma.JobUncheckedCreateWithoutAttendancesInput>
-  connectOrCreate?: Prisma.JobCreateOrConnectWithoutAttendancesInput
-  upsert?: Prisma.JobUpsertWithoutAttendancesInput
-  disconnect?: Prisma.JobWhereInput | boolean
-  delete?: Prisma.JobWhereInput | boolean
-  connect?: Prisma.JobWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.JobUpdateToOneWithWhereWithoutAttendancesInput, Prisma.JobUpdateWithoutAttendancesInput>, Prisma.JobUncheckedUpdateWithoutAttendancesInput>
-}
-
 export type JobCreateWithoutAssignedTentorInput = {
   id?: string
   title: string
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1192,7 +1096,6 @@ export type JobCreateWithoutAssignedTentorInput = {
   student?: Prisma.UserCreateNestedOneWithoutStudentJobsInput
   enrollment?: Prisma.EnrollmentCreateNestedOneWithoutJobsInput
   applications?: Prisma.JobApplicationCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutAssignedTentorInput = {
@@ -1201,27 +1104,24 @@ export type JobUncheckedCreateWithoutAssignedTentorInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutAssignedTentorInput = {
@@ -1237,20 +1137,18 @@ export type JobCreateManyAssignedTentorInputEnvelope = {
 export type JobCreateWithoutStudentInput = {
   id?: string
   title: string
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1260,7 +1158,6 @@ export type JobCreateWithoutStudentInput = {
   assignedTentor?: Prisma.UserCreateNestedOneWithoutAssignedJobsInput
   enrollment?: Prisma.EnrollmentCreateNestedOneWithoutJobsInput
   applications?: Prisma.JobApplicationCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutStudentInput = {
@@ -1269,27 +1166,24 @@ export type JobUncheckedCreateWithoutStudentInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutStudentInput = {
@@ -1327,23 +1221,21 @@ export type JobScalarWhereInput = {
   classId?: Prisma.StringNullableFilter<"Job"> | string | null
   subjectId?: Prisma.StringNullableFilter<"Job"> | string | null
   packageId?: Prisma.StringNullableFilter<"Job"> | string | null
-  jobMode?: Prisma.EnumJobModeFilter<"Job"> | $Enums.JobMode
+  jobMode?: Prisma.StringFilter<"Job"> | string
+  jobType?: Prisma.StringNullableFilter<"Job"> | string | null
   tentorFee?: Prisma.IntFilter<"Job"> | number
-  transportAllowance?: Prisma.IntFilter<"Job"> | number
   sessionDurationMinutes?: Prisma.IntFilter<"Job"> | number
   scheduleDays?: Prisma.StringNullableListFilter<"Job">
   scheduleTime?: Prisma.StringFilter<"Job"> | string
-  scheduleEndTime?: Prisma.StringFilter<"Job"> | string
   studentCount?: Prisma.IntFilter<"Job"> | number
   location?: Prisma.StringFilter<"Job"> | string
   latitude?: Prisma.FloatNullableFilter<"Job"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Job"> | number | null
-  status?: Prisma.EnumJobStatusFilter<"Job"> | $Enums.JobStatus
+  status?: Prisma.StringFilter<"Job"> | string
   assignedTentorId?: Prisma.StringNullableFilter<"Job"> | string | null
   studentId?: Prisma.StringNullableFilter<"Job"> | string | null
   enrollmentId?: Prisma.StringNullableFilter<"Job"> | string | null
   notes?: Prisma.StringFilter<"Job"> | string
-  additionalNotes?: Prisma.StringFilter<"Job"> | string
   createdAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Job"> | Date | string | null
@@ -1368,20 +1260,18 @@ export type JobUpdateManyWithWhereWithoutStudentInput = {
 export type JobCreateWithoutClassInput = {
   id?: string
   title: string
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1391,7 +1281,6 @@ export type JobCreateWithoutClassInput = {
   student?: Prisma.UserCreateNestedOneWithoutStudentJobsInput
   enrollment?: Prisma.EnrollmentCreateNestedOneWithoutJobsInput
   applications?: Prisma.JobApplicationCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutClassInput = {
@@ -1399,28 +1288,25 @@ export type JobUncheckedCreateWithoutClassInput = {
   title: string
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutClassInput = {
@@ -1452,20 +1338,18 @@ export type JobUpdateManyWithWhereWithoutClassInput = {
 export type JobCreateWithoutSubjectInput = {
   id?: string
   title: string
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1475,7 +1359,6 @@ export type JobCreateWithoutSubjectInput = {
   student?: Prisma.UserCreateNestedOneWithoutStudentJobsInput
   enrollment?: Prisma.EnrollmentCreateNestedOneWithoutJobsInput
   applications?: Prisma.JobApplicationCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutSubjectInput = {
@@ -1483,28 +1366,25 @@ export type JobUncheckedCreateWithoutSubjectInput = {
   title: string
   classId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutSubjectInput = {
@@ -1536,20 +1416,18 @@ export type JobUpdateManyWithWhereWithoutSubjectInput = {
 export type JobCreateWithoutPackageInput = {
   id?: string
   title: string
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1559,7 +1437,6 @@ export type JobCreateWithoutPackageInput = {
   student?: Prisma.UserCreateNestedOneWithoutStudentJobsInput
   enrollment?: Prisma.EnrollmentCreateNestedOneWithoutJobsInput
   applications?: Prisma.JobApplicationCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutPackageInput = {
@@ -1567,28 +1444,25 @@ export type JobUncheckedCreateWithoutPackageInput = {
   title: string
   classId?: string | null
   subjectId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutPackageInput = {
@@ -1620,20 +1494,18 @@ export type JobUpdateManyWithWhereWithoutPackageInput = {
 export type JobCreateWithoutEnrollmentInput = {
   id?: string
   title: string
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1643,7 +1515,6 @@ export type JobCreateWithoutEnrollmentInput = {
   assignedTentor?: Prisma.UserCreateNestedOneWithoutAssignedJobsInput
   student?: Prisma.UserCreateNestedOneWithoutStudentJobsInput
   applications?: Prisma.JobApplicationCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutEnrollmentInput = {
@@ -1652,27 +1523,24 @@ export type JobUncheckedCreateWithoutEnrollmentInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobInput
-  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutEnrollmentInput = {
@@ -1704,20 +1572,18 @@ export type JobUpdateManyWithWhereWithoutEnrollmentInput = {
 export type JobCreateWithoutApplicationsInput = {
   id?: string
   title: string
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1727,7 +1593,6 @@ export type JobCreateWithoutApplicationsInput = {
   assignedTentor?: Prisma.UserCreateNestedOneWithoutAssignedJobsInput
   student?: Prisma.UserCreateNestedOneWithoutStudentJobsInput
   enrollment?: Prisma.EnrollmentCreateNestedOneWithoutJobsInput
-  attendances?: Prisma.AttendanceCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutApplicationsInput = {
@@ -1736,27 +1601,24 @@ export type JobUncheckedCreateWithoutApplicationsInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutApplicationsInput = {
@@ -1778,20 +1640,18 @@ export type JobUpdateToOneWithWhereWithoutApplicationsInput = {
 export type JobUpdateWithoutApplicationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1801,7 +1661,6 @@ export type JobUpdateWithoutApplicationsInput = {
   assignedTentor?: Prisma.UserUpdateOneWithoutAssignedJobsNestedInput
   student?: Prisma.UserUpdateOneWithoutStudentJobsNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneWithoutJobsNestedInput
-  attendances?: Prisma.AttendanceUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutApplicationsInput = {
@@ -1810,159 +1669,24 @@ export type JobUncheckedUpdateWithoutApplicationsInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutJobNestedInput
-}
-
-export type JobCreateWithoutAttendancesInput = {
-  id?: string
-  title: string
-  jobMode?: $Enums.JobMode
-  tentorFee?: number
-  transportAllowance?: number
-  sessionDurationMinutes?: number
-  scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
-  scheduleTime?: string
-  scheduleEndTime?: string
-  studentCount?: number
-  location?: string
-  latitude?: number | null
-  longitude?: number | null
-  status?: $Enums.JobStatus
-  notes?: string
-  additionalNotes?: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  class?: Prisma.ClassLevelCreateNestedOneWithoutJobsInput
-  subject?: Prisma.SubjectCreateNestedOneWithoutJobsInput
-  package?: Prisma.PackageCreateNestedOneWithoutJobsInput
-  assignedTentor?: Prisma.UserCreateNestedOneWithoutAssignedJobsInput
-  student?: Prisma.UserCreateNestedOneWithoutStudentJobsInput
-  enrollment?: Prisma.EnrollmentCreateNestedOneWithoutJobsInput
-  applications?: Prisma.JobApplicationCreateNestedManyWithoutJobInput
-}
-
-export type JobUncheckedCreateWithoutAttendancesInput = {
-  id?: string
-  title: string
-  classId?: string | null
-  subjectId?: string | null
-  packageId?: string | null
-  jobMode?: $Enums.JobMode
-  tentorFee?: number
-  transportAllowance?: number
-  sessionDurationMinutes?: number
-  scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
-  scheduleTime?: string
-  scheduleEndTime?: string
-  studentCount?: number
-  location?: string
-  latitude?: number | null
-  longitude?: number | null
-  status?: $Enums.JobStatus
-  assignedTentorId?: string | null
-  studentId?: string | null
-  enrollmentId?: string | null
-  notes?: string
-  additionalNotes?: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobInput
-}
-
-export type JobCreateOrConnectWithoutAttendancesInput = {
-  where: Prisma.JobWhereUniqueInput
-  create: Prisma.XOR<Prisma.JobCreateWithoutAttendancesInput, Prisma.JobUncheckedCreateWithoutAttendancesInput>
-}
-
-export type JobUpsertWithoutAttendancesInput = {
-  update: Prisma.XOR<Prisma.JobUpdateWithoutAttendancesInput, Prisma.JobUncheckedUpdateWithoutAttendancesInput>
-  create: Prisma.XOR<Prisma.JobCreateWithoutAttendancesInput, Prisma.JobUncheckedCreateWithoutAttendancesInput>
-  where?: Prisma.JobWhereInput
-}
-
-export type JobUpdateToOneWithWhereWithoutAttendancesInput = {
-  where?: Prisma.JobWhereInput
-  data: Prisma.XOR<Prisma.JobUpdateWithoutAttendancesInput, Prisma.JobUncheckedUpdateWithoutAttendancesInput>
-}
-
-export type JobUpdateWithoutAttendancesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
-  tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
-  scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
-  studentCount?: Prisma.IntFieldUpdateOperationsInput | number
-  location?: Prisma.StringFieldUpdateOperationsInput | string
-  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
-  notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  class?: Prisma.ClassLevelUpdateOneWithoutJobsNestedInput
-  subject?: Prisma.SubjectUpdateOneWithoutJobsNestedInput
-  package?: Prisma.PackageUpdateOneWithoutJobsNestedInput
-  assignedTentor?: Prisma.UserUpdateOneWithoutAssignedJobsNestedInput
-  student?: Prisma.UserUpdateOneWithoutStudentJobsNestedInput
-  enrollment?: Prisma.EnrollmentUpdateOneWithoutJobsNestedInput
-  applications?: Prisma.JobApplicationUpdateManyWithoutJobNestedInput
-}
-
-export type JobUncheckedUpdateWithoutAttendancesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
-  tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
-  scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
-  studentCount?: Prisma.IntFieldUpdateOperationsInput | number
-  location?: Prisma.StringFieldUpdateOperationsInput | string
-  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
-  assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobCreateManyAssignedTentorInput = {
@@ -1971,22 +1695,20 @@ export type JobCreateManyAssignedTentorInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1998,22 +1720,20 @@ export type JobCreateManyStudentInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2022,20 +1742,18 @@ export type JobCreateManyStudentInput = {
 export type JobUpdateWithoutAssignedTentorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2045,7 +1763,6 @@ export type JobUpdateWithoutAssignedTentorInput = {
   student?: Prisma.UserUpdateOneWithoutStudentJobsNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneWithoutJobsNestedInput
   applications?: Prisma.JobApplicationUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutAssignedTentorInput = {
@@ -2054,27 +1771,24 @@ export type JobUncheckedUpdateWithoutAssignedTentorInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateManyWithoutAssignedTentorInput = {
@@ -2083,22 +1797,20 @@ export type JobUncheckedUpdateManyWithoutAssignedTentorInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2107,20 +1819,18 @@ export type JobUncheckedUpdateManyWithoutAssignedTentorInput = {
 export type JobUpdateWithoutStudentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2130,7 +1840,6 @@ export type JobUpdateWithoutStudentInput = {
   assignedTentor?: Prisma.UserUpdateOneWithoutAssignedJobsNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneWithoutJobsNestedInput
   applications?: Prisma.JobApplicationUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutStudentInput = {
@@ -2139,27 +1848,24 @@ export type JobUncheckedUpdateWithoutStudentInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateManyWithoutStudentInput = {
@@ -2168,22 +1874,20 @@ export type JobUncheckedUpdateManyWithoutStudentInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2194,23 +1898,21 @@ export type JobCreateManyClassInput = {
   title: string
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2219,20 +1921,18 @@ export type JobCreateManyClassInput = {
 export type JobUpdateWithoutClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2242,7 +1942,6 @@ export type JobUpdateWithoutClassInput = {
   student?: Prisma.UserUpdateOneWithoutStudentJobsNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneWithoutJobsNestedInput
   applications?: Prisma.JobApplicationUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutClassInput = {
@@ -2250,28 +1949,25 @@ export type JobUncheckedUpdateWithoutClassInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateManyWithoutClassInput = {
@@ -2279,23 +1975,21 @@ export type JobUncheckedUpdateManyWithoutClassInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2306,23 +2000,21 @@ export type JobCreateManySubjectInput = {
   title: string
   classId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2331,20 +2023,18 @@ export type JobCreateManySubjectInput = {
 export type JobUpdateWithoutSubjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2354,7 +2044,6 @@ export type JobUpdateWithoutSubjectInput = {
   student?: Prisma.UserUpdateOneWithoutStudentJobsNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneWithoutJobsNestedInput
   applications?: Prisma.JobApplicationUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutSubjectInput = {
@@ -2362,28 +2051,25 @@ export type JobUncheckedUpdateWithoutSubjectInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateManyWithoutSubjectInput = {
@@ -2391,23 +2077,21 @@ export type JobUncheckedUpdateManyWithoutSubjectInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2418,23 +2102,21 @@ export type JobCreateManyPackageInput = {
   title: string
   classId?: string | null
   subjectId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   enrollmentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2443,20 +2125,18 @@ export type JobCreateManyPackageInput = {
 export type JobUpdateWithoutPackageInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2466,7 +2146,6 @@ export type JobUpdateWithoutPackageInput = {
   student?: Prisma.UserUpdateOneWithoutStudentJobsNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneWithoutJobsNestedInput
   applications?: Prisma.JobApplicationUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutPackageInput = {
@@ -2474,28 +2153,25 @@ export type JobUncheckedUpdateWithoutPackageInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateManyWithoutPackageInput = {
@@ -2503,23 +2179,21 @@ export type JobUncheckedUpdateManyWithoutPackageInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2531,22 +2205,20 @@ export type JobCreateManyEnrollmentInput = {
   classId?: string | null
   subjectId?: string | null
   packageId?: string | null
-  jobMode?: $Enums.JobMode
+  jobMode?: string
+  jobType?: string | null
   tentorFee?: number
-  transportAllowance?: number
   sessionDurationMinutes?: number
   scheduleDays?: Prisma.JobCreatescheduleDaysInput | string[]
   scheduleTime?: string
-  scheduleEndTime?: string
   studentCount?: number
   location?: string
   latitude?: number | null
   longitude?: number | null
-  status?: $Enums.JobStatus
+  status?: string
   assignedTentorId?: string | null
   studentId?: string | null
   notes?: string
-  additionalNotes?: string
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2555,20 +2227,18 @@ export type JobCreateManyEnrollmentInput = {
 export type JobUpdateWithoutEnrollmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2578,7 +2248,6 @@ export type JobUpdateWithoutEnrollmentInput = {
   assignedTentor?: Prisma.UserUpdateOneWithoutAssignedJobsNestedInput
   student?: Prisma.UserUpdateOneWithoutStudentJobsNestedInput
   applications?: Prisma.JobApplicationUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutEnrollmentInput = {
@@ -2587,27 +2256,24 @@ export type JobUncheckedUpdateWithoutEnrollmentInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobNestedInput
-  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateManyWithoutEnrollmentInput = {
@@ -2616,22 +2282,20 @@ export type JobUncheckedUpdateManyWithoutEnrollmentInput = {
   classId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobMode?: Prisma.EnumJobModeFieldUpdateOperationsInput | $Enums.JobMode
+  jobMode?: Prisma.StringFieldUpdateOperationsInput | string
+  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorFee?: Prisma.IntFieldUpdateOperationsInput | number
-  transportAllowance?: Prisma.IntFieldUpdateOperationsInput | number
   sessionDurationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   scheduleDays?: Prisma.JobUpdatescheduleDaysInput | string[]
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  scheduleEndTime?: Prisma.StringFieldUpdateOperationsInput | string
   studentCount?: Prisma.IntFieldUpdateOperationsInput | number
   location?: Prisma.StringFieldUpdateOperationsInput | string
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   assignedTentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.StringFieldUpdateOperationsInput | string
-  additionalNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2644,12 +2308,10 @@ export type JobUncheckedUpdateManyWithoutEnrollmentInput = {
 
 export type JobCountOutputType = {
   applications: number
-  attendances: number
 }
 
 export type JobCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   applications?: boolean | JobCountOutputTypeCountApplicationsArgs
-  attendances?: boolean | JobCountOutputTypeCountAttendancesArgs
 }
 
 /**
@@ -2669,13 +2331,6 @@ export type JobCountOutputTypeCountApplicationsArgs<ExtArgs extends runtime.Type
   where?: Prisma.JobApplicationWhereInput
 }
 
-/**
- * JobCountOutputType without action
- */
-export type JobCountOutputTypeCountAttendancesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.AttendanceWhereInput
-}
-
 
 export type JobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2684,12 +2339,11 @@ export type JobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   subjectId?: boolean
   packageId?: boolean
   jobMode?: boolean
+  jobType?: boolean
   tentorFee?: boolean
-  transportAllowance?: boolean
   sessionDurationMinutes?: boolean
   scheduleDays?: boolean
   scheduleTime?: boolean
-  scheduleEndTime?: boolean
   studentCount?: boolean
   location?: boolean
   latitude?: boolean
@@ -2699,7 +2353,6 @@ export type JobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   studentId?: boolean
   enrollmentId?: boolean
   notes?: boolean
-  additionalNotes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -2710,7 +2363,6 @@ export type JobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   student?: boolean | Prisma.Job$studentArgs<ExtArgs>
   enrollment?: boolean | Prisma.Job$enrollmentArgs<ExtArgs>
   applications?: boolean | Prisma.Job$applicationsArgs<ExtArgs>
-  attendances?: boolean | Prisma.Job$attendancesArgs<ExtArgs>
   _count?: boolean | Prisma.JobCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["job"]>
 
@@ -2721,12 +2373,11 @@ export type JobSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   subjectId?: boolean
   packageId?: boolean
   jobMode?: boolean
+  jobType?: boolean
   tentorFee?: boolean
-  transportAllowance?: boolean
   sessionDurationMinutes?: boolean
   scheduleDays?: boolean
   scheduleTime?: boolean
-  scheduleEndTime?: boolean
   studentCount?: boolean
   location?: boolean
   latitude?: boolean
@@ -2736,7 +2387,6 @@ export type JobSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   studentId?: boolean
   enrollmentId?: boolean
   notes?: boolean
-  additionalNotes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -2755,12 +2405,11 @@ export type JobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   subjectId?: boolean
   packageId?: boolean
   jobMode?: boolean
+  jobType?: boolean
   tentorFee?: boolean
-  transportAllowance?: boolean
   sessionDurationMinutes?: boolean
   scheduleDays?: boolean
   scheduleTime?: boolean
-  scheduleEndTime?: boolean
   studentCount?: boolean
   location?: boolean
   latitude?: boolean
@@ -2770,7 +2419,6 @@ export type JobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   studentId?: boolean
   enrollmentId?: boolean
   notes?: boolean
-  additionalNotes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -2789,12 +2437,11 @@ export type JobSelectScalar = {
   subjectId?: boolean
   packageId?: boolean
   jobMode?: boolean
+  jobType?: boolean
   tentorFee?: boolean
-  transportAllowance?: boolean
   sessionDurationMinutes?: boolean
   scheduleDays?: boolean
   scheduleTime?: boolean
-  scheduleEndTime?: boolean
   studentCount?: boolean
   location?: boolean
   latitude?: boolean
@@ -2804,13 +2451,12 @@ export type JobSelectScalar = {
   studentId?: boolean
   enrollmentId?: boolean
   notes?: boolean
-  additionalNotes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type JobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "classId" | "subjectId" | "packageId" | "jobMode" | "tentorFee" | "transportAllowance" | "sessionDurationMinutes" | "scheduleDays" | "scheduleTime" | "scheduleEndTime" | "studentCount" | "location" | "latitude" | "longitude" | "status" | "assignedTentorId" | "studentId" | "enrollmentId" | "notes" | "additionalNotes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["job"]>
+export type JobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "classId" | "subjectId" | "packageId" | "jobMode" | "jobType" | "tentorFee" | "sessionDurationMinutes" | "scheduleDays" | "scheduleTime" | "studentCount" | "location" | "latitude" | "longitude" | "status" | "assignedTentorId" | "studentId" | "enrollmentId" | "notes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["job"]>
 export type JobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   class?: boolean | Prisma.Job$classArgs<ExtArgs>
   subject?: boolean | Prisma.Job$subjectArgs<ExtArgs>
@@ -2819,7 +2465,6 @@ export type JobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   student?: boolean | Prisma.Job$studentArgs<ExtArgs>
   enrollment?: boolean | Prisma.Job$enrollmentArgs<ExtArgs>
   applications?: boolean | Prisma.Job$applicationsArgs<ExtArgs>
-  attendances?: boolean | Prisma.Job$attendancesArgs<ExtArgs>
   _count?: boolean | Prisma.JobCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type JobIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2849,7 +2494,6 @@ export type $JobPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     student: Prisma.$UserPayload<ExtArgs> | null
     enrollment: Prisma.$EnrollmentPayload<ExtArgs> | null
     applications: Prisma.$JobApplicationPayload<ExtArgs>[]
-    attendances: Prisma.$AttendancePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2857,23 +2501,21 @@ export type $JobPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     classId: string | null
     subjectId: string | null
     packageId: string | null
-    jobMode: $Enums.JobMode
+    jobMode: string
+    jobType: string | null
     tentorFee: number
-    transportAllowance: number
     sessionDurationMinutes: number
     scheduleDays: string[]
     scheduleTime: string
-    scheduleEndTime: string
     studentCount: number
     location: string
     latitude: number | null
     longitude: number | null
-    status: $Enums.JobStatus
+    status: string
     assignedTentorId: string | null
     studentId: string | null
     enrollmentId: string | null
     notes: string
-    additionalNotes: string
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -3278,7 +2920,6 @@ export interface Prisma__JobClient<T, Null = never, ExtArgs extends runtime.Type
   student<T extends Prisma.Job$studentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$studentArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   enrollment<T extends Prisma.Job$enrollmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$enrollmentArgs<ExtArgs>>): Prisma.Prisma__EnrollmentClient<runtime.Types.Result.GetResult<Prisma.$EnrollmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   applications<T extends Prisma.Job$applicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JobApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  attendances<T extends Prisma.Job$attendancesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$attendancesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3313,23 +2954,21 @@ export interface JobFieldRefs {
   readonly classId: Prisma.FieldRef<"Job", 'String'>
   readonly subjectId: Prisma.FieldRef<"Job", 'String'>
   readonly packageId: Prisma.FieldRef<"Job", 'String'>
-  readonly jobMode: Prisma.FieldRef<"Job", 'JobMode'>
+  readonly jobMode: Prisma.FieldRef<"Job", 'String'>
+  readonly jobType: Prisma.FieldRef<"Job", 'String'>
   readonly tentorFee: Prisma.FieldRef<"Job", 'Int'>
-  readonly transportAllowance: Prisma.FieldRef<"Job", 'Int'>
   readonly sessionDurationMinutes: Prisma.FieldRef<"Job", 'Int'>
   readonly scheduleDays: Prisma.FieldRef<"Job", 'String[]'>
   readonly scheduleTime: Prisma.FieldRef<"Job", 'String'>
-  readonly scheduleEndTime: Prisma.FieldRef<"Job", 'String'>
   readonly studentCount: Prisma.FieldRef<"Job", 'Int'>
   readonly location: Prisma.FieldRef<"Job", 'String'>
   readonly latitude: Prisma.FieldRef<"Job", 'Float'>
   readonly longitude: Prisma.FieldRef<"Job", 'Float'>
-  readonly status: Prisma.FieldRef<"Job", 'JobStatus'>
+  readonly status: Prisma.FieldRef<"Job", 'String'>
   readonly assignedTentorId: Prisma.FieldRef<"Job", 'String'>
   readonly studentId: Prisma.FieldRef<"Job", 'String'>
   readonly enrollmentId: Prisma.FieldRef<"Job", 'String'>
   readonly notes: Prisma.FieldRef<"Job", 'String'>
-  readonly additionalNotes: Prisma.FieldRef<"Job", 'String'>
   readonly createdAt: Prisma.FieldRef<"Job", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Job", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Job", 'DateTime'>
@@ -3869,30 +3508,6 @@ export type Job$applicationsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.JobApplicationScalarFieldEnum | Prisma.JobApplicationScalarFieldEnum[]
-}
-
-/**
- * Job.attendances
- */
-export type Job$attendancesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Attendance
-   */
-  select?: Prisma.AttendanceSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Attendance
-   */
-  omit?: Prisma.AttendanceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.AttendanceInclude<ExtArgs> | null
-  where?: Prisma.AttendanceWhereInput
-  orderBy?: Prisma.AttendanceOrderByWithRelationInput | Prisma.AttendanceOrderByWithRelationInput[]
-  cursor?: Prisma.AttendanceWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.AttendanceScalarFieldEnum | Prisma.AttendanceScalarFieldEnum[]
 }
 
 /**

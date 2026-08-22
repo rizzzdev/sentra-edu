@@ -9,18 +9,20 @@
 import { userStore, subjectStore, educationLevelStore, enrollmentStore, jobStore, attendanceStore, payrollStore } from '$lib/api';
 import { database } from '$lib/shared/stores';
 
-  let editModalOpen: boolean = false;
+  let editModalOpen = $state(false);
 
-  $: currentUser = $authStore;
+  const currentUser = $derived($authStore);
 
-  $: initials = currentUser
-    ? currentUser.fullName
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((word) => word[0].toUpperCase())
-        .join('')
-    : 'U';
+  const initials = $derived(
+    currentUser
+      ? currentUser.fullName
+          .split(' ')
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((word) => word[0].toUpperCase())
+          .join('')
+      : 'U'
+  );
 
   const roleBadgeMap: Record<UserRole, string> = {
     SUPER_ADMIN: 'b-admin',
@@ -30,37 +32,51 @@ import { database } from '$lib/shared/stores';
   };
 
   // Activity stats by role
-  $: approvedSessions = currentUser
-    ? $attendanceStore.filter((attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.tentorId === currentUser?.id && attendanceItem.status === 'APPROVED').length
-    : 0;
+  const approvedSessions = $derived(
+    currentUser
+      ? $attendanceStore.filter((attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.tentorId === currentUser?.id && attendanceItem.status === 'APPROVED').length
+      : 0
+  );
 
-  $: activeJobs = currentUser
-    ? $jobStore.filter((jobItem) => jobItem.deletedAt === null && jobItem.assignedTentorId === currentUser?.id && jobItem.status === 'ASSIGNED').length
-    : 0;
+  const activeJobs = $derived(
+    currentUser
+      ? $jobStore.filter((jobItem) => jobItem.deletedAt === null && jobItem.assignedTentorId === currentUser?.id && jobItem.status === 'ASSIGNED').length
+      : 0
+  );
 
-  $: paidHonor = currentUser
-    ? $payrollStore
-        .filter((claimItem) => claimItem.deletedAt === null && claimItem.tentorId === currentUser?.id && claimItem.status === 'PAID')
-        .reduce((sum, claimItem) => sum + claimItem.totalAmount, 0)
-    : 0;
+  const paidHonor = $derived(
+    currentUser
+      ? $payrollStore
+          .filter((claimItem) => claimItem.deletedAt === null && claimItem.tentorId === currentUser?.id && claimItem.status === 'PAID')
+          .reduce((sum, claimItem) => sum + claimItem.totalAmount, 0)
+      : 0
+  );
 
-  $: studentProgramsList = currentUser
-    ? getStudentPrograms($database, currentUser.id, currentUser.fullName)
-    : [];
-  $: studentPrograms = studentProgramsList.length;
-  $: studentProgramIds = studentProgramsList.map((programItem) => programItem.id);
-  $: studentApprovedSessions = currentUser
-    ? $attendanceStore.filter((attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.status === 'APPROVED' && (studentProgramIds.includes(attendanceItem.enrollmentId) || attendanceItem.enrollmentId === currentUser.id)).length
-    : 0;
+  const studentProgramsList = $derived(
+    currentUser
+      ? getStudentPrograms($database, currentUser.id, currentUser.fullName)
+      : []
+  );
+  const studentPrograms = $derived(studentProgramsList.length);
+  const studentProgramIds = $derived(studentProgramsList.map((programItem) => programItem.id));
+  const studentApprovedSessions = $derived(
+    currentUser
+      ? $attendanceStore.filter((attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.status === 'APPROVED' && (studentProgramIds.includes(attendanceItem.enrollmentId) || attendanceItem.enrollmentId === currentUser.id)).length
+      : 0
+  );
 
-  $: parentProgramsList = currentUser
-    ? getParentPrograms($database, currentUser.id)
-    : [];
-  $: parentProgramsCount = parentProgramsList.length;
+  const parentProgramsList = $derived(
+    currentUser
+      ? getParentPrograms($database, currentUser.id)
+      : []
+  );
+  const parentProgramsCount = $derived(parentProgramsList.length);
 
-  $: parentChildren = currentUser
-    ? $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.parentId === currentUser?.id).length
-    : 0;
+  const parentChildren = $derived(
+    currentUser
+      ? $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.parentId === currentUser?.id).length
+      : 0
+  );
 
   function getSubjectNames(subjectIds?: string[]): string {
     if (!subjectIds || subjectIds.length === 0) return '—';
@@ -85,7 +101,7 @@ import { database } from '$lib/shared/stores';
       <h3><Icon name="person" size="lg" /> Profil Saya</h3>
       <div class="desc">Informasi akun Anda — perubahan langsung berlaku, termasuk untuk login berikutnya.</div>
     </div>
-    <button type="button" class="btn btn-primary" on:click={() => { editModalOpen = true; }}>
+    <button type="button" class="btn btn-primary" onclick={() => { editModalOpen = true; }}>
       <Icon name="edit" size="sm" /> Ubah Profil
     </button>
   </div>

@@ -1,32 +1,37 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Icon from '$lib/components/atoms/icon.svelte';
   import MagicLinkModal from '$lib/features/student-enrollment/components/magic-link-modal.svelte';
   import ConfirmationDialog from '$lib/components/organisms/confirmation-dialog.svelte';
   import { toastStore } from '$lib/shared/stores/toast-store';
-import { magicLinkStore } from '$lib/api';
-import { api } from '$lib/api/client';
+  import { magicLinkStore } from '$lib/api';
+  import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  onMount(() => {
+    magicLinkStore.fetch();
+  });
+
+  let searchQuery = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
   // Magic Link Modal & State
-  let magicLinkModalOpen: boolean = false;
-  let deleteMagicLinkDialogOpen: boolean = false;
-  let deleteMagicLinkId: string | null = null;
+  let magicLinkModalOpen = $state(false);
+  let deleteMagicLinkDialogOpen = $state(false);
+  let deleteMagicLinkId = $state<string | null>(null);
 
-  $: allMagicLinks = ($magicLinkStore || []).filter(
+  const allMagicLinks = $derived(($magicLinkStore || []).filter(
     (magicLinkItem) => magicLinkItem.deletedAt === null && magicLinkItem.targetRole === 'TENTOR'
-  );
+  ));
 
-  $: filteredMagicLinks = allMagicLinks.filter((magicLinkItem) => {
+  const filteredMagicLinks = $derived(allMagicLinks.filter((magicLinkItem) => {
     const query = searchQuery.toLowerCase();
     if (!query) return true;
     return magicLinkItem.title.toLowerCase().includes(query) || magicLinkItem.token.toLowerCase().includes(query);
-  });
+  }));
 
-  $: paginatedMagicLinks = filteredMagicLinks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  $: totalPagesMagicLinks = Math.max(1, Math.ceil(filteredMagicLinks.length / itemsPerPage));
+  const paginatedMagicLinks = $derived(filteredMagicLinks.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
+  const totalPagesMagicLinks = $derived(Math.max(1, Math.ceil(filteredMagicLinks.length / itemsPerPage)));
 
   function getFullMagicUrl(token: string): string {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
@@ -50,8 +55,12 @@ import { api } from '$lib/api/client';
     const response = await api.magicLinks.delete(deleteMagicLinkId);
     deleteMagicLinkDialogOpen = false;
     deleteMagicLinkId = null;
-    if (!response.error) toastStore.success(response.message);
-    else toastStore.error(response.message);
+    if (!response.error) {
+      toastStore.success(response.message);
+      await magicLinkStore.fetch();
+    } else {
+      toastStore.error(response.message);
+    }
   }
 </script>
 
@@ -64,7 +73,7 @@ import { api } from '$lib/api/client';
     <button
       type="button"
       class="btn btn-primary"
-      on:click={() => { magicLinkModalOpen = true; }}
+      onclick={() => { magicLinkModalOpen = true; }}
     >
       <Icon name="add_link" size="sm" /> Buat Magic Link Tentor
     </button>
@@ -163,7 +172,7 @@ import { api } from '$lib/api/client';
                       type="button"
                       class="btn-icon"
                       data-tip="Salin Link"
-                      on:click={() => handleCopyMagicLink(magicLinkItem.token)}
+                      onclick={() => handleCopyMagicLink(magicLinkItem.token)}
                     >
                       <Icon name="content_copy" size="sm" />
                     </button>
@@ -171,7 +180,7 @@ import { api } from '$lib/api/client';
                       type="button"
                       class="btn-icon"
                       data-tip={magicLinkItem.active ? 'Nonaktifkan' : 'Aktifkan'}
-                      on:click={async () => {
+                      onclick={async () => {
                         const toggleResponse = await api.magicLinks.update(magicLinkItem.id);
                         if (!toggleResponse.error) toastStore.success(toggleResponse.message);
                       }}
@@ -182,7 +191,7 @@ import { api } from '$lib/api/client';
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deleteMagicLinkId = magicLinkItem.id; deleteMagicLinkDialogOpen = true; }}
+                      onclick={() => { deleteMagicLinkId = magicLinkItem.id; deleteMagicLinkDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -201,11 +210,11 @@ import { api } from '$lib/api/client';
           Menampilkan {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredMagicLinks.length)} dari {filteredMagicLinks.length} magic link tentor
         </div>
         <div class="page-btns">
-          <button type="button" class="page-btn" disabled={currentPage <= 1} on:click={() => currentPage--}>&laquo;</button>
+          <button type="button" class="page-btn" disabled={currentPage <= 1} onclick={() => currentPage--}>&laquo;</button>
           {#each Array.from({ length: totalPagesMagicLinks }, (_, index) => index + 1) as pageNumber}
-            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" on:click={() => { currentPage = pageNumber; }}>{pageNumber}</button>
+            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" onclick={() => { currentPage = pageNumber; }}>{pageNumber}</button>
           {/each}
-          <button type="button" class="page-btn" disabled={currentPage >= totalPagesMagicLinks} on:click={() => currentPage++}>&raquo;</button>
+          <button type="button" class="page-btn" disabled={currentPage >= totalPagesMagicLinks} onclick={() => currentPage++}>&raquo;</button>
         </div>
       </div>
     {/if}

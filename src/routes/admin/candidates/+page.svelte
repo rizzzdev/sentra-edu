@@ -12,39 +12,39 @@
 import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let statusFilter: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  let searchQuery = $state('');
+  let statusFilter = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
-  let candidateModalOpen: boolean = false;
-  let editingCandidate: RecruitmentCandidate | null = null;
-  let detailCandidate: RecruitmentCandidate | null = null;
+  let candidateModalOpen = $state(false);
+  let editingCandidate = $state<RecruitmentCandidate | null>(null);
+  let detailCandidate = $state<RecruitmentCandidate | null>(null);
 
   // Step modals
-  let scheduleTestCand: RecruitmentCandidate | null = null;
-  let testDateTime: string = '';
+  let scheduleTestCand = $state<RecruitmentCandidate | null>(null);
+  let testDateTime = $state('');
 
-  let recordTestCand: RecruitmentCandidate | null = null;
-  let testScore: number = 85;
-  let testNotes: string = '';
+  let recordTestCand = $state<RecruitmentCandidate | null>(null);
+  let testScore = $state(85);
+  let testNotes = $state('');
 
-  let scheduleInterviewCand: RecruitmentCandidate | null = null;
-  let interviewDateTime: string = '';
+  let scheduleInterviewCand = $state<RecruitmentCandidate | null>(null);
+  let interviewDateTime = $state('');
 
-  let recordInterviewCand: RecruitmentCandidate | null = null;
-  let interviewNotes: string = '';
+  let recordInterviewCand = $state<RecruitmentCandidate | null>(null);
+  let interviewNotes = $state('');
 
-  let acceptCand: RecruitmentCandidate | null = null;
-  let initialPassword: string = '';
+  let acceptCand = $state<RecruitmentCandidate | null>(null);
+  let initialPassword = $state('');
 
-  let rejectCand: RecruitmentCandidate | null = null;
-  let rejectionReason: string = '';
+  let rejectCand = $state<RecruitmentCandidate | null>(null);
+  let rejectionReason = $state('');
 
-  let deleteDialogOpen: boolean = false;
-  let deletingCandidateId: string | null = null;
+  let deleteDialogOpen = $state(false);
+  let deletingCandidateId = $state<string | null>(null);
 
-  $: allCandidates = $candidateStore.filter((candidateItem) => candidateItem.deletedAt === null);
+  const allCandidates = $derived($candidateStore.filter((candidateItem) => candidateItem.deletedAt === null));
 
   const PIPELINE_STATUSES: [string, string][] = [
     ['REGISTERED', 'Pendaftar Baru'],
@@ -73,7 +73,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       .join(', ') || '—';
   }
 
-  $: filteredCandidates = allCandidates.filter((candidateItem) => {
+  const filteredCandidates = $derived(allCandidates.filter((candidateItem) => {
     const query = searchQuery.toLowerCase();
     const subjectsStr = getSubjectNames(candidateItem.subjectIds).toLowerCase();
     const matchesSearch =
@@ -83,13 +83,13 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       subjectsStr.includes(query);
     const matchesStatus = !statusFilter || candidateItem.status === statusFilter;
     return matchesSearch && matchesStatus;
-  });
+  }));
 
-  $: paginatedCandidates = filteredCandidates.slice(
+  const paginatedCandidates = $derived(filteredCandidates.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
-  $: totalPages = Math.max(1, Math.ceil(filteredCandidates.length / itemsPerPage));
+  ));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredCandidates.length / itemsPerPage)));
 
   async function handleScheduleTestSubmit() {
     if (!scheduleTestCand || !testDateTime) {
@@ -212,7 +212,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
     <h3><Icon name="badge" size="lg" /> Rekrutmen Tentor</h3>
     <div class="desc">Pipeline rekrutmen: daftar &rarr; tes &rarr; wawancara &rarr; keputusan.</div>
   </div>
-  <Button variant="primary" on:click={() => { editingCandidate = null; candidateModalOpen = true; }} icon="person_add">
+  <Button variant="primary" onclick={() => { editingCandidate = null; candidateModalOpen = true; }} icon="person_add">
     Daftarkan Kandidat
   </Button>
 </div>
@@ -287,7 +287,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                       size="sm"
                       className="btn-icon"
                       data-tip="Detail"
-                      on:click={() => { detailCandidate = candidateItem; }}
+                      onclick={() => { detailCandidate = candidateItem; }}
                       icon="visibility"
                     />
 
@@ -297,7 +297,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                         size="sm"
                         className="btn-icon"
                         data-tip="Jadwalkan Tes"
-                        on:click={() => {
+                        onclick={() => {
                           scheduleTestCand = candidateItem;
                           testDateTime = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
                         }}
@@ -309,7 +309,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                         size="sm"
                         className="btn-icon"
                         data-tip="Catat Tes"
-                        on:click={() => {
+                        onclick={() => {
                           recordTestCand = candidateItem;
                           testScore = 85;
                           testNotes = '';
@@ -322,7 +322,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                         size="sm"
                         className="btn-icon"
                         data-tip="Jadwalkan Wawancara"
-                        on:click={() => {
+                        onclick={() => {
                           scheduleInterviewCand = candidateItem;
                           interviewDateTime = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
                         }}
@@ -334,7 +334,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                         size="sm"
                         className="btn-icon"
                         data-tip="Catat Wawancara"
-                        on:click={() => {
+                        onclick={() => {
                           recordInterviewCand = candidateItem;
                           interviewNotes = '';
                         }}
@@ -346,7 +346,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                         size="sm"
                         className="btn-icon"
                         data-tip="Terima"
-                        on:click={() => {
+                        onclick={() => {
                           acceptCand = candidateItem;
                           initialPassword = 'tentor123';
                         }}
@@ -357,7 +357,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                         size="sm"
                         className="btn-icon"
                         data-tip="Tolak"
-                        on:click={() => {
+                        onclick={() => {
                           rejectCand = candidateItem;
                           rejectionReason = '';
                         }}
@@ -370,7 +370,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                       size="sm"
                       className="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => {
+                      onclick={() => {
                         editingCandidate = candidateItem;
                         candidateModalOpen = true;
                       }}
@@ -381,7 +381,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
                       size="sm"
                       className="btn-icon"
                       data-tip="Hapus"
-                      on:click={() => {
+                      onclick={() => {
                         deletingCandidateId = candidateItem.id;
                         deleteDialogOpen = true;
                       }}
@@ -406,7 +406,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
             variant="outline"
             className="page-btn"
             disabled={currentPage <= 1}
-            on:click={() => currentPage--}
+            onclick={() => currentPage--}
           >
             &laquo;
           </Button>
@@ -414,7 +414,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
             <Button
               variant={currentPage === pageNumber ? 'primary' : 'outline'}
               className="page-btn"
-              on:click={() => { currentPage = pageNumber; }}
+              onclick={() => { currentPage = pageNumber; }}
             >
               {pageNumber}
             </Button>
@@ -423,7 +423,7 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
             variant="outline"
             className="page-btn"
             disabled={currentPage >= totalPages}
-            on:click={() => currentPage++}
+            onclick={() => currentPage++}
           >
             &raquo;
           </Button>
@@ -458,11 +458,11 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       <dt>Catatan</dt>
       <dd>{detailCandidate.notes || '—'}</dd>
     </div>
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { detailCandidate = null; }} icon="close">
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { detailCandidate = null; }} icon="close">
         Tutup
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}
 
@@ -477,14 +477,14 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       <label for="f_testScheduledAt">Jadwal Tes <i class="req">*</i></label>
       <Input id="f_testScheduledAt" type="datetime-local" required bind:value={testDateTime} />
     </div>
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { scheduleTestCand = null; }} icon="close">
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { scheduleTestCand = null; }} icon="close">
         Batal
       </Button>
-      <Button variant="primary" on:click={handleScheduleTestSubmit} icon="save">
+      <Button variant="primary" onclick={handleScheduleTestSubmit} icon="save">
         Jadwalkan
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}
 
@@ -499,14 +499,14 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       <label for="f_testNotes">Catatan Hasil Tes</label>
       <textarea id="f_testNotes" rows="3" placeholder="cth: Penguasaan materi baik, perlu latihan pedagogi" bind:value={testNotes}></textarea>
     </div>
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { recordTestCand = null; }} icon="close">
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { recordTestCand = null; }} icon="close">
         Batal
       </Button>
-      <Button variant="primary" on:click={handleRecordTestSubmit} icon="save">
+      <Button variant="primary" onclick={handleRecordTestSubmit} icon="save">
         Simpan Hasil
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}
 
@@ -517,14 +517,14 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       <label for="f_interviewScheduledAt">Jadwal Wawancara <i class="req">*</i></label>
       <Input id="f_interviewScheduledAt" type="datetime-local" required bind:value={interviewDateTime} />
     </div>
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { scheduleInterviewCand = null; }} icon="close">
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { scheduleInterviewCand = null; }} icon="close">
         Batal
       </Button>
-      <Button variant="primary" on:click={handleScheduleInterviewSubmit} icon="save">
+      <Button variant="primary" onclick={handleScheduleInterviewSubmit} icon="save">
         Jadwalkan
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}
 
@@ -535,14 +535,14 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       <label for="f_interviewNotes">Hasil Wawancara <i class="req">*</i></label>
       <textarea id="f_interviewNotes" rows="3" placeholder="cth: Komunikasi baik, siap ditempatkan" required bind:value={interviewNotes}></textarea>
     </div>
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { recordInterviewCand = null; }} icon="close">
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { recordInterviewCand = null; }} icon="close">
         Batal
       </Button>
-      <Button variant="primary" on:click={handleRecordInterviewSubmit} icon="save">
+      <Button variant="primary" onclick={handleRecordInterviewSubmit} icon="save">
         Simpan Hasil
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}
 
@@ -557,14 +557,14 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       <label for="f_initialPassword">Password Awal (kosongkan untuk default)</label>
       <Input id="f_initialPassword" type="password" placeholder="default: tentor123" bind:value={initialPassword} />
     </div>
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { acceptCand = null; }} icon="close">
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { acceptCand = null; }} icon="close">
         Batal
       </Button>
-      <Button variant="primary" on:click={handleAcceptSubmit} icon="how_to_reg">
+      <Button variant="primary" onclick={handleAcceptSubmit} icon="how_to_reg">
         Terima & Buat Akun
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}
 
@@ -575,14 +575,14 @@ import { subjectStore, educationLevelStore, candidateStore } from '$lib/api';
       <label for="f_rejectionReason">Alasan Penolakan <i class="req">*</i></label>
       <textarea id="f_rejectionReason" rows="3" placeholder="cth: Skor tes di bawah standar" required bind:value={rejectionReason}></textarea>
     </div>
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { rejectCand = null; }} icon="close">
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { rejectCand = null; }} icon="close">
         Batal
       </Button>
-      <Button variant="danger" on:click={handleRejectSubmit} icon="block">
+      <Button variant="danger" onclick={handleRejectSubmit} icon="block">
         Tolak Kandidat
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}
 

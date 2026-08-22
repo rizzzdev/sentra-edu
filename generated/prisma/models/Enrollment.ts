@@ -45,7 +45,7 @@ export type EnrollmentMinAggregateOutputType = {
   tentorId: string | null
   scheduleDay: string | null
   scheduleTime: string | null
-  status: $Enums.EnrollmentStatus | null
+  status: string | null
   address: string | null
   latitude: number | null
   longitude: number | null
@@ -64,7 +64,7 @@ export type EnrollmentMaxAggregateOutputType = {
   tentorId: string | null
   scheduleDay: string | null
   scheduleTime: string | null
-  status: $Enums.EnrollmentStatus | null
+  status: string | null
   address: string | null
   latitude: number | null
   longitude: number | null
@@ -258,7 +258,7 @@ export type EnrollmentGroupByOutputType = {
   tentorId: string | null
   scheduleDay: string
   scheduleTime: string
-  status: $Enums.EnrollmentStatus
+  status: string
   address: string | null
   latitude: number | null
   longitude: number | null
@@ -300,7 +300,7 @@ export type EnrollmentWhereInput = {
   tentorId?: Prisma.StringNullableFilter<"Enrollment"> | string | null
   scheduleDay?: Prisma.StringFilter<"Enrollment"> | string
   scheduleTime?: Prisma.StringFilter<"Enrollment"> | string
-  status?: Prisma.EnumEnrollmentStatusFilter<"Enrollment"> | $Enums.EnrollmentStatus
+  status?: Prisma.StringFilter<"Enrollment"> | string
   address?: Prisma.StringNullableFilter<"Enrollment"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Enrollment"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Enrollment"> | number | null
@@ -359,7 +359,7 @@ export type EnrollmentWhereUniqueInput = Prisma.AtLeast<{
   tentorId?: Prisma.StringNullableFilter<"Enrollment"> | string | null
   scheduleDay?: Prisma.StringFilter<"Enrollment"> | string
   scheduleTime?: Prisma.StringFilter<"Enrollment"> | string
-  status?: Prisma.EnumEnrollmentStatusFilter<"Enrollment"> | $Enums.EnrollmentStatus
+  status?: Prisma.StringFilter<"Enrollment"> | string
   address?: Prisma.StringNullableFilter<"Enrollment"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Enrollment"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Enrollment"> | number | null
@@ -414,7 +414,7 @@ export type EnrollmentScalarWhereWithAggregatesInput = {
   tentorId?: Prisma.StringNullableWithAggregatesFilter<"Enrollment"> | string | null
   scheduleDay?: Prisma.StringWithAggregatesFilter<"Enrollment"> | string
   scheduleTime?: Prisma.StringWithAggregatesFilter<"Enrollment"> | string
-  status?: Prisma.EnumEnrollmentStatusWithAggregatesFilter<"Enrollment"> | $Enums.EnrollmentStatus
+  status?: Prisma.StringWithAggregatesFilter<"Enrollment"> | string
   address?: Prisma.StringNullableWithAggregatesFilter<"Enrollment"> | string | null
   latitude?: Prisma.FloatNullableWithAggregatesFilter<"Enrollment"> | number | null
   longitude?: Prisma.FloatNullableWithAggregatesFilter<"Enrollment"> | number | null
@@ -428,7 +428,7 @@ export type EnrollmentCreateInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -455,7 +455,7 @@ export type EnrollmentUncheckedCreateInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -472,7 +472,7 @@ export type EnrollmentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -499,7 +499,7 @@ export type EnrollmentUncheckedUpdateInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -521,7 +521,7 @@ export type EnrollmentCreateManyInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -535,7 +535,7 @@ export type EnrollmentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -553,7 +553,7 @@ export type EnrollmentUncheckedUpdateManyInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -902,10 +902,6 @@ export type EnrollmentUncheckedUpdateManyWithoutPackageNestedInput = {
   deleteMany?: Prisma.EnrollmentScalarWhereInput | Prisma.EnrollmentScalarWhereInput[]
 }
 
-export type EnumEnrollmentStatusFieldUpdateOperationsInput = {
-  set?: $Enums.EnrollmentStatus
-}
-
 export type NullableFloatFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
@@ -962,7 +958,7 @@ export type EnrollmentCreateWithoutStudentInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -987,7 +983,7 @@ export type EnrollmentUncheckedCreateWithoutStudentInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1014,7 +1010,7 @@ export type EnrollmentCreateWithoutTentorInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1039,7 +1035,7 @@ export type EnrollmentUncheckedCreateWithoutTentorInput = {
   packageId: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1066,7 +1062,7 @@ export type EnrollmentCreateWithoutParentInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1092,7 +1088,7 @@ export type EnrollmentUncheckedCreateWithoutParentInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1142,7 +1138,7 @@ export type EnrollmentScalarWhereInput = {
   tentorId?: Prisma.StringNullableFilter<"Enrollment"> | string | null
   scheduleDay?: Prisma.StringFilter<"Enrollment"> | string
   scheduleTime?: Prisma.StringFilter<"Enrollment"> | string
-  status?: Prisma.EnumEnrollmentStatusFilter<"Enrollment"> | $Enums.EnrollmentStatus
+  status?: Prisma.StringFilter<"Enrollment"> | string
   address?: Prisma.StringNullableFilter<"Enrollment"> | string | null
   latitude?: Prisma.FloatNullableFilter<"Enrollment"> | number | null
   longitude?: Prisma.FloatNullableFilter<"Enrollment"> | number | null
@@ -1188,7 +1184,7 @@ export type EnrollmentCreateWithoutClassInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1213,7 +1209,7 @@ export type EnrollmentUncheckedCreateWithoutClassInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1256,7 +1252,7 @@ export type EnrollmentCreateWithoutSubjectInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1281,7 +1277,7 @@ export type EnrollmentUncheckedCreateWithoutSubjectInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1324,7 +1320,7 @@ export type EnrollmentCreateWithoutPackageInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1349,7 +1345,7 @@ export type EnrollmentUncheckedCreateWithoutPackageInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1392,7 +1388,7 @@ export type EnrollmentCreateWithoutJobsInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1418,7 +1414,7 @@ export type EnrollmentUncheckedCreateWithoutJobsInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1450,7 +1446,7 @@ export type EnrollmentUpdateWithoutJobsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1476,7 +1472,7 @@ export type EnrollmentUncheckedUpdateWithoutJobsInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1492,7 +1488,7 @@ export type EnrollmentCreateWithoutAttendancesInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1518,7 +1514,7 @@ export type EnrollmentUncheckedCreateWithoutAttendancesInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1550,7 +1546,7 @@ export type EnrollmentUpdateWithoutAttendancesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1576,7 +1572,7 @@ export type EnrollmentUncheckedUpdateWithoutAttendancesInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1592,7 +1588,7 @@ export type EnrollmentCreateWithoutInvoicesInput = {
   id?: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1618,7 +1614,7 @@ export type EnrollmentUncheckedCreateWithoutInvoicesInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1650,7 +1646,7 @@ export type EnrollmentUpdateWithoutInvoicesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1676,7 +1672,7 @@ export type EnrollmentUncheckedUpdateWithoutInvoicesInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1696,7 +1692,7 @@ export type EnrollmentCreateManyStudentInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1714,7 +1710,7 @@ export type EnrollmentCreateManyTentorInput = {
   packageId: string
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1733,7 +1729,7 @@ export type EnrollmentCreateManyParentInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1746,7 +1742,7 @@ export type EnrollmentUpdateWithoutStudentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1771,7 +1767,7 @@ export type EnrollmentUncheckedUpdateWithoutStudentInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1792,7 +1788,7 @@ export type EnrollmentUncheckedUpdateManyWithoutStudentInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1806,7 +1802,7 @@ export type EnrollmentUpdateWithoutTentorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1831,7 +1827,7 @@ export type EnrollmentUncheckedUpdateWithoutTentorInput = {
   packageId?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1852,7 +1848,7 @@ export type EnrollmentUncheckedUpdateManyWithoutTentorInput = {
   packageId?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1866,7 +1862,7 @@ export type EnrollmentUpdateWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1892,7 +1888,7 @@ export type EnrollmentUncheckedUpdateWithoutParentInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1913,7 +1909,7 @@ export type EnrollmentUncheckedUpdateManyWithoutParentInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1930,7 +1926,7 @@ export type EnrollmentCreateManyClassInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -1944,7 +1940,7 @@ export type EnrollmentUpdateWithoutClassInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1969,7 +1965,7 @@ export type EnrollmentUncheckedUpdateWithoutClassInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1990,7 +1986,7 @@ export type EnrollmentUncheckedUpdateManyWithoutClassInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -2008,7 +2004,7 @@ export type EnrollmentCreateManySubjectInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -2022,7 +2018,7 @@ export type EnrollmentUpdateWithoutSubjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -2047,7 +2043,7 @@ export type EnrollmentUncheckedUpdateWithoutSubjectInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -2068,7 +2064,7 @@ export type EnrollmentUncheckedUpdateManyWithoutSubjectInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -2086,7 +2082,7 @@ export type EnrollmentCreateManyPackageInput = {
   tentorId?: string | null
   scheduleDay?: string
   scheduleTime?: string
-  status?: $Enums.EnrollmentStatus
+  status?: string
   address?: string | null
   latitude?: number | null
   longitude?: number | null
@@ -2100,7 +2096,7 @@ export type EnrollmentUpdateWithoutPackageInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -2125,7 +2121,7 @@ export type EnrollmentUncheckedUpdateWithoutPackageInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -2146,7 +2142,7 @@ export type EnrollmentUncheckedUpdateManyWithoutPackageInput = {
   tentorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduleDay?: Prisma.StringFieldUpdateOperationsInput | string
   scheduleTime?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumEnrollmentStatusFieldUpdateOperationsInput | $Enums.EnrollmentStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -2355,7 +2351,7 @@ export type $EnrollmentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     tentorId: string | null
     scheduleDay: string
     scheduleTime: string
-    status: $Enums.EnrollmentStatus
+    status: string
     address: string | null
     latitude: number | null
     longitude: number | null
@@ -2803,7 +2799,7 @@ export interface EnrollmentFieldRefs {
   readonly tentorId: Prisma.FieldRef<"Enrollment", 'String'>
   readonly scheduleDay: Prisma.FieldRef<"Enrollment", 'String'>
   readonly scheduleTime: Prisma.FieldRef<"Enrollment", 'String'>
-  readonly status: Prisma.FieldRef<"Enrollment", 'EnrollmentStatus'>
+  readonly status: Prisma.FieldRef<"Enrollment", 'String'>
   readonly address: Prisma.FieldRef<"Enrollment", 'String'>
   readonly latitude: Prisma.FieldRef<"Enrollment", 'Float'>
   readonly longitude: Prisma.FieldRef<"Enrollment", 'Float'>

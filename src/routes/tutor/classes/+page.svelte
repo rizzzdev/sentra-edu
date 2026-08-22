@@ -6,26 +6,25 @@
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
   import Pagination from '$lib/components/molecules/pagination.svelte';
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
-  import { onMount } from 'svelte';
 import { database } from '$lib/shared/stores';
+import { jobStore } from '$lib/api';
 
-  $: currentUser = $authStore;
-  let isLoading: boolean = true;
-  let searchQuery: string = '';
-  let statusFilter: string = '';
-  let modeFilter: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 10;
+  const currentUser = $derived($authStore);
+  const jobLoading = jobStore.loading;
+  const isLoading = $derived($jobLoading);
+  let searchQuery = $state('');
+  let statusFilter = $state('');
+  let modeFilter = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 10;
 
-  onMount(() => {
-    setTimeout(() => { isLoading = false; }, 300);
-  });
+  const allPrograms = $derived(
+    currentUser
+      ? getTutorPrograms($database, currentUser.id)
+      : []
+  );
 
-  $: allPrograms = currentUser
-    ? getTutorPrograms($database, currentUser.id)
-    : [];
-
-  $: filteredPrograms = allPrograms.filter((programItem) => {
+  const filteredPrograms = $derived(allPrograms.filter((programItem) => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       const matchSubject = programItem.subjectNames.some((subjectName) => subjectName.toLowerCase().includes(query));
@@ -43,17 +42,19 @@ import { database } from '$lib/shared/stores';
       if (modeFilter !== programItem.packageMode) return false;
     }
     return true;
-  });
+  }));
 
-  $: paginatedPrograms = filteredPrograms.slice(
+  const paginatedPrograms = $derived(filteredPrograms.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  ));
 
   // Reset to page 1 when filters change
-  $: if (searchQuery || statusFilter || modeFilter) {
-    currentPage = 1;
-  }
+  $effect(() => {
+    if (searchQuery || statusFilter || modeFilter) {
+      currentPage = 1;
+    }
+  });
 </script>
 
 <div class="page-head">

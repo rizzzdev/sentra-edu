@@ -10,8 +10,11 @@ import type { JobApplication } from '$generated/prisma/client';
 
 /** Schema for creating a new JobApplication */
 export const CreateJobApplicationSchema = z.object({
+  id: z.string().optional(),
   jobId: z.string().min(1, 'Lowongan wajib dipilih'),
   tentorId: z.string().min(1, 'Tentor wajib dipilih'),
+  status: z.enum(['PENDING', 'UNDER_REVIEW', 'ACCEPTED', 'REJECTED']).optional().default('PENDING'),
+  appliedAt: z.union([z.string(), z.date()]).optional().default(() => new Date()),
   notes: z.string().trim().max(500, 'Catatan maksimal 500 karakter').optional().default(''),
 });
 

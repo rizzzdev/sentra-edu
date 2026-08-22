@@ -6,21 +6,23 @@
 import { userStore, subjectStore, enrollmentStore, jobStore, attendanceStore } from '$lib/api';
 import { database } from '$lib/shared/stores';
 
-  $: currentUser = $authStore;
+  const currentUser = $derived($authStore);
 
   // Student data calculation
-  $: studentPrograms = currentUser ? getStudentPrograms($database, currentUser.id, currentUser.fullName) : [];
-  $: studentProgramIds = studentPrograms.map((programItem) => programItem.id);
-  $: studentEnrs = currentUser
-    ? $enrollmentStore.filter((enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.studentId === currentUser?.id)
-    : [];
-  $: studentEnrIds = studentEnrs.map((enrollmentItem) => enrollmentItem.id);
-
-  $: studentApprovedAtt = $attendanceStore.filter(
-    (attendanceItem) => attendanceItem.deletedAt === null && (studentEnrIds.includes(attendanceItem.enrollmentId) || studentProgramIds.includes(attendanceItem.enrollmentId)) && attendanceItem.status === 'APPROVED'
+  const studentPrograms = $derived(currentUser ? getStudentPrograms($database, currentUser.id, currentUser.fullName) : []);
+  const studentProgramIds = $derived(studentPrograms.map((programItem) => programItem.id));
+  const studentEnrs = $derived(
+    currentUser
+      ? $enrollmentStore.filter((enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.studentId === currentUser?.id)
+      : []
   );
+  const studentEnrIds = $derived(studentEnrs.map((enrollmentItem) => enrollmentItem.id));
 
-  $: studentBySubject = (() => {
+  const studentApprovedAtt = $derived($attendanceStore.filter(
+    (attendanceItem) => attendanceItem.deletedAt === null && (studentEnrIds.includes(attendanceItem.enrollmentId) || studentProgramIds.includes(attendanceItem.enrollmentId)) && attendanceItem.status === 'APPROVED'
+  ));
+
+  const studentBySubject = $derived.by(() => {
     const map: Record<string, { count: number; topics: string[] }> = {};
     studentApprovedAtt.forEach((attendanceItem) => {
       let subjectDisplayName = 'Lainnya';
@@ -44,28 +46,30 @@ import { database } from '$lib/shared/stores';
       }
     });
     return map;
-  })();
+  });
 
-  $: totalStudentHours = Math.round(studentApprovedAtt.length * 1.5);
+  const totalStudentHours = $derived(Math.round(studentApprovedAtt.length * 1.5));
 
   // Orang Tua data calculation
-  $: parentPrograms = currentUser ? getParentPrograms($database, currentUser.id) : [];
-  $: parentProgramIds = parentPrograms.map((programItem) => programItem.id);
-  $: parentStudents = currentUser
-    ? $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.parentId === currentUser?.id)
-    : [];
-  $: parentStudentIds = parentStudents.map((studentUser) => studentUser.id);
+  const parentPrograms = $derived(currentUser ? getParentPrograms($database, currentUser.id) : []);
+  const parentProgramIds = $derived(parentPrograms.map((programItem) => programItem.id));
+  const parentStudents = $derived(
+    currentUser
+      ? $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.parentId === currentUser?.id)
+      : []
+  );
+  const parentStudentIds = $derived(parentStudents.map((studentUser) => studentUser.id));
 
-  $: parentEnrs = $enrollmentStore.filter(
+  const parentEnrs = $derived($enrollmentStore.filter(
     (enrollmentItem) => enrollmentItem.deletedAt === null && (enrollmentItem.parentId === currentUser?.id || parentStudentIds.includes(enrollmentItem.studentId))
-  );
-  $: parentEnrIds = parentEnrs.map((enrollmentItem) => enrollmentItem.id);
+  ));
+  const parentEnrIds = $derived(parentEnrs.map((enrollmentItem) => enrollmentItem.id));
 
-  $: parentApprovedAtt = $attendanceStore.filter(
+  const parentApprovedAtt = $derived($attendanceStore.filter(
     (attendanceItem) => attendanceItem.deletedAt === null && (parentEnrIds.includes(attendanceItem.enrollmentId) || parentProgramIds.includes(attendanceItem.enrollmentId)) && attendanceItem.status === 'APPROVED'
-  );
+  ));
 
-  $: parentByStudent = (() => {
+  const parentByStudent = $derived.by(() => {
     const map: Record<string, { count: number; hours: number }> = {};
     parentApprovedAtt.forEach((attendanceItem) => {
       let studentDisplayName = '—';
@@ -87,7 +91,7 @@ import { database } from '$lib/shared/stores';
       map[studentDisplayName].hours += 90;
     });
     return map;
-  })();
+  });
 </script>
 
 {#if currentUser?.role === 'STUDENT'}

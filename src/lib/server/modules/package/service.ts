@@ -5,10 +5,10 @@
 
 import { packageRepository } from './repository';
 import { getCached, setCache, invalidateCache } from '../../cache';
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreatePackage, validateUpdatePackage, getFieldErrors } from './domain';
-import type { PackageEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreatePackage, validateUpdatePackage, getFieldErrors } from '$lib/api/modules/package/domain';
+import type { PackageEntity } from '$lib/api/modules/package/domain';
 
 const CACHE_KEY = 'packages';
 
@@ -25,7 +25,8 @@ export const packageService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[packageService] Error:`, err);
       return errorResponse('Failed to retrieve Package data.', 500);
     }
   },
@@ -34,27 +35,29 @@ export const packageService = {
       const item = await packageRepository.findById(id);
       if (!item) return errorResponse('Package not found.', 404);
       return successResponse(item, 'Package retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[packageService] Error:`, err);
       return errorResponse('Failed to retrieve Package.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<PackageEntity>> {
     const parsed = validateCreatePackage(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await packageRepository.create(parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(created, 'Package created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[packageService] Error:`, err);
       return errorResponse('Failed to create Package.', 500);
     }
   },
   async update(id: string, data: any): Promise<ApiResponse<PackageEntity>> {
     const parsed = validateUpdatePackage(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const existing = await packageRepository.findById(id);
@@ -62,7 +65,8 @@ export const packageService = {
       const updated = await packageRepository.update(id, parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(updated, 'Package updated successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[packageService] Error:`, err);
       return errorResponse('Failed to update Package.', 500);
     }
   },
@@ -73,7 +77,8 @@ export const packageService = {
       await packageRepository.softDelete(id);
       invalidateCache([CACHE_KEY]);
       return successResponse({ id }, 'Package deleted successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[packageService] Error:`, err);
       return errorResponse('Failed to delete Package.', 500);
     }
   }

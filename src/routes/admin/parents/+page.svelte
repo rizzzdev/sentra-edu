@@ -7,20 +7,20 @@
 import { userStore } from '$lib/api';
 import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  let searchQuery = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
   // Parent Master Modal State
-  let parentModalOpen: boolean = false;
-  let editingParent: User | null = null;
-  let deleteParentDialogOpen: boolean = false;
-  let deleteParentId: string | null = null;
+  let parentModalOpen = $state(false);
+  let editingParent = $state<User | null>(null);
+  let deleteParentDialogOpen = $state(false);
+  let deleteParentId = $state<string | null>(null);
 
-  $: allStudents = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT');
-  $: allParents = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'PARENT');
+  const allStudents = $derived($userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT'));
+  const allParents = $derived($userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'PARENT'));
 
-  $: filteredParents = allParents.filter((parentUser) => {
+  const filteredParents = $derived(allParents.filter((parentUser) => {
     const query = searchQuery.toLowerCase();
     if (!query) return true;
     return (
@@ -29,10 +29,10 @@ import { api } from '$lib/api/client';
       (parentUser.phone || '').toLowerCase().includes(query) ||
       (parentUser.occupation || '').toLowerCase().includes(query)
     );
-  });
+  }));
 
-  $: paginatedParents = filteredParents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  $: totalPagesParents = Math.max(1, Math.ceil(filteredParents.length / itemsPerPage));
+  const paginatedParents = $derived(filteredParents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
+  const totalPagesParents = $derived(Math.max(1, Math.ceil(filteredParents.length / itemsPerPage)));
 
   function getChildrenOfParent(parentId: string): User[] {
     return allStudents.filter((studentUser) => studentUser.parentId === parentId);
@@ -57,7 +57,7 @@ import { api } from '$lib/api/client';
     <button
       type="button"
       class="btn btn-primary"
-      on:click={() => { editingParent = null; parentModalOpen = true; }}
+      onclick={() => { editingParent = null; parentModalOpen = true; }}
     >
       <Icon name="person_add" size="sm" /> Tambah Orang Tua
     </button>
@@ -146,7 +146,7 @@ import { api } from '$lib/api/client';
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => { editingParent = parent; parentModalOpen = true; }}
+                      onclick={() => { editingParent = parent; parentModalOpen = true; }}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -154,7 +154,7 @@ import { api } from '$lib/api/client';
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deleteParentId = parent.id; deleteParentDialogOpen = true; }}
+                      onclick={() => { deleteParentId = parent.id; deleteParentDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -173,11 +173,11 @@ import { api } from '$lib/api/client';
           Menampilkan {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredParents.length)} dari {filteredParents.length} orang tua
         </div>
         <div class="page-btns">
-          <button type="button" class="page-btn" disabled={currentPage <= 1} on:click={() => currentPage--}>&laquo;</button>
+          <button type="button" class="page-btn" disabled={currentPage <= 1} onclick={() => currentPage--}>&laquo;</button>
           {#each Array.from({ length: totalPagesParents }, (_, index) => index + 1) as pageNumber}
-            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" on:click={() => { currentPage = pageNumber; }}>{pageNumber}</button>
+            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" onclick={() => { currentPage = pageNumber; }}>{pageNumber}</button>
           {/each}
-          <button type="button" class="page-btn" disabled={currentPage >= totalPagesParents} on:click={() => currentPage++}>&raquo;</button>
+          <button type="button" class="page-btn" disabled={currentPage >= totalPagesParents} onclick={() => currentPage++}>&raquo;</button>
         </div>
       </div>
     {/if}

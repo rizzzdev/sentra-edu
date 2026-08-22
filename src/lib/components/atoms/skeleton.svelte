@@ -1,8 +1,15 @@
 <script lang="ts">
-  export let width: string = 'w-full';
-  export let height: string = 'h-4'; // 16px (multiple of 4)
-  export let rounded: string = 'rounded-lg';
-  export let className: string = '';
+  let {
+    width = 'w-full',
+    height = 'h-4',
+    rounded = 'rounded-lg',
+    className = ''
+  }: {
+    width?: string;
+    height?: string;
+    rounded?: string;
+    className?: string;
+  } = $props();
 </script>
 
 <div

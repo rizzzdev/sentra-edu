@@ -8,8 +8,8 @@
   import { goto } from '$app/navigation';
 import { userStore, subjectStore, classStore, enrollmentStore, jobStore, applicationStore, attendanceStore, payrollStore } from '$lib/api';
 
-  $: currentUser = $authStore;
-  $: tentorId = currentUser?.id || '';
+  const currentUser = $derived($authStore);
+  const tentorId = $derived(currentUser?.id || '');
 
   interface TutorActiveLesson {
     id: string;
@@ -21,7 +21,7 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore, applica
   }
 
   // My active lessons (both direct enrollments and assigned jobs)
-  $: myActiveLessons = (() => {
+  const myActiveLessons = $derived.by(() => {
     const list: TutorActiveLesson[] = [];
     const seenIds = new Set<string>();
 
@@ -71,31 +71,31 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore, applica
     }
 
     return list;
-  })();
+  });
 
   // My attendance records
-  $: myAttendances = $attendanceStore.filter(
+  const myAttendances = $derived($attendanceStore.filter(
     (attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.tentorId === tentorId
-  );
-  $: approvedAttendances = myAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED');
-  $: pendingAttendances = myAttendances.filter((attendanceItem) => attendanceItem.status === 'SUBMITTED');
+  ));
+  const approvedAttendances = $derived(myAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED'));
+  const pendingAttendances = $derived(myAttendances.filter((attendanceItem) => attendanceItem.status === 'SUBMITTED'));
 
   // My payroll claims
-  $: myClaims = $payrollStore.filter(
+  const myClaims = $derived($payrollStore.filter(
     (claimItem) => claimItem.deletedAt === null && claimItem.tentorId === tentorId
-  );
-  $: paidClaims = myClaims.filter((claimItem) => claimItem.status === 'PAID');
-  $: totalPaid = paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
+  ));
+  const paidClaims = $derived(myClaims.filter((claimItem) => claimItem.status === 'PAID'));
+  const totalPaid = $derived(paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0));
 
   // Available jobs (open for application)
-  $: openJobs = $jobStore.filter(
+  const openJobs = $derived($jobStore.filter(
     (jobItem) => jobItem.deletedAt === null && jobItem.status === 'AVAILABLE'
-  );
+  ));
 
   // My applications
-  $: myApps = $applicationStore.filter(
+  const myApps = $derived($applicationStore.filter(
     (appItem) => appItem.deletedAt === null && appItem.tentorId === tentorId
-  );
+  ));
 
   function getSubjectName(subjectId: string): string {
     return $subjectStore.find((subjectItem) => subjectItem.id === subjectId)?.name || '—';
@@ -156,13 +156,13 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore, applica
 
   <!-- QUICK ACTIONS -->
   <div class="quick-actions mb-5">
-    <Button variant="primary" icon="school" on:click={() => goto('/tutor/classes')}>
+    <Button variant="primary" icon="school" onclick={() => goto('/tutor/classes')}>
       Program Les Aktif
     </Button>
-    <Button variant="outline" icon="work" on:click={() => goto('/tutor/job-board')}>
+    <Button variant="outline" icon="work" onclick={() => goto('/tutor/job-board')}>
       Cari Lowongan
     </Button>
-    <Button variant="outline" icon="location_on" on:click={() => goto('/tutor/attendance')}>
+    <Button variant="outline" icon="location_on" onclick={() => goto('/tutor/attendance')}>
       Presensi Saya
     </Button>
   </div>

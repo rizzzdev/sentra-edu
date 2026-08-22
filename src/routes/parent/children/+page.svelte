@@ -7,32 +7,30 @@
   import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
   import SelectSearch from '$lib/components/molecules/select-search.svelte';
 
-  $: currentUser = $authStore;
+  const currentUser = $derived($authStore);
 
-  let searchQuery: string = '';
-  let modeFilter: string = 'ALL';
-  let typeFilter: string = 'ALL';
-  let statusFilter: string = 'ALL';
-  let isLoading: boolean = true;
-  let errorMessage: string | null = null;
+  let searchQuery = $state('');
+  let modeFilter = $state('ALL');
+  let typeFilter = $state('ALL');
+  let statusFilter = $state('ALL');
+  let errorMessage = $state<string | null>(null);
 
   // Pagination states
-  let currentPage: number = 1;
-  const itemsPerPage: number = 6;
+  let currentPage = $state(1);
+  const itemsPerPage = 6;
 
-  import { onMount } from 'svelte';
 import { database } from '$lib/shared/stores';
-  onMount(() => {
-    setTimeout(() => {
-      isLoading = false;
-    }, 400);
-  });
+import { jobStore, enrollmentStore } from '$lib/api';
+  const jobLoading = jobStore.loading;
+  const isLoading = $derived($jobLoading);
 
-  $: allPrograms = currentUser
-    ? getParentPrograms($database, currentUser.id)
-    : [];
+  const allPrograms = $derived(
+    currentUser
+      ? getParentPrograms($database, currentUser.id)
+      : []
+  );
 
-  $: filteredPrograms = allPrograms.filter((program: UnifiedProgram) => {
+  const filteredPrograms = $derived(allPrograms.filter((program: UnifiedProgram) => {
     const query = searchQuery.trim().toLowerCase();
     const matchesSearch =
       !query ||
@@ -64,25 +62,27 @@ import { database } from '$lib/shared/stores';
       (statusFilter === 'NEGOTIATING' && program.status === 'NEGOTIATING');
 
     return matchesSearch && matchesMode && matchesType && matchesStatus;
-  });
+  }));
 
-  $: totalPages = Math.max(1, Math.ceil(filteredPrograms.length / itemsPerPage));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredPrograms.length / itemsPerPage)));
 
   // Reset to page 1 when filters change
-  $: if (searchQuery || modeFilter || typeFilter || statusFilter) {
-    if (currentPage > totalPages) {
-      currentPage = 1;
+  $effect(() => {
+    if (searchQuery || modeFilter || typeFilter || statusFilter) {
+      if (currentPage > totalPages) {
+        currentPage = 1;
+      }
     }
-  }
+  });
 
-  $: paginatedPrograms = filteredPrograms.slice(
+  const paginatedPrograms = $derived(filteredPrograms.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  ));
 
-  $: privateCount = allPrograms.filter((programItem) => programItem.packageMode === 'PRIVAT').length;
-  $: groupCount = allPrograms.filter((programItem) => programItem.packageMode === 'KELOMPOK').length;
-  $: hasActiveFilter = Boolean(searchQuery || (modeFilter && modeFilter !== 'ALL') || (typeFilter && typeFilter !== 'ALL') || (statusFilter && statusFilter !== 'ALL'));
+  const privateCount = $derived(allPrograms.filter((programItem) => programItem.packageMode === 'PRIVAT').length);
+  const groupCount = $derived(allPrograms.filter((programItem) => programItem.packageMode === 'KELOMPOK').length);
+  const hasActiveFilter = $derived(Boolean(searchQuery || (modeFilter && modeFilter !== 'ALL') || (typeFilter && typeFilter !== 'ALL') || (statusFilter && statusFilter !== 'ALL')));
 
   function handleResetFilters() {
     searchQuery = '';
@@ -133,7 +133,7 @@ import { database } from '$lib/shared/stores';
       type="text"
       placeholder="Cari anak / mapel / kelas / tentor..."
       bind:value={searchQuery}
-      on:input={() => { currentPage = 1; }}
+      oninput={() => { currentPage = 1; }}
     />
   </div>
 
@@ -175,7 +175,7 @@ import { database } from '$lib/shared/stores';
     <button
       type="button"
       class="btn btn-sm btn-outline"
-      on:click={handleResetFilters}
+      onclick={handleResetFilters}
       title="Reset semua filter"
     >
       <Icon name="restart_alt" size="xs" /> Reset
@@ -191,10 +191,9 @@ import { database } from '$lib/shared/stores';
         <AlertBanner
           variant="destructive"
           message={errorMessage}
-          onRetry={() => {
+          onRetry={async () => {
             errorMessage = null;
-            isLoading = true;
-            setTimeout(() => { isLoading = false; }, 400);
+            await Promise.all([jobStore.refetch(), enrollmentStore.refetch()]);
           }}
         />
       </div>
@@ -316,7 +315,7 @@ import { database } from '$lib/shared/stores';
             type="button"
             class="page-btn"
             disabled={currentPage <= 1}
-            on:click={() => { currentPage--; }}
+            onclick={() => { currentPage--; }}
             title="Halaman Sebelumnya"
           >
             &laquo;
@@ -325,7 +324,7 @@ import { database } from '$lib/shared/stores';
             <button
               type="button"
               class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-              on:click={() => { currentPage = pageNumber; }}
+              onclick={() => { currentPage = pageNumber; }}
             >
               {pageNumber}
             </button>
@@ -334,7 +333,7 @@ import { database } from '$lib/shared/stores';
             type="button"
             class="page-btn"
             disabled={currentPage >= totalPages}
-            on:click={() => { currentPage++; }}
+            onclick={() => { currentPage++; }}
             title="Halaman Berikutnya"
           >
             &raquo;

@@ -10,17 +10,24 @@ import { userStore, subjectStore, classStore, packageStore, applicationStore } f
   import { LeafletMap } from '$lib/components/molecules';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let job: JobPost | null = null;
-  export let onClose: () => void = () => {};
-  export let onEdit: ((job: JobPost) => void) | undefined = undefined;
+  let {
+    open = false,
+    job = null,
+    onClose = () => {},
+    onEdit = undefined
+  }: {
+    open?: boolean;
+    job?: JobPost | null;
+    onClose?: () => void;
+    onEdit?: ((job: JobPost) => void) | undefined;
+  } = $props();
 
-  let confirmCancelOpen: boolean = false;
-  let confirmRejectAppId: string | null = null;
+  let confirmCancelOpen = $state(false);
+  let confirmRejectAppId = $state<string | null>(null);
 
-  $: applications = job
+  let applications = $derived(job
     ? $applicationStore.filter((applicationItem) => applicationItem.deletedAt === null && applicationItem.jobId === job?.id)
-    : [];
+    : []);
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
@@ -153,7 +160,7 @@ import { userStore, subjectStore, classStore, packageStore, applicationStore } f
             variant="outline"
             size="sm"
             icon="edit"
-            on:click={() => { if (job && onEdit) onEdit(job); }}
+            onclick={() => { if (job && onEdit) onEdit(job); }}
           >
             Ubah Data
           </Button>
@@ -315,7 +322,7 @@ import { userStore, subjectStore, classStore, packageStore, applicationStore } f
                           <Button
                             variant="primary"
                             size="sm"
-                            on:click={() => handleAppApprove(applicationItem.id)}
+                            onclick={() => handleAppApprove(applicationItem.id)}
                             icon="check"
                           >
                             Setujui
@@ -323,7 +330,7 @@ import { userStore, subjectStore, classStore, packageStore, applicationStore } f
                           <Button
                             variant="danger"
                             size="sm"
-                            on:click={() => { confirmRejectAppId = applicationItem.id; }}
+                            onclick={() => { confirmRejectAppId = applicationItem.id; }}
                             icon="close"
                           >
                             Tolak
@@ -357,7 +364,7 @@ import { userStore, subjectStore, classStore, packageStore, applicationStore } f
             <Button
               variant="outline"
               size="sm"
-              on:click={() => handleSetStatus('AVAILABLE')}
+              onclick={() => handleSetStatus('AVAILABLE')}
               icon="undo"
             >
               Kembalikan ke Tersedia
@@ -369,7 +376,7 @@ import { userStore, subjectStore, classStore, packageStore, applicationStore } f
             <Button
               variant="danger"
               size="sm"
-              on:click={() => { confirmCancelOpen = true; }}
+              onclick={() => { confirmCancelOpen = true; }}
               icon="block"
             >
               Batalkan Lowongan
@@ -381,7 +388,7 @@ import { userStore, subjectStore, classStore, packageStore, applicationStore } f
             <Button
               variant="outline"
               size="sm"
-              on:click={() => handleSetStatus('AVAILABLE')}
+              onclick={() => handleSetStatus('AVAILABLE')}
               icon="undo"
             >
               Buka Kembali Lowongan
@@ -392,11 +399,11 @@ import { userStore, subjectStore, classStore, packageStore, applicationStore } f
     </div>
   {/if}
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Tutup
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>
 
 <ConfirmationDialog

@@ -13,31 +13,26 @@
 import { userStore, subjectStore, classStore, packageStore, jobStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let statusFilter: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 10;
-  let isLoading: boolean = true;
+  let searchQuery = $state('');
+  let statusFilter = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 10;
+  const jobLoading = jobStore.loading;
+  const isLoading = $derived($jobLoading);
 
-  let jobModalOpen: boolean = false;
-  let editingJob: JobPosting | null = null;
-  let assignModalOpen: boolean = false;
-  let assigningJob: JobPosting | null = null;
-  let deleteDialogOpen: boolean = false;
-  let deletingJobId: string | null = null;
+  let jobModalOpen = $state(false);
+  let editingJob = $state<JobPosting | null>(null);
+  let assignModalOpen = $state(false);
+  let assigningJob = $state<JobPosting | null>(null);
+  let deleteDialogOpen = $state(false);
+  let deletingJobId = $state<string | null>(null);
 
-  onMount(() => {
-    setTimeout(() => {
-      isLoading = false;
-    }, 250);
-  });
+  const allJobs = $derived($jobStore.filter((jobItem) => jobItem.deletedAt === null));
 
-  $: allJobs = $jobStore.filter((jobItem) => jobItem.deletedAt === null);
-
-  $: totalJobsCount = allJobs.length;
-  $: availableJobsCount = allJobs.filter((jobItem) => jobItem.status === 'AVAILABLE').length;
-  $: negotiatingJobsCount = allJobs.filter((jobItem) => jobItem.status === 'NEGOTIATING').length;
-  $: assignedJobsCount = allJobs.filter((jobItem) => jobItem.status === 'ASSIGNED').length;
+  const totalJobsCount = $derived(allJobs.length);
+  const availableJobsCount = $derived(allJobs.filter((jobItem) => jobItem.status === 'AVAILABLE').length);
+  const negotiatingJobsCount = $derived(allJobs.filter((jobItem) => jobItem.status === 'NEGOTIATING').length);
+  const assignedJobsCount = $derived(allJobs.filter((jobItem) => jobItem.status === 'ASSIGNED').length);
 
   function getClassesList(jobPosting: JobPosting): string[] {
     const classIds = Array.isArray(jobPosting.classIds) && jobPosting.classIds.length > 0
@@ -69,7 +64,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
     return packagePlan ? packagePlan.tentorFee : (jobPosting.tentorFee || 0);
   }
 
-  $: filteredJobs = allJobs.filter((jobPosting) => {
+  const filteredJobs = $derived(allJobs.filter((jobPosting) => {
     const query = searchQuery.trim().toLowerCase();
     const classNames = getClassesList(jobPosting).join(' ').toLowerCase();
     const subjectNames = getSubjectsList(jobPosting).join(' ').toLowerCase();
@@ -81,17 +76,19 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
 
     const matchesStatus = !statusFilter || jobPosting.status === statusFilter;
     return matchesSearch && matchesStatus;
+  }));
+
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredJobs.length / itemsPerPage)));
+
+  $effect(() => {
+    if (searchQuery || statusFilter) {
+      if (currentPage > totalPages) {
+        currentPage = 1;
+      }
+    }
   });
 
-  $: totalPages = Math.max(1, Math.ceil(filteredJobs.length / itemsPerPage));
-
-  $: if (searchQuery || statusFilter) {
-    if (currentPage > totalPages) {
-      currentPage = 1;
-    }
-  }
-
-  $: paginatedJobs = filteredJobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedJobs = $derived(filteredJobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
 
   async function handleConfirmDelete() {
     if (!deletingJobId) return;
@@ -114,7 +111,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
     <h3><Icon name="work" size="lg" /> Lowongan Les</h3>
     <div class="desc">Daftar lowongan bimbingan belajar yang siap ditugaskan atau dinegosiasikan dengan tentor.</div>
   </div>
-  <button type="button" class="btn btn-primary inline-flex items-center gap-1.5" on:click={() => { editingJob = null; jobModalOpen = true; }}>
+  <button type="button" class="btn btn-primary inline-flex items-center gap-1.5" onclick={() => { editingJob = null; jobModalOpen = true; }}>
     <Icon name="add" size="sm" /> Buat Lowongan
   </button>
 </div>
@@ -147,7 +144,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
       type="text"
       placeholder="Cari judul lowongan / kelas / mapel..."
       bind:value={searchQuery}
-      on:input={() => { currentPage = 1; }}
+      oninput={() => { currentPage = 1; }}
     />
   </div>
 
@@ -165,7 +162,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
     <button
       type="button"
       class="btn btn-sm btn-outline"
-      on:click={handleResetFilters}
+      onclick={handleResetFilters}
       title="Reset filter"
     >
       <Icon name="restart_alt" size="xs" /> Reset
@@ -286,7 +283,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
                       type="button"
                       class="btn-icon"
                       data-tip="Kelola"
-                      on:click={() => { assigningJob = jobItem; assignModalOpen = true; }}
+                      onclick={() => { assigningJob = jobItem; assignModalOpen = true; }}
                     >
                       <Icon name="tune" size="sm" />
                     </button>
@@ -294,7 +291,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => { editingJob = jobItem; jobModalOpen = true; }}
+                      onclick={() => { editingJob = jobItem; jobModalOpen = true; }}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -302,7 +299,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deletingJobId = jobItem.id; deleteDialogOpen = true; }}
+                      onclick={() => { deletingJobId = jobItem.id; deleteDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -325,7 +322,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
           type="button"
           class="page-btn"
           disabled={currentPage <= 1}
-          on:click={() => { currentPage--; }}
+          onclick={() => { currentPage--; }}
           title="Halaman Sebelumnya"
         >
           &laquo;
@@ -334,7 +331,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
           <button
             type="button"
             class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-            on:click={() => { currentPage = pageNumber; }}
+            onclick={() => { currentPage = pageNumber; }}
           >
             {pageNumber}
           </button>
@@ -343,7 +340,7 @@ import { userStore, subjectStore, classStore, packageStore, jobStore } from '$li
           type="button"
           class="page-btn"
           disabled={currentPage >= totalPages}
-          on:click={() => { currentPage++; }}
+          onclick={() => { currentPage++; }}
           title="Halaman Berikutnya"
         >
           &raquo;

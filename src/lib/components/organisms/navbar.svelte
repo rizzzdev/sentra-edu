@@ -1,18 +1,29 @@
 <script lang="ts">
-import { notificationStore } from '$lib/api';
-  import { Icon } from '$lib/components/atoms';
-  import {themeStore} from '$lib/shared/stores';
+  import { notificationStore } from '$lib/api';
+  import Icon from '$lib/components/atoms/icon.svelte';
+  import { themeStore } from '$lib/shared/stores';
   import type { User } from '$lib/shared/types';
   import { ROLE_LABEL } from '$lib/shared/utils';
 
-  export let currentUser: User;
-  export let title: string = 'Dashboard';
-  export let onToggleMobileMenu: () => void = () => {};
-  export let onOpenNotifications: () => void = () => {};
+  interface NavbarProps {
+    currentUser: User;
+    title?: string;
+    onToggleMobileMenu?: () => void;
+    onOpenNotifications?: () => void;
+  }
 
-  $: unreadCount = ($notificationStore || []).filter(
-    (item) => item.userId === currentUser.id && !item.read
-  ).length;
+  let {
+    currentUser,
+    title = 'Dashboard',
+    onToggleMobileMenu = () => {},
+    onOpenNotifications = () => {}
+  }: NavbarProps = $props();
+
+  let unreadCount = $derived(
+    ($notificationStore || []).filter(
+      (notificationItem) => notificationItem.userId === currentUser.id && !notificationItem.read
+    ).length
+  );
 </script>
 
 <header class="topbar">
@@ -28,7 +39,7 @@ import { notificationStore } from '$lib/api';
     class="top-btn"
     title="Notifikasi"
     aria-label="Notifikasi"
-    on:click={onOpenNotifications}
+    onclick={onOpenNotifications}
   >
     <Icon name="notifications" size="md" />
     {#if unreadCount > 0}
@@ -42,7 +53,7 @@ import { notificationStore } from '$lib/api';
     class="top-btn"
     title="Ganti tema"
     aria-label="Ganti tema terang/gelap"
-    on:click={themeStore.toggleTheme}
+    onclick={themeStore.toggleTheme}
   >
     <Icon name={$themeStore === 'dark' ? 'light_mode' : 'dark_mode'} size="md" />
   </button>
@@ -52,7 +63,7 @@ import { notificationStore } from '$lib/api';
     type="button"
     class="burger"
     aria-label="Buka menu"
-    on:click={onToggleMobileMenu}
+    onclick={onToggleMobileMenu}
   >
     <Icon name="menu" size="md" />
   </button>

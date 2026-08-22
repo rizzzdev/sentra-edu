@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import type { RecruitmentCandidate, CandidateStatus } from '$lib/shared/types';
@@ -7,17 +7,25 @@
   import { SelectSearch } from '$lib/components/molecules';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let candidate: RecruitmentCandidate | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    candidate = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    candidate?: RecruitmentCandidate | null;
+    onClose?: () => void;
+  } = $props();
 
-  let status: string = 'INTERVIEW';
-  let notes: string = '';
+  let status = $state<string>('INTERVIEW');
+  let notes = $state<string>('');
 
-  $: if (candidate) {
-    status = candidate.status;
-    notes = candidate.notes || '';
-  }
+  $effect(() => {
+    if (candidate) {
+      status = candidate.status;
+      notes = candidate.notes || '';
+    }
+  });
 
   async function handleUpdateStatus() {
     if (!candidate) return;
@@ -92,18 +100,18 @@
     {/if}
   {/if}
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     {#if status === 'ACCEPTED'}
-      <Button variant="primary" on:click={handleConvertToTentor} icon="how_to_reg">
+      <Button variant="primary" onclick={handleConvertToTentor} icon="how_to_reg">
         Konversi Jadi Akun Tentor
       </Button>
     {:else}
-      <Button variant="primary" on:click={handleUpdateStatus} icon="save">
+      <Button variant="primary" onclick={handleUpdateStatus} icon="save">
         Simpan Status
       </Button>
     {/if}
-  </svelte:fragment>
+  {/snippet}
 </Modal>

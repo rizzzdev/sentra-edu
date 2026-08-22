@@ -1,6 +1,6 @@
 <script lang="ts">
 import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '$lib/api';
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {authStore, toastStore} from '$lib/shared/stores';
   import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils';
   import type { AttendanceRecord } from '$lib/shared/types';
@@ -8,23 +8,28 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
   import { LeafletMap } from '$lib/components/molecules';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let attendance: AttendanceRecord | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    attendance = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    attendance?: AttendanceRecord | null;
+    onClose?: () => void;
+  } = $props();
 
-  let rejectionModalOpen: boolean = false;
-  let rejectionReason: string = '';
+  let rejectionModalOpen = $state(false);
+  let rejectionReason = $state('');
 
-  $: canVerify = $authStore?.role === 'SUPER_ADMIN';
-  $: job = attendance?.jobId
+  let canVerify = $derived($authStore?.role === 'SUPER_ADMIN');
+  let job = $derived(attendance?.jobId
     ? $jobStore.find((jobItem) => jobItem.id === attendance?.jobId)
-    : (attendance?.enrollmentId ? $jobStore.find((jobItem) => jobItem.enrollmentId === attendance?.enrollmentId) : null);
+    : (attendance?.enrollmentId ? $jobStore.find((jobItem) => jobItem.enrollmentId === attendance?.enrollmentId) : null));
 
-  $: enrollment = attendance?.enrollmentId ? $enrollmentStore.find((enrollmentItem) => enrollmentItem.id === attendance?.enrollmentId) : null;
-  $: tentor = attendance ? $userStore.find((userItem) => userItem.id === attendance?.tentorId) : null;
+  let enrollment = $derived(attendance?.enrollmentId ? $enrollmentStore.find((enrollmentItem) => enrollmentItem.id === attendance?.enrollmentId) : null);
+  let tentor = $derived(attendance ? $userStore.find((userItem) => userItem.id === attendance?.tentorId) : null);
 
-  // Resolved Subject Names
-  $: subjectNames = (() => {
+  let subjectNames = $derived((() => {
     if (!attendance) return '—';
     if (attendance.subjectIds && attendance.subjectIds.length > 0) {
       return $subjectStore
@@ -36,10 +41,9 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       return $subjectStore.find((subjectItem) => subjectItem.id === enrollment?.subjectId)?.name || '—';
     }
     return '—';
-  })();
+  })());
 
-  // Resolved Class Names
-  $: classNames = (() => {
+  let classNames = $derived((() => {
     if (!attendance) return '—';
     if (attendance.classIds && attendance.classIds.length > 0) {
       return $classStore
@@ -51,10 +55,9 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       return $classStore.find((classItem) => classItem.id === enrollment?.classId)?.className || '—';
     }
     return '—';
-  })();
+  })());
 
-  // Resolved Student Names
-  $: studentNames = (() => {
+  let studentNames = $derived((() => {
     if (!attendance) return '—';
     if (attendance.studentNames && attendance.studentNames.length > 0) {
       return attendance.studentNames.join(', ');
@@ -69,12 +72,12 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       return $userStore.find((userItem) => userItem.id === enrollment?.studentId)?.fullName || '—';
     }
     return '—';
-  })();
+  })());
 
-  $: isOffline = Boolean(
+  let isOffline = $derived(Boolean(
     attendance?.latitudeCheckIn !== null &&
     attendance?.longitudeCheckIn !== null
-  );
+  ));
 
   function formatDisplayTime(isoOrTimeString: string): string {
     if (!isoOrTimeString) return '';
@@ -116,7 +119,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
   <Modal {open} {onClose} title="Detail Presensi" icon="fact_check" maxWidth="max-w-xl">
     {#if attendance}
       <div class="space-y-3">
-        <!-- Lowongan Info -->
         {#if job?.title}
           <div class="field">
             <span class="text-xs text-muted-fg block">Lowongan</span>
@@ -124,7 +126,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
           </div>
         {/if}
 
-        <!-- Details Grid -->
         <div class="grid grid-cols-2 gap-3 text-sm">
           <div class="p-2.5 rounded-lg border border-border bg-surface">
             <span class="text-xs text-muted-fg block">Tentor</span>
@@ -161,7 +162,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
           </div>
         </div>
 
-        <!-- Topic and Notes -->
         <div class="p-2.5 rounded-lg border border-border bg-surface space-y-1.5 text-sm">
           <div>
             <span class="text-xs text-muted-fg block font-medium">Topik Materi:</span>
@@ -175,7 +175,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
           {/if}
         </div>
 
-        <!-- GPS Leaflet Map for Offline -->
         {#if isOffline && attendance.latitudeCheckIn !== null && attendance.longitudeCheckIn !== null}
           <div class="space-y-1.5">
             <span class="text-xs text-muted-fg font-medium">Lokasi GPS Check-in</span>
@@ -192,7 +191,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
           </div>
         {/if}
 
-        <!-- Status -->
         <div class="flex items-center justify-between pt-1">
           <span class="text-xs text-muted-fg">Status</span>
           <span class="badge {getStatusBadgeClass(attendance.status)}">
@@ -202,20 +200,20 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       </div>
     {/if}
 
-    <svelte:fragment slot="footer">
+    {#snippet footer()}
       {#if canVerify && attendance?.status === 'SUBMITTED'}
-        <Button variant="danger" on:click={() => { rejectionModalOpen = true; }} icon="close">
+        <Button variant="danger" onclick={() => { rejectionModalOpen = true; }} icon="close">
           Tolak
         </Button>
-        <Button variant="primary" on:click={handleApprove} icon="check">
+        <Button variant="primary" onclick={handleApprove} icon="check">
           Setujui
         </Button>
       {:else}
-        <Button variant="outline" on:click={onClose} icon="close">
+        <Button variant="outline" onclick={onClose} icon="close">
           Tutup
         </Button>
       {/if}
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {:else}
   <Modal open={true} onClose={() => { rejectionModalOpen = false; }} title="Tolak Presensi" icon="close" maxWidth="max-w-md">
@@ -231,13 +229,13 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       ></textarea>
     </div>
 
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { rejectionModalOpen = false; }} icon="close">
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { rejectionModalOpen = false; }} icon="close">
         Batal
       </Button>
-      <Button variant="danger" on:click={handleRejectSubmit} icon="close">
+      <Button variant="danger" onclick={handleRejectSubmit} icon="close">
         Tolak Presensi
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}

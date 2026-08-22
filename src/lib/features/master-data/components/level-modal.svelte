@@ -1,25 +1,35 @@
 <script lang="ts">
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon, Input } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import type { EducationLevel } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
+  import { educationLevelStore } from '$lib/api';
 
-  export let open: boolean = false;
-  export let editingLevel: EducationLevel | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingLevel = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingLevel?: EducationLevel | null;
+    onClose?: () => void;
+  } = $props();
 
-  let levelName: string = '';
-  let description: string = '';
+  let levelName = $state('');
+  let description = $state('');
+  let isSubmitting = $state(false);
 
-  $: if (editingLevel) {
-    levelName = editingLevel.levelName;
-    description = editingLevel.description || '';
-  } else {
-    levelName = '';
-    description = '';
-  }
+  $effect(() => {
+    if (editingLevel) {
+      levelName = editingLevel.levelName;
+      description = editingLevel.description || '';
+    } else {
+      levelName = '';
+      description = '';
+    }
+  });
 
   async function handleSubmit() {
     if (!levelName.trim()) {
@@ -27,6 +37,7 @@
       return;
     }
 
+    isSubmitting = true;
     const payload = {
       id: editingLevel ? editingLevel.id : undefined,
       levelName: levelName.trim(),
@@ -34,17 +45,19 @@
     };
 
     const response = await api.educationLevels.create(payload);
+    isSubmitting = false;
     if (!response.error) {
-      toastStore.success(response.message);
+      toastStore.success(response.message || (editingLevel ? 'Jenjang berhasil diubah.' : 'Jenjang berhasil ditambahkan.'));
+      await educationLevelStore.fetch();
       onClose();
     } else {
-      toastStore.error(response.message);
+      toastStore.error(response.message || 'Gagal menyimpan data jenjang.');
     }
   }
 </script>
 
 <Modal {open} {onClose} title={editingLevel ? 'Ubah Jenjang' : 'Tambah Jenjang'} icon="school" maxWidth="480px">
-  <form id="form-level" on:submit|preventDefault={handleSubmit}>
+  <form id="form-level" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <div class="field">
       <label for="f_levelName">Nama Jenjang <i class="req">*</i></label>
       <Input
@@ -67,12 +80,12 @@
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-level" icon="save">
       {editingLevel ? 'Simpan Perubahan' : 'Tambah Jenjang'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

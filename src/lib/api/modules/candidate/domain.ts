@@ -10,14 +10,19 @@ import type { Candidate } from '$generated/prisma/client';
 
 /** Schema for creating a new Candidate */
 export const CreateCandidateSchema = z.object({
+  id: z.string().optional(),
   fullName: z.string().trim().min(1, 'Nama lengkap wajib diisi').max(100, 'Nama maksimal 100 karakter'),
   email: z.string().trim().min(1, 'Email wajib diisi').email('Format email tidak valid'),
   phone: z.string().trim().min(1, 'Nomor telepon wajib diisi').max(20, 'Nomor telepon maksimal 20 karakter'),
   education: z.string().trim().max(100).optional().default(''),
   experienceYears: z.number().min(0, 'Pengalaman tidak boleh negatif').optional().default(0),
-  subjectIds: z.array(z.string()).optional(),
-  levelIds: z.array(z.string()).optional(),
+  subjectIds: z.array(z.string()).optional().default([]),
+  levelIds: z.array(z.string()).optional().default([]),
+  cvUrl: z.string().nullable().optional(),
+  source: z.string().nullable().optional(),
+  status: z.enum(['REGISTERED', 'TEST_SCHEDULED', 'TESTED', 'INTERVIEW_SCHEDULED', 'INTERVIEWED', 'ACCEPTED', 'REJECTED', 'INTERVIEW', 'MICROTEACHING']).optional().default('REGISTERED'),
   notes: z.string().trim().max(1000).optional().default(''),
+  interviewDate: z.union([z.string(), z.date()]).nullable().optional(),
 });
 
 /** Schema for updating an existing Candidate (all fields optional) */

@@ -5,10 +5,10 @@
 
 import { notificationRepository } from './repository';
 
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreateNotification, validateUpdateNotification, getFieldErrors } from './domain';
-import type { NotificationEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreateNotification, validateUpdateNotification, getFieldErrors } from '$lib/api/modules/notification/domain';
+import type { NotificationEntity } from '$lib/api/modules/notification/domain';
 
 export const notificationService = {
   async findAll(page: number = 1, limit: number = 50): Promise<ApiResponse<NotificationEntity[]>> {
@@ -23,20 +23,22 @@ export const notificationService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[notificationService] Error:`, err);
       return errorResponse('Failed to retrieve Notification data.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<NotificationEntity>> {
     const parsed = validateCreateNotification(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await notificationRepository.create(parsed.data);
       
       return successResponse(created, 'Notification created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[notificationService] Error:`, err);
       return errorResponse('Failed to create Notification.', 500);
     }
   },
@@ -44,7 +46,8 @@ export const notificationService = {
     try {
       const items = await notificationRepository.findByUser(userId);
       return successResponse(items, 'Notifications retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[notificationService] Error:`, err);
       return errorResponse('Failed to retrieve notifications.', 500);
     }
   },
@@ -52,7 +55,8 @@ export const notificationService = {
     try {
       await notificationRepository.markAsRead(id);
       return successResponse({ id }, 'Notification marked as read.');
-    } catch {
+    } catch (err) {
+      console.error(`[notificationService] Error:`, err);
       return errorResponse('Failed to mark notification as read.', 500);
     }
   },
@@ -60,7 +64,8 @@ export const notificationService = {
     try {
       await notificationRepository.markAllAsRead(userId);
       return successResponse(null, 'All notifications marked as read.');
-    } catch {
+    } catch (err) {
+      console.error(`[notificationService] Error:`, err);
       return errorResponse('Failed to mark all notifications as read.', 500);
     }
   }

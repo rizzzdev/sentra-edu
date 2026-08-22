@@ -10,6 +10,7 @@ import type { Package } from '$generated/prisma/client';
 
 /** Schema for creating a new Package */
 export const CreatePackageSchema = z.object({
+  id: z.string().optional(),
   name: z.string().trim().min(1, 'Nama paket wajib diisi').max(100, 'Nama paket maksimal 100 karakter'),
   mode: z.enum(['PRIVATE', 'KELOMPOK'], { required_error: 'Mode paket wajib dipilih' }),
   period: z.enum(['BULANAN', 'HARIAN'], { required_error: 'Periode wajib dipilih' }),

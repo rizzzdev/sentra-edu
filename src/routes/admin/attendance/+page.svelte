@@ -11,18 +11,18 @@
 import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let statusFilter: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  let searchQuery = $state('');
+  let statusFilter = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
-  let checkinModalOpen: boolean = false;
-  let verifyModalOpen: boolean = false;
-  let selectedAttendance: AttendanceRecord | null = null;
+  let checkinModalOpen = $state(false);
+  let verifyModalOpen = $state(false);
+  let selectedAttendance = $state<AttendanceRecord | null>(null);
 
-  $: currentUser = $authStore;
+  const currentUser = $derived($authStore);
 
-  $: allAttendances = $attendanceStore.filter((attendanceItem) => {
+  const allAttendances = $derived($attendanceStore.filter((attendanceItem) => {
     if (attendanceItem.deletedAt !== null) return false;
     if (!currentUser) return false;
 
@@ -33,11 +33,11 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
     const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === attendanceItem.enrollmentId);
     if (!enrollmentItem) return false;
     return enrollmentItem.studentId === currentUser.id || enrollmentItem.parentId === currentUser.id;
-  });
+  }));
 
-  $: nSubmitted = allAttendances.filter((attendanceItem) => attendanceItem.status === 'SUBMITTED').length;
-  $: nApproved = allAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length;
-  $: nRejected = allAttendances.filter((attendanceItem) => attendanceItem.status === 'REJECTED').length;
+  const nSubmitted = $derived(allAttendances.filter((attendanceItem) => attendanceItem.status === 'SUBMITTED').length);
+  const nApproved = $derived(allAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length);
+  const nRejected = $derived(allAttendances.filter((attendanceItem) => attendanceItem.status === 'REJECTED').length);
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
@@ -79,7 +79,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
     return '—';
   }
 
-  $: filteredAttendances = allAttendances
+  const filteredAttendances = $derived(allAttendances
     .filter((attendanceItem) => {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
@@ -91,13 +91,13 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
       const matchesStatus = !statusFilter || attendanceItem.status === statusFilter;
       return matchesSearch && matchesStatus;
     })
-    .sort((firstItem, secondItem) => (firstItem.sessionDate < secondItem.sessionDate ? 1 : -1));
+    .sort((firstItem, secondItem) => (firstItem.sessionDate < secondItem.sessionDate ? 1 : -1)));
 
-  $: paginatedAttendances = filteredAttendances.slice(
+  const paginatedAttendances = $derived(filteredAttendances.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
-  $: totalPages = Math.max(1, Math.ceil(filteredAttendances.length / itemsPerPage));
+  ));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredAttendances.length / itemsPerPage)));
 
   function handleOpenDetail(attendanceItem: AttendanceRecord) {
     selectedAttendance = attendanceItem;
@@ -230,7 +230,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
                         type="button"
                         class="btn-icon"
                         data-tip="Periksa"
-                        on:click={() => handleOpenDetail(attendanceItem)}
+                        onclick={() => handleOpenDetail(attendanceItem)}
                       >
                         <Icon name="visibility" size="sm" />
                       </button>
@@ -239,7 +239,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
                           type="button"
                           class="btn-icon"
                           data-tip="Setujui"
-                          on:click={() => handleApprove(attendanceItem)}
+                          onclick={() => handleApprove(attendanceItem)}
                         >
                           <Icon name="check" size="sm" />
                         </button>
@@ -247,7 +247,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
                           type="button"
                           class="btn-icon btn-icon-danger"
                           data-tip="Tolak"
-                          on:click={() => handleReject(attendanceItem)}
+                          onclick={() => handleReject(attendanceItem)}
                         >
                           <Icon name="close" size="sm" />
                         </button>
@@ -271,7 +271,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               type="button"
               class="page-btn"
               disabled={currentPage <= 1}
-              on:click={() => currentPage--}
+              onclick={() => currentPage--}
             >
               &laquo;
             </button>
@@ -279,7 +279,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               <button
                 type="button"
                 class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-                on:click={() => { currentPage = pageNumber; }}
+                onclick={() => { currentPage = pageNumber; }}
               >
                 {pageNumber}
               </button>
@@ -288,7 +288,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               type="button"
               class="page-btn"
               disabled={currentPage >= totalPages}
-              on:click={() => currentPage++}
+              onclick={() => currentPage++}
             >
               &raquo;
             </button>
@@ -304,7 +304,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
       <h3><Icon name="location_on" size="lg" /> Presensi Saya</h3>
       <div class="desc">Catatan presensi dan materi belajar sesi les Anda.</div>
     </div>
-    <button type="button" class="btn btn-primary" on:click={() => { checkinModalOpen = true; }}>
+    <button type="button" class="btn btn-primary" onclick={() => { checkinModalOpen = true; }}>
       <Icon name="location_on" size="sm" /> Check-in Presensi
     </button>
   </div>
@@ -360,7 +360,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
                         type="button"
                         class="btn-icon"
                         data-tip="Periksa"
-                        on:click={() => handleOpenDetail(attendanceItem)}
+                        onclick={() => handleOpenDetail(attendanceItem)}
                       >
                         <Icon name="visibility" size="sm" />
                       </button>
@@ -383,7 +383,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               type="button"
               class="page-btn"
               disabled={currentPage <= 1}
-              on:click={() => currentPage--}
+              onclick={() => currentPage--}
             >
               &laquo;
             </button>
@@ -391,7 +391,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               <button
                 type="button"
                 class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-                on:click={() => { currentPage = pageNumber; }}
+                onclick={() => { currentPage = pageNumber; }}
               >
                 {pageNumber}
               </button>
@@ -400,7 +400,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               type="button"
               class="page-btn"
               disabled={currentPage >= totalPages}
-              on:click={() => currentPage++}
+              onclick={() => currentPage++}
             >
               &raquo;
             </button>
@@ -489,7 +489,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               type="button"
               class="page-btn"
               disabled={currentPage <= 1}
-              on:click={() => currentPage--}
+              onclick={() => currentPage--}
             >
               &laquo;
             </button>
@@ -497,7 +497,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               <button
                 type="button"
                 class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-                on:click={() => { currentPage = pageNumber; }}
+                onclick={() => { currentPage = pageNumber; }}
               >
                 {pageNumber}
               </button>
@@ -506,7 +506,7 @@ import { userStore, subjectStore, enrollmentStore, attendanceStore } from '$lib/
               type="button"
               class="page-btn"
               disabled={currentPage >= totalPages}
-              on:click={() => currentPage++}
+              onclick={() => currentPage++}
             >
               &raquo;
             </button>

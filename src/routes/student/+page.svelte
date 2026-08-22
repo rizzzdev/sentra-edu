@@ -9,71 +9,68 @@
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
 
-  $: currentUser = $authStore;
+  import { database } from '$lib/shared/stores';
+  import { userStore, subjectStore, classStore, packageStore, enrollmentStore, jobStore, attendanceStore, invoiceStore, payrollStore, candidateStore } from '$lib/api';
 
-  let verifyModalOpen: boolean = false;
-  let selectedAttendance: AttendanceRecord | null = null;
+  const currentUser = $derived($authStore);
+
+  let verifyModalOpen = $state(false);
+  let selectedAttendance = $state<AttendanceRecord | null>(null);
 
   // Pagination states
-  let adminPage: number = 1;
-  let tentorPage: number = 1;
-  let parentPage: number = 1;
-  const itemsPerPage: number = 5;
+  let adminPage = $state(1);
+  let tentorPage = $state(1);
+  let parentPage = $state(1);
+  let studentProgPage = $state(1);
+  let studentAttPage = $state(1);
+  const itemsPerPage = 5;
 
-  let isLoading: boolean = true;
-  let errorMessage: string | null = null;
-
-  import { onMount } from 'svelte';
-import { userStore, subjectStore, classStore, packageStore, enrollmentStore, jobStore, attendanceStore, invoiceStore, payrollStore, candidateStore } from '$lib/api';
-import { database } from '$lib/shared/stores';
-  onMount(() => {
-    setTimeout(() => { isLoading = false; }, 600);
-  });
+  const jobLoading = jobStore.loading;
+  const isLoading = $derived($jobLoading);
+  let errorMessage = $state<string | null>(null);
 
   // Super Admin stats & list
-  $: activeJobs = $jobStore.filter((job) => job.deletedAt === null && (job.status === 'AVAILABLE' || job.status === 'NEGOTIATING')).length;
-  $: tentorCount = $userStore.filter((user) => user.deletedAt === null && user.role === 'TENTOR').length;
-  $: enrolledStudentCount = $enrollmentStore.filter((enroll) => enroll.deletedAt === null).length;
-  $: pendingAttList = $attendanceStore.filter((att) => att.deletedAt === null && att.status === 'SUBMITTED');
-  $: pendingClaimsCount = $payrollStore.filter((claim) => claim.deletedAt === null && claim.status === 'REQUESTED').length;
-  $: candidatesCount = $candidateStore.filter((cand) => cand.deletedAt === null).length;
+  const activeJobs = $derived($jobStore.filter((job) => job.deletedAt === null && (job.status === 'AVAILABLE' || job.status === 'NEGOTIATING')).length);
+  const tentorCount = $derived($userStore.filter((user) => user.deletedAt === null && user.role === 'TENTOR').length);
+  const enrolledStudentCount = $derived($enrollmentStore.filter((enroll) => enroll.deletedAt === null).length);
+  const pendingAttList = $derived($attendanceStore.filter((att) => att.deletedAt === null && att.status === 'SUBMITTED'));
+  const pendingClaimsCount = $derived($payrollStore.filter((claim) => claim.deletedAt === null && claim.status === 'REQUESTED').length);
+  const candidatesCount = $derived($candidateStore.filter((cand) => cand.deletedAt === null).length);
 
-  $: adminPaginatedAtt = pendingAttList.slice((adminPage - 1) * itemsPerPage, adminPage * itemsPerPage);
+  const adminPaginatedAtt = $derived(pendingAttList.slice((adminPage - 1) * itemsPerPage, adminPage * itemsPerPage));
 
   // Tentor stats & list
-  $: tentorOpenJobs = $jobStore.filter((job) => job.deletedAt === null && (job.status === 'AVAILABLE' || job.status === 'NEGOTIATING'));
-  $: tentorMyAtt = currentUser ? $attendanceStore.filter((att) => att.deletedAt === null && att.tentorId === currentUser?.id) : [];
-  $: tentorApprovedAtt = tentorMyAtt.filter((att) => att.status === 'APPROVED');
-  $: tentorClaims = currentUser ? $payrollStore.filter((claim) => claim.deletedAt === null && claim.tentorId === currentUser?.id) : [];
-  $: tentorMyJobs = currentUser ? $jobStore.filter((job) => job.deletedAt === null && job.assignedTentorId === currentUser?.id) : [];
+  const tentorOpenJobs = $derived($jobStore.filter((job) => job.deletedAt === null && (job.status === 'AVAILABLE' || job.status === 'NEGOTIATING')));
+  const tentorMyAtt = $derived(currentUser ? $attendanceStore.filter((att) => att.deletedAt === null && att.tentorId === currentUser?.id) : []);
+  const tentorApprovedAtt = $derived(tentorMyAtt.filter((att) => att.status === 'APPROVED'));
+  const tentorClaims = $derived(currentUser ? $payrollStore.filter((claim) => claim.deletedAt === null && claim.tentorId === currentUser?.id) : []);
+  const tentorMyJobs = $derived(currentUser ? $jobStore.filter((job) => job.deletedAt === null && job.assignedTentorId === currentUser?.id) : []);
 
-  $: tentorPaginatedJobs = tentorMyJobs.slice((tentorPage - 1) * itemsPerPage, tentorPage * itemsPerPage);
+  const tentorPaginatedJobs = $derived(tentorMyJobs.slice((tentorPage - 1) * itemsPerPage, tentorPage * itemsPerPage));
 
   // Student stats & list
-  let studentProgPage: number = 1;
-  let studentAttPage: number = 1;
-  $: studentPrograms = currentUser ? getStudentPrograms($database, currentUser.id, currentUser.fullName) : [];
-  $: studentEnrIds = $enrollmentStore.filter((enroll) => enroll.deletedAt === null && enroll.studentId === currentUser?.id).map((enrollmentItem) => enrollmentItem.id);
-  $: studentProgramIds = studentPrograms.map((programItem) => programItem.id);
-  $: studentMyAtt = $attendanceStore.filter((att) => att.deletedAt === null && (studentEnrIds.includes(att.enrollmentId) || studentProgramIds.includes(att.enrollmentId)));
-  $: studentApprovedAtt = studentMyAtt.filter((att) => att.status === 'APPROVED');
-  $: studentPaginatedPrograms = studentPrograms.slice((studentProgPage - 1) * itemsPerPage, studentProgPage * itemsPerPage);
-  $: studentPaginatedAtt = studentMyAtt.slice((studentAttPage - 1) * itemsPerPage, studentAttPage * itemsPerPage);
+  const studentPrograms = $derived(currentUser ? getStudentPrograms($database, currentUser.id, currentUser.fullName) : []);
+  const studentEnrIds = $derived($enrollmentStore.filter((enroll) => enroll.deletedAt === null && enroll.studentId === currentUser?.id).map((enrollmentItem) => enrollmentItem.id));
+  const studentProgramIds = $derived(studentPrograms.map((programItem) => programItem.id));
+  const studentMyAtt = $derived($attendanceStore.filter((att) => att.deletedAt === null && (studentEnrIds.includes(att.enrollmentId) || studentProgramIds.includes(att.enrollmentId))));
+  const studentApprovedAtt = $derived(studentMyAtt.filter((att) => att.status === 'APPROVED'));
+  const studentPaginatedPrograms = $derived(studentPrograms.slice((studentProgPage - 1) * itemsPerPage, studentProgPage * itemsPerPage));
+  const studentPaginatedAtt = $derived(studentMyAtt.slice((studentAttPage - 1) * itemsPerPage, studentAttPage * itemsPerPage));
 
   // Parent stats & list
-  $: parentPrograms = currentUser ? getParentPrograms($database, currentUser.id) : [];
-  $: parentMyStudents = currentUser ? $userStore.filter((user) => user.deletedAt === null && user.role === 'STUDENT' && user.parentId === currentUser?.id) : [];
-  $: parentStudentIds = parentMyStudents.map((student) => student.id);
-  $: parentMyEnr = $enrollmentStore.filter((enroll) => enroll.deletedAt === null && (enroll.parentId === currentUser?.id || parentStudentIds.includes(enroll.studentId)));
-  $: parentEnrIds = parentMyEnr.map((enroll) => enroll.id);
-  $: parentProgramIds = parentPrograms.map((programItem) => programItem.id);
-  $: parentMyAtt = $attendanceStore.filter((att) => att.deletedAt === null && (parentEnrIds.includes(att.enrollmentId) || parentProgramIds.includes(att.enrollmentId)));
-  $: parentApprovedAtt = parentMyAtt.filter((att) => att.status === 'APPROVED');
-  $: parentInvoices = $invoiceStore.filter((inv) => inv.deletedAt === null && (parentEnrIds.includes(inv.enrollmentId) || parentProgramIds.includes(inv.enrollmentId)));
-  $: parentUnpaidInvoices = parentInvoices.filter((inv) => inv.status === 'UNPAID');
-  $: parentUnpaidTotal = parentUnpaidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+  const parentPrograms = $derived(currentUser ? getParentPrograms($database, currentUser.id) : []);
+  const parentMyStudents = $derived(currentUser ? $userStore.filter((user) => user.deletedAt === null && user.role === 'STUDENT' && user.parentId === currentUser?.id) : []);
+  const parentStudentIds = $derived(parentMyStudents.map((student) => student.id));
+  const parentMyEnr = $derived($enrollmentStore.filter((enroll) => enroll.deletedAt === null && (enroll.parentId === currentUser?.id || parentStudentIds.includes(enroll.studentId))));
+  const parentEnrIds = $derived(parentMyEnr.map((enroll) => enroll.id));
+  const parentProgramIds = $derived(parentPrograms.map((programItem) => programItem.id));
+  const parentMyAtt = $derived($attendanceStore.filter((att) => att.deletedAt === null && (parentEnrIds.includes(att.enrollmentId) || parentProgramIds.includes(att.enrollmentId))));
+  const parentApprovedAtt = $derived(parentMyAtt.filter((att) => att.status === 'APPROVED'));
+  const parentInvoices = $derived($invoiceStore.filter((inv) => inv.deletedAt === null && (parentEnrIds.includes(inv.enrollmentId) || parentProgramIds.includes(inv.enrollmentId))));
+  const parentUnpaidInvoices = $derived(parentInvoices.filter((inv) => inv.status === 'UNPAID'));
+  const parentUnpaidTotal = $derived(parentUnpaidInvoices.reduce((sum, inv) => sum + inv.amount, 0));
 
-  $: parentPaginatedInvoices = parentInvoices.slice((parentPage - 1) * itemsPerPage, parentPage * itemsPerPage);
+  const parentPaginatedInvoices = $derived(parentInvoices.slice((parentPage - 1) * itemsPerPage, parentPage * itemsPerPage));
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
@@ -194,7 +191,7 @@ import { database } from '$lib/shared/stores';
             {:else if errorMessage}
               <tr>
                 <td colspan="5" class="!p-4">
-                  <AlertBanner variant="destructive" message={errorMessage} onRetry={() => { errorMessage = null; isLoading = true; setTimeout(() => isLoading = false, 600); }} />
+                  <AlertBanner variant="destructive" message={errorMessage} onRetry={async () => { errorMessage = null; await Promise.all([jobStore.refetch(), attendanceStore.refetch(), enrollmentStore.refetch()]); }} />
                 </td>
               </tr>
             {:else if adminPaginatedAtt.length === 0}
@@ -217,7 +214,7 @@ import { database } from '$lib/shared/stores';
                         type="button"
                         class="btn-icon"
                         data-tip="Periksa"
-                        on:click={() => handleOpenVerify(att)}
+                        onclick={() => handleOpenVerify(att)}
                       >
                         <Icon name="visibility" size="sm" />
                       </button>
@@ -240,7 +237,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={adminPage <= 1}
-              on:click={() => adminPage--}
+              onclick={() => adminPage--}
             >
               &laquo;
             </button>
@@ -249,7 +246,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={adminPage * itemsPerPage >= pendingAttList.length}
-              on:click={() => adminPage++}
+              onclick={() => adminPage++}
             >
               &raquo;
             </button>
@@ -337,7 +334,7 @@ import { database } from '$lib/shared/stores';
             {:else if errorMessage}
               <tr>
                 <td colspan="3" class="!p-4">
-                  <AlertBanner variant="destructive" message={errorMessage} onRetry={() => { errorMessage = null; isLoading = true; setTimeout(() => isLoading = false, 600); }} />
+                  <AlertBanner variant="destructive" message={errorMessage} onRetry={async () => { errorMessage = null; await Promise.all([jobStore.refetch(), attendanceStore.refetch(), enrollmentStore.refetch()]); }} />
                 </td>
               </tr>
             {:else if tentorPaginatedJobs.length === 0}
@@ -382,7 +379,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={tentorPage <= 1}
-              on:click={() => tentorPage--}
+              onclick={() => tentorPage--}
             >
               &laquo;
             </button>
@@ -391,7 +388,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={tentorPage * itemsPerPage >= tentorMyJobs.length}
-              on:click={() => tentorPage++}
+              onclick={() => tentorPage++}
             >
               &raquo;
             </button>
@@ -597,7 +594,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={studentProgPage <= 1}
-              on:click={() => { studentProgPage--; }}
+              onclick={() => { studentProgPage--; }}
             >
               &laquo;
             </button>
@@ -605,7 +602,7 @@ import { database } from '$lib/shared/stores';
               <button
                 type="button"
                 class="page-btn {studentProgPage === p ? 'active' : ''}"
-                on:click={() => { studentProgPage = p; }}
+                onclick={() => { studentProgPage = p; }}
               >
                 {p}
               </button>
@@ -614,7 +611,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={studentProgPage * itemsPerPage >= studentPrograms.length}
-              on:click={() => { studentProgPage++; }}
+              onclick={() => { studentProgPage++; }}
             >
               &raquo;
             </button>
@@ -700,7 +697,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={studentAttPage <= 1}
-              on:click={() => { studentAttPage--; }}
+              onclick={() => { studentAttPage--; }}
             >
               &laquo;
             </button>
@@ -708,7 +705,7 @@ import { database } from '$lib/shared/stores';
               <button
                 type="button"
                 class="page-btn {studentAttPage === p ? 'active' : ''}"
-                on:click={() => { studentAttPage = p; }}
+                onclick={() => { studentAttPage = p; }}
               >
                 {p}
               </button>
@@ -717,7 +714,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={studentAttPage * itemsPerPage >= studentMyAtt.length}
-              on:click={() => { studentAttPage++; }}
+              onclick={() => { studentAttPage++; }}
             >
               &raquo;
             </button>
@@ -810,7 +807,7 @@ import { database } from '$lib/shared/stores';
             {:else if errorMessage}
               <tr>
                 <td colspan="5" class="!p-4">
-                  <AlertBanner variant="destructive" message={errorMessage} onRetry={() => { errorMessage = null; isLoading = true; setTimeout(() => isLoading = false, 600); }} />
+                  <AlertBanner variant="destructive" message={errorMessage} onRetry={async () => { errorMessage = null; await Promise.all([jobStore.refetch(), attendanceStore.refetch(), enrollmentStore.refetch()]); }} />
                 </td>
               </tr>
             {:else if parentPaginatedInvoices.length === 0}
@@ -849,7 +846,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={parentPage <= 1}
-              on:click={() => parentPage--}
+              onclick={() => parentPage--}
             >
               &laquo;
             </button>
@@ -858,7 +855,7 @@ import { database } from '$lib/shared/stores';
               type="button"
               class="page-btn"
               disabled={parentPage * itemsPerPage >= parentInvoices.length}
-              on:click={() => parentPage++}
+              onclick={() => parentPage++}
             >
               &raquo;
             </button>

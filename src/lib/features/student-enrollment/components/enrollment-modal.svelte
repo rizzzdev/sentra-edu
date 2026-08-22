@@ -1,59 +1,68 @@
 <script lang="ts">
 import { userStore, subjectStore, classStore, packageStore } from '$lib/api';
-  import { LeafletMap, Modal, SelectSearch } from '$lib/components/molecules';
-  import { Icon, Input } from '$lib/components/atoms';
+  import { LeafletMap, SelectSearch } from '$lib/components/molecules';
+  import { Input } from '$lib/components/atoms';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {toastStore} from '$lib/shared/stores';
   import type { Enrollment } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let editingEnrollment: Enrollment | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingEnrollment = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingEnrollment?: Enrollment | null;
+    onClose?: () => void;
+  } = $props();
 
-  let studentId: string = '';
-  let classId: string = '';
-  let subjectId: string = '';
-  let packageId: string = '';
-  let parentName: string = '';
-  let parentPhone: string = '';
-  let fullAddress: string = '';
-  let latitude: number = -6.2;
-  let longitude: number = 106.8;
+  let studentId = $state('');
+  let classId = $state('');
+  let subjectId = $state('');
+  let packageId = $state('');
+  let parentName = $state('');
+  let parentPhone = $state('');
+  let fullAddress = $state('');
+  let latitude = $state(-6.2);
+  let longitude = $state(106.8);
 
-  $: students = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT');
+  let students = $derived($userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT'));
 
-  let previousOpen = false;
-  let previousEnrollmentId: string | null = null;
+  let previousOpen = $state(false);
+  let previousEnrollmentId = $state<string | null>(null);
 
-  $: if (open && (!previousOpen || (editingEnrollment?.id !== previousEnrollmentId))) {
-    previousOpen = true;
-    previousEnrollmentId = editingEnrollment?.id || null;
-    if (editingEnrollment) {
-      studentId = editingEnrollment.studentId;
-      classId = editingEnrollment.classId;
-      subjectId = editingEnrollment.subjectId;
-      packageId = editingEnrollment.packageId;
-      fullAddress = editingEnrollment.address || '';
-      latitude = editingEnrollment.latitude || -6.2;
-      longitude = editingEnrollment.longitude || 106.8;
-    } else {
-      studentId = students[0]?.id || '';
-      classId = $classStore.filter((classItem) => classItem.deletedAt === null)[0]?.id || '';
-      subjectId = $subjectStore.filter((subjectItem) => subjectItem.deletedAt === null)[0]?.id || '';
-      packageId = $packageStore.filter((packageItem) => packageItem.deletedAt === null && packageItem.active !== false)[0]?.id || '';
-      parentName = '';
-      parentPhone = '';
-      fullAddress = '';
-      latitude = -6.2;
-      longitude = 106.8;
+  $effect(() => {
+    if (open && (!previousOpen || (editingEnrollment?.id !== previousEnrollmentId))) {
+      previousOpen = true;
+      previousEnrollmentId = editingEnrollment?.id || null;
+      if (editingEnrollment) {
+        studentId = editingEnrollment.studentId;
+        classId = editingEnrollment.classId;
+        subjectId = editingEnrollment.subjectId;
+        packageId = editingEnrollment.packageId;
+        fullAddress = editingEnrollment.address || '';
+        latitude = editingEnrollment.latitude || -6.2;
+        longitude = editingEnrollment.longitude || 106.8;
+      } else {
+        studentId = students[0]?.id || '';
+        classId = $classStore.filter((classItem) => classItem.deletedAt === null)[0]?.id || '';
+        subjectId = $subjectStore.filter((subjectItem) => subjectItem.deletedAt === null)[0]?.id || '';
+        packageId = $packageStore.filter((packageItem) => packageItem.deletedAt === null && packageItem.active !== false)[0]?.id || '';
+        parentName = '';
+        parentPhone = '';
+        fullAddress = '';
+        latitude = -6.2;
+        longitude = 106.8;
+      }
     }
-  }
 
-  $: if (!open && previousOpen) {
-    previousOpen = false;
-    previousEnrollmentId = null;
-  }
+    if (!open && previousOpen) {
+      previousOpen = false;
+      previousEnrollmentId = null;
+    }
+  });
 
   async function handleSubmit() {
     if (!studentId || !classId || !subjectId || !packageId || !fullAddress.trim()) {
@@ -83,7 +92,7 @@ import { userStore, subjectStore, classStore, packageStore } from '$lib/api';
 </script>
 
 <Modal {open} {onClose} title={editingEnrollment ? 'Ubah Data Murid' : 'Daftarkan Murid'} icon="person_add" maxWidth="600px">
-  <form id="form-enrollment" on:submit|preventDefault={handleSubmit}>
+  <form id="form-enrollment" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <div class="field">
       <SelectSearch
         id="f_studentId"
@@ -180,12 +189,12 @@ import { userStore, subjectStore, classStore, packageStore } from '$lib/api';
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-enrollment" icon="save">
       {editingEnrollment ? 'Simpan Perubahan' : 'Daftarkan Murid'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

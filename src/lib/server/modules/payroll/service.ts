@@ -5,10 +5,10 @@
 
 import { payrollRepository } from './repository';
 import { getCached, setCache, invalidateCache } from '../../cache';
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreatePayrollClaim, validateUpdatePayrollClaim, getFieldErrors } from './domain';
-import type { PayrollClaimEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreatePayrollClaim, validateUpdatePayrollClaim, getFieldErrors } from '$lib/api/modules/payroll/domain';
+import type { PayrollClaimEntity } from '$lib/api/modules/payroll/domain';
 
 const CACHE_KEY = 'payroll';
 
@@ -25,7 +25,8 @@ export const payrollService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[payrollService] Error:`, err);
       return errorResponse('Failed to retrieve PayrollClaim data.', 500);
     }
   },
@@ -34,27 +35,29 @@ export const payrollService = {
       const item = await payrollRepository.findById(id);
       if (!item) return errorResponse('PayrollClaim not found.', 404);
       return successResponse(item, 'PayrollClaim retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[payrollService] Error:`, err);
       return errorResponse('Failed to retrieve PayrollClaim.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<PayrollClaimEntity>> {
     const parsed = validateCreatePayrollClaim(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await payrollRepository.create(parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(created, 'PayrollClaim created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[payrollService] Error:`, err);
       return errorResponse('Failed to create PayrollClaim.', 500);
     }
   },
   async update(id: string, data: any): Promise<ApiResponse<PayrollClaimEntity>> {
     const parsed = validateUpdatePayrollClaim(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const existing = await payrollRepository.findById(id);
@@ -62,7 +65,8 @@ export const payrollService = {
       const updated = await payrollRepository.update(id, parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(updated, 'PayrollClaim updated successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[payrollService] Error:`, err);
       return errorResponse('Failed to update PayrollClaim.', 500);
     }
   },
@@ -73,7 +77,8 @@ export const payrollService = {
       await payrollRepository.softDelete(id);
       invalidateCache([CACHE_KEY]);
       return successResponse({ id }, 'PayrollClaim deleted successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[payrollService] Error:`, err);
       return errorResponse('Failed to delete PayrollClaim.', 500);
     }
   }

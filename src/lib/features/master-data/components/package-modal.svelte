@@ -1,46 +1,55 @@
 <script lang="ts">
-  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { SelectSearch } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { CurrencyInput, Icon, Input } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import type { PackagePlan } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let editingPackage: PackagePlan | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingPackage = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingPackage?: PackagePlan | null;
+    onClose?: () => void;
+  } = $props();
 
-  let name: string = '';
-  let mode: string = 'PRIVATE';
-  let period: string = 'BULANAN';
-  let price: number = 1000000;
-  let tentorFee: number = 100000;
-  let sessionsPerPeriod: number = 8;
-  let maxStudents: number = 5;
-  let activeStr: string = 'true';
-  let description: string = '';
+  let name = $state('');
+  let mode = $state('PRIVATE');
+  let period = $state('BULANAN');
+  let price = $state(1000000);
+  let tentorFee = $state(100000);
+  let sessionsPerPeriod = $state(8);
+  let maxStudents = $state(5);
+  let activeStr = $state('true');
+  let description = $state('');
 
-  $: if (editingPackage) {
-    name = editingPackage.name;
-    mode = editingPackage.mode;
-    period = editingPackage.period;
-    price = editingPackage.price;
-    tentorFee = editingPackage.tentorFee;
-    sessionsPerPeriod = editingPackage.sessionsPerPeriod;
-    maxStudents = editingPackage.maxStudents;
-    activeStr = String(editingPackage.active);
-    description = editingPackage.description || '';
-  } else {
-    name = '';
-    mode = 'PRIVATE';
-    period = 'BULANAN';
-    price = 1000000;
-    tentorFee = 100000;
-    sessionsPerPeriod = 8;
-    maxStudents = 5;
-    activeStr = 'true';
-    description = '';
-  }
+  $effect(() => {
+    if (editingPackage) {
+      name = editingPackage.name;
+      mode = editingPackage.mode;
+      period = editingPackage.period;
+      price = editingPackage.price;
+      tentorFee = editingPackage.tentorFee;
+      sessionsPerPeriod = editingPackage.sessionsPerPeriod;
+      maxStudents = editingPackage.maxStudents;
+      activeStr = String(editingPackage.active);
+      description = editingPackage.description || '';
+    } else {
+      name = '';
+      mode = 'PRIVATE';
+      period = 'BULANAN';
+      price = 1000000;
+      tentorFee = 100000;
+      sessionsPerPeriod = 8;
+      maxStudents = 5;
+      activeStr = 'true';
+      description = '';
+    }
+  });
 
   async function handleSubmit() {
     if (!name.trim()) {
@@ -72,7 +81,7 @@
 </script>
 
 <Modal {open} {onClose} title={editingPackage ? 'Ubah Paket Les' : 'Tambah Paket'} icon="sell" maxWidth="600px">
-  <form id="form-package" on:submit|preventDefault={handleSubmit}>
+  <form id="form-package" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <div class="field">
       <label for="f_name">Nama Paket <i class="req">*</i></label>
       <Input
@@ -182,12 +191,12 @@
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-package" icon="save">
       {editingPackage ? 'Simpan Perubahan' : 'Tambah Paket'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

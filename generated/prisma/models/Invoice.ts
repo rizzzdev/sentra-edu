@@ -44,7 +44,7 @@ export type InvoiceMinAggregateOutputType = {
   invoiceNumber: string | null
   amount: number | null
   dueDate: Date | null
-  status: $Enums.InvoiceStatus | null
+  status: string | null
   paidAt: Date | null
   paymentProofUrl: string | null
   periodMonth: number | null
@@ -61,7 +61,7 @@ export type InvoiceMaxAggregateOutputType = {
   invoiceNumber: string | null
   amount: number | null
   dueDate: Date | null
-  status: $Enums.InvoiceStatus | null
+  status: string | null
   paidAt: Date | null
   paymentProofUrl: string | null
   periodMonth: number | null
@@ -247,7 +247,7 @@ export type InvoiceGroupByOutputType = {
   invoiceNumber: string
   amount: number
   dueDate: Date
-  status: $Enums.InvoiceStatus
+  status: string
   paidAt: Date | null
   paymentProofUrl: string | null
   periodMonth: number
@@ -287,7 +287,7 @@ export type InvoiceWhereInput = {
   invoiceNumber?: Prisma.StringFilter<"Invoice"> | string
   amount?: Prisma.IntFilter<"Invoice"> | number
   dueDate?: Prisma.DateTimeFilter<"Invoice"> | Date | string
-  status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
+  status?: Prisma.StringFilter<"Invoice"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
   paymentProofUrl?: Prisma.StringNullableFilter<"Invoice"> | string | null
   periodMonth?: Prisma.IntFilter<"Invoice"> | number
@@ -326,7 +326,7 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<{
   invoiceNumber?: Prisma.StringFilter<"Invoice"> | string
   amount?: Prisma.IntFilter<"Invoice"> | number
   dueDate?: Prisma.DateTimeFilter<"Invoice"> | Date | string
-  status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
+  status?: Prisma.StringFilter<"Invoice"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
   paymentProofUrl?: Prisma.StringNullableFilter<"Invoice"> | string | null
   periodMonth?: Prisma.IntFilter<"Invoice"> | number
@@ -369,7 +369,7 @@ export type InvoiceScalarWhereWithAggregatesInput = {
   invoiceNumber?: Prisma.StringWithAggregatesFilter<"Invoice"> | string
   amount?: Prisma.IntWithAggregatesFilter<"Invoice"> | number
   dueDate?: Prisma.DateTimeWithAggregatesFilter<"Invoice"> | Date | string
-  status?: Prisma.EnumInvoiceStatusWithAggregatesFilter<"Invoice"> | $Enums.InvoiceStatus
+  status?: Prisma.StringWithAggregatesFilter<"Invoice"> | string
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
   paymentProofUrl?: Prisma.StringNullableWithAggregatesFilter<"Invoice"> | string | null
   periodMonth?: Prisma.IntWithAggregatesFilter<"Invoice"> | number
@@ -385,7 +385,7 @@ export type InvoiceCreateInput = {
   invoiceNumber: string
   amount?: number
   dueDate: Date | string
-  status?: $Enums.InvoiceStatus
+  status?: string
   paidAt?: Date | string | null
   paymentProofUrl?: string | null
   periodMonth: number
@@ -403,7 +403,7 @@ export type InvoiceUncheckedCreateInput = {
   invoiceNumber: string
   amount?: number
   dueDate: Date | string
-  status?: $Enums.InvoiceStatus
+  status?: string
   paidAt?: Date | string | null
   paymentProofUrl?: string | null
   periodMonth: number
@@ -419,7 +419,7 @@ export type InvoiceUpdateInput = {
   invoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodMonth?: Prisma.IntFieldUpdateOperationsInput | number
@@ -437,7 +437,7 @@ export type InvoiceUncheckedUpdateInput = {
   invoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodMonth?: Prisma.IntFieldUpdateOperationsInput | number
@@ -454,7 +454,7 @@ export type InvoiceCreateManyInput = {
   invoiceNumber: string
   amount?: number
   dueDate: Date | string
-  status?: $Enums.InvoiceStatus
+  status?: string
   paidAt?: Date | string | null
   paymentProofUrl?: string | null
   periodMonth: number
@@ -470,7 +470,7 @@ export type InvoiceUpdateManyMutationInput = {
   invoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodMonth?: Prisma.IntFieldUpdateOperationsInput | number
@@ -487,7 +487,7 @@ export type InvoiceUncheckedUpdateManyInput = {
   invoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodMonth?: Prisma.IntFieldUpdateOperationsInput | number
@@ -613,16 +613,12 @@ export type InvoiceUncheckedUpdateManyWithoutEnrollmentNestedInput = {
   deleteMany?: Prisma.InvoiceScalarWhereInput | Prisma.InvoiceScalarWhereInput[]
 }
 
-export type EnumInvoiceStatusFieldUpdateOperationsInput = {
-  set?: $Enums.InvoiceStatus
-}
-
 export type InvoiceCreateWithoutEnrollmentInput = {
   id?: string
   invoiceNumber: string
   amount?: number
   dueDate: Date | string
-  status?: $Enums.InvoiceStatus
+  status?: string
   paidAt?: Date | string | null
   paymentProofUrl?: string | null
   periodMonth: number
@@ -638,7 +634,7 @@ export type InvoiceUncheckedCreateWithoutEnrollmentInput = {
   invoiceNumber: string
   amount?: number
   dueDate: Date | string
-  status?: $Enums.InvoiceStatus
+  status?: string
   paidAt?: Date | string | null
   paymentProofUrl?: string | null
   periodMonth: number
@@ -684,7 +680,7 @@ export type InvoiceScalarWhereInput = {
   invoiceNumber?: Prisma.StringFilter<"Invoice"> | string
   amount?: Prisma.IntFilter<"Invoice"> | number
   dueDate?: Prisma.DateTimeFilter<"Invoice"> | Date | string
-  status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
+  status?: Prisma.StringFilter<"Invoice"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
   paymentProofUrl?: Prisma.StringNullableFilter<"Invoice"> | string | null
   periodMonth?: Prisma.IntFilter<"Invoice"> | number
@@ -700,7 +696,7 @@ export type InvoiceCreateManyEnrollmentInput = {
   invoiceNumber: string
   amount?: number
   dueDate: Date | string
-  status?: $Enums.InvoiceStatus
+  status?: string
   paidAt?: Date | string | null
   paymentProofUrl?: string | null
   periodMonth: number
@@ -716,7 +712,7 @@ export type InvoiceUpdateWithoutEnrollmentInput = {
   invoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodMonth?: Prisma.IntFieldUpdateOperationsInput | number
@@ -732,7 +728,7 @@ export type InvoiceUncheckedUpdateWithoutEnrollmentInput = {
   invoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodMonth?: Prisma.IntFieldUpdateOperationsInput | number
@@ -748,7 +744,7 @@ export type InvoiceUncheckedUpdateManyWithoutEnrollmentInput = {
   invoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.IntFieldUpdateOperationsInput | number
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   periodMonth?: Prisma.IntFieldUpdateOperationsInput | number
@@ -854,7 +850,7 @@ export type $InvoicePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     invoiceNumber: string
     amount: number
     dueDate: Date
-    status: $Enums.InvoiceStatus
+    status: string
     paidAt: Date | null
     paymentProofUrl: string | null
     periodMonth: number
@@ -1292,7 +1288,7 @@ export interface InvoiceFieldRefs {
   readonly invoiceNumber: Prisma.FieldRef<"Invoice", 'String'>
   readonly amount: Prisma.FieldRef<"Invoice", 'Int'>
   readonly dueDate: Prisma.FieldRef<"Invoice", 'DateTime'>
-  readonly status: Prisma.FieldRef<"Invoice", 'InvoiceStatus'>
+  readonly status: Prisma.FieldRef<"Invoice", 'String'>
   readonly paidAt: Prisma.FieldRef<"Invoice", 'DateTime'>
   readonly paymentProofUrl: Prisma.FieldRef<"Invoice", 'String'>
   readonly periodMonth: Prisma.FieldRef<"Invoice", 'Int'>

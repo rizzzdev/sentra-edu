@@ -1,25 +1,33 @@
 <script lang="ts">
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon, Input } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import type { Subject } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let editingSubject: Subject | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingSubject = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingSubject?: Subject | null;
+    onClose?: () => void;
+  } = $props();
 
-  let name: string = '';
-  let description: string = '';
+  let name = $state('');
+  let description = $state('');
 
-  $: if (editingSubject) {
-    name = editingSubject.name;
-    description = editingSubject.description || '';
-  } else {
-    name = '';
-    description = '';
-  }
+  $effect(() => {
+    if (editingSubject) {
+      name = editingSubject.name;
+      description = editingSubject.description || '';
+    } else {
+      name = '';
+      description = '';
+    }
+  });
 
   async function handleSubmit() {
     if (!name.trim()) {
@@ -44,7 +52,7 @@
 </script>
 
 <Modal {open} {onClose} title={editingSubject ? 'Ubah Mapel' : 'Tambah Mapel'} icon="menu_book" maxWidth="480px">
-  <form id="form-subject" on:submit|preventDefault={handleSubmit}>
+  <form id="form-subject" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <div class="field">
       <label for="f_name">Nama Mapel <i class="req">*</i></label>
       <Input
@@ -67,12 +75,12 @@
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-subject" icon="save">
       {editingSubject ? 'Simpan Perubahan' : 'Tambah Mapel'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

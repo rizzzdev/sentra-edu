@@ -27,16 +27,12 @@ export type AggregateAttendance = {
 }
 
 export type AttendanceAvgAggregateOutputType = {
-  durationMinutes: number | null
-  sessionsCount: number | null
   latitudeCheckIn: number | null
   longitudeCheckIn: number | null
   studentRating: number | null
 }
 
 export type AttendanceSumAggregateOutputType = {
-  durationMinutes: number | null
-  sessionsCount: number | null
   latitudeCheckIn: number | null
   longitudeCheckIn: number | null
   studentRating: number | null
@@ -44,17 +40,14 @@ export type AttendanceSumAggregateOutputType = {
 
 export type AttendanceMinAggregateOutputType = {
   id: string | null
-  jobId: string | null
   enrollmentId: string | null
   tentorId: string | null
   sessionDate: Date | null
   startTime: string | null
   endTime: string | null
-  durationMinutes: number | null
-  sessionsCount: number | null
   topic: string | null
   studentNotes: string | null
-  status: $Enums.AttendanceStatus | null
+  status: string | null
   latitudeCheckIn: number | null
   longitudeCheckIn: number | null
   isRadiusValid: boolean | null
@@ -70,17 +63,14 @@ export type AttendanceMinAggregateOutputType = {
 
 export type AttendanceMaxAggregateOutputType = {
   id: string | null
-  jobId: string | null
   enrollmentId: string | null
   tentorId: string | null
   sessionDate: Date | null
   startTime: string | null
   endTime: string | null
-  durationMinutes: number | null
-  sessionsCount: number | null
   topic: string | null
   studentNotes: string | null
-  status: $Enums.AttendanceStatus | null
+  status: string | null
   latitudeCheckIn: number | null
   longitudeCheckIn: number | null
   isRadiusValid: boolean | null
@@ -96,16 +86,11 @@ export type AttendanceMaxAggregateOutputType = {
 
 export type AttendanceCountAggregateOutputType = {
   id: number
-  jobId: number
   enrollmentId: number
   tentorId: number
-  subjectIds: number
-  classIds: number
   sessionDate: number
   startTime: number
   endTime: number
-  durationMinutes: number
-  sessionsCount: number
   topic: number
   studentNotes: number
   status: number
@@ -125,16 +110,12 @@ export type AttendanceCountAggregateOutputType = {
 
 
 export type AttendanceAvgAggregateInputType = {
-  durationMinutes?: true
-  sessionsCount?: true
   latitudeCheckIn?: true
   longitudeCheckIn?: true
   studentRating?: true
 }
 
 export type AttendanceSumAggregateInputType = {
-  durationMinutes?: true
-  sessionsCount?: true
   latitudeCheckIn?: true
   longitudeCheckIn?: true
   studentRating?: true
@@ -142,14 +123,11 @@ export type AttendanceSumAggregateInputType = {
 
 export type AttendanceMinAggregateInputType = {
   id?: true
-  jobId?: true
   enrollmentId?: true
   tentorId?: true
   sessionDate?: true
   startTime?: true
   endTime?: true
-  durationMinutes?: true
-  sessionsCount?: true
   topic?: true
   studentNotes?: true
   status?: true
@@ -168,14 +146,11 @@ export type AttendanceMinAggregateInputType = {
 
 export type AttendanceMaxAggregateInputType = {
   id?: true
-  jobId?: true
   enrollmentId?: true
   tentorId?: true
   sessionDate?: true
   startTime?: true
   endTime?: true
-  durationMinutes?: true
-  sessionsCount?: true
   topic?: true
   studentNotes?: true
   status?: true
@@ -194,16 +169,11 @@ export type AttendanceMaxAggregateInputType = {
 
 export type AttendanceCountAggregateInputType = {
   id?: true
-  jobId?: true
   enrollmentId?: true
   tentorId?: true
-  subjectIds?: true
-  classIds?: true
   sessionDate?: true
   startTime?: true
   endTime?: true
-  durationMinutes?: true
-  sessionsCount?: true
   topic?: true
   studentNotes?: true
   status?: true
@@ -309,19 +279,14 @@ export type AttendanceGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 
 export type AttendanceGroupByOutputType = {
   id: string
-  jobId: string | null
   enrollmentId: string
   tentorId: string
-  subjectIds: string[]
-  classIds: string[]
   sessionDate: Date
   startTime: string
   endTime: string
-  durationMinutes: number
-  sessionsCount: number
   topic: string
   studentNotes: string
-  status: $Enums.AttendanceStatus
+  status: string
   latitudeCheckIn: number | null
   longitudeCheckIn: number | null
   isRadiusValid: boolean
@@ -360,19 +325,14 @@ export type AttendanceWhereInput = {
   OR?: Prisma.AttendanceWhereInput[]
   NOT?: Prisma.AttendanceWhereInput | Prisma.AttendanceWhereInput[]
   id?: Prisma.StringFilter<"Attendance"> | string
-  jobId?: Prisma.StringNullableFilter<"Attendance"> | string | null
   enrollmentId?: Prisma.StringFilter<"Attendance"> | string
   tentorId?: Prisma.StringFilter<"Attendance"> | string
-  subjectIds?: Prisma.StringNullableListFilter<"Attendance">
-  classIds?: Prisma.StringNullableListFilter<"Attendance">
   sessionDate?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   startTime?: Prisma.StringFilter<"Attendance"> | string
   endTime?: Prisma.StringFilter<"Attendance"> | string
-  durationMinutes?: Prisma.IntFilter<"Attendance"> | number
-  sessionsCount?: Prisma.FloatFilter<"Attendance"> | number
   topic?: Prisma.StringFilter<"Attendance"> | string
   studentNotes?: Prisma.StringFilter<"Attendance"> | string
-  status?: Prisma.EnumAttendanceStatusFilter<"Attendance"> | $Enums.AttendanceStatus
+  status?: Prisma.StringFilter<"Attendance"> | string
   latitudeCheckIn?: Prisma.FloatNullableFilter<"Attendance"> | number | null
   longitudeCheckIn?: Prisma.FloatNullableFilter<"Attendance"> | number | null
   isRadiusValid?: Prisma.BoolFilter<"Attendance"> | boolean
@@ -384,23 +344,17 @@ export type AttendanceWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Attendance"> | Date | string | null
-  job?: Prisma.XOR<Prisma.JobNullableScalarRelationFilter, Prisma.JobWhereInput> | null
   enrollment?: Prisma.XOR<Prisma.EnrollmentScalarRelationFilter, Prisma.EnrollmentWhereInput>
   tentor?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type AttendanceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  jobId?: Prisma.SortOrderInput | Prisma.SortOrder
   enrollmentId?: Prisma.SortOrder
   tentorId?: Prisma.SortOrder
-  subjectIds?: Prisma.SortOrder
-  classIds?: Prisma.SortOrder
   sessionDate?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  durationMinutes?: Prisma.SortOrder
-  sessionsCount?: Prisma.SortOrder
   topic?: Prisma.SortOrder
   studentNotes?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -415,7 +369,6 @@ export type AttendanceOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  job?: Prisma.JobOrderByWithRelationInput
   enrollment?: Prisma.EnrollmentOrderByWithRelationInput
   tentor?: Prisma.UserOrderByWithRelationInput
 }
@@ -425,19 +378,14 @@ export type AttendanceWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.AttendanceWhereInput | Prisma.AttendanceWhereInput[]
   OR?: Prisma.AttendanceWhereInput[]
   NOT?: Prisma.AttendanceWhereInput | Prisma.AttendanceWhereInput[]
-  jobId?: Prisma.StringNullableFilter<"Attendance"> | string | null
   enrollmentId?: Prisma.StringFilter<"Attendance"> | string
   tentorId?: Prisma.StringFilter<"Attendance"> | string
-  subjectIds?: Prisma.StringNullableListFilter<"Attendance">
-  classIds?: Prisma.StringNullableListFilter<"Attendance">
   sessionDate?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   startTime?: Prisma.StringFilter<"Attendance"> | string
   endTime?: Prisma.StringFilter<"Attendance"> | string
-  durationMinutes?: Prisma.IntFilter<"Attendance"> | number
-  sessionsCount?: Prisma.FloatFilter<"Attendance"> | number
   topic?: Prisma.StringFilter<"Attendance"> | string
   studentNotes?: Prisma.StringFilter<"Attendance"> | string
-  status?: Prisma.EnumAttendanceStatusFilter<"Attendance"> | $Enums.AttendanceStatus
+  status?: Prisma.StringFilter<"Attendance"> | string
   latitudeCheckIn?: Prisma.FloatNullableFilter<"Attendance"> | number | null
   longitudeCheckIn?: Prisma.FloatNullableFilter<"Attendance"> | number | null
   isRadiusValid?: Prisma.BoolFilter<"Attendance"> | boolean
@@ -449,23 +397,17 @@ export type AttendanceWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Attendance"> | Date | string | null
-  job?: Prisma.XOR<Prisma.JobNullableScalarRelationFilter, Prisma.JobWhereInput> | null
   enrollment?: Prisma.XOR<Prisma.EnrollmentScalarRelationFilter, Prisma.EnrollmentWhereInput>
   tentor?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
 
 export type AttendanceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  jobId?: Prisma.SortOrderInput | Prisma.SortOrder
   enrollmentId?: Prisma.SortOrder
   tentorId?: Prisma.SortOrder
-  subjectIds?: Prisma.SortOrder
-  classIds?: Prisma.SortOrder
   sessionDate?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  durationMinutes?: Prisma.SortOrder
-  sessionsCount?: Prisma.SortOrder
   topic?: Prisma.SortOrder
   studentNotes?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -492,19 +434,14 @@ export type AttendanceScalarWhereWithAggregatesInput = {
   OR?: Prisma.AttendanceScalarWhereWithAggregatesInput[]
   NOT?: Prisma.AttendanceScalarWhereWithAggregatesInput | Prisma.AttendanceScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
-  jobId?: Prisma.StringNullableWithAggregatesFilter<"Attendance"> | string | null
   enrollmentId?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
   tentorId?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
-  subjectIds?: Prisma.StringNullableListFilter<"Attendance">
-  classIds?: Prisma.StringNullableListFilter<"Attendance">
   sessionDate?: Prisma.DateTimeWithAggregatesFilter<"Attendance"> | Date | string
   startTime?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
   endTime?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
-  durationMinutes?: Prisma.IntWithAggregatesFilter<"Attendance"> | number
-  sessionsCount?: Prisma.FloatWithAggregatesFilter<"Attendance"> | number
   topic?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
   studentNotes?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
-  status?: Prisma.EnumAttendanceStatusWithAggregatesFilter<"Attendance"> | $Enums.AttendanceStatus
+  status?: Prisma.StringWithAggregatesFilter<"Attendance"> | string
   latitudeCheckIn?: Prisma.FloatNullableWithAggregatesFilter<"Attendance"> | number | null
   longitudeCheckIn?: Prisma.FloatNullableWithAggregatesFilter<"Attendance"> | number | null
   isRadiusValid?: Prisma.BoolWithAggregatesFilter<"Attendance"> | boolean
@@ -520,16 +457,12 @@ export type AttendanceScalarWhereWithAggregatesInput = {
 
 export type AttendanceCreateInput = {
   id?: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -541,26 +474,20 @@ export type AttendanceCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  job?: Prisma.JobCreateNestedOneWithoutAttendancesInput
   enrollment: Prisma.EnrollmentCreateNestedOneWithoutAttendancesInput
   tentor: Prisma.UserCreateNestedOneWithoutAttendancesInput
 }
 
 export type AttendanceUncheckedCreateInput = {
   id?: string
-  jobId?: string | null
   enrollmentId: string
   tentorId: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -576,16 +503,12 @@ export type AttendanceUncheckedCreateInput = {
 
 export type AttendanceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -597,26 +520,20 @@ export type AttendanceUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  job?: Prisma.JobUpdateOneWithoutAttendancesNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneRequiredWithoutAttendancesNestedInput
   tentor?: Prisma.UserUpdateOneRequiredWithoutAttendancesNestedInput
 }
 
 export type AttendanceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  jobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.StringFieldUpdateOperationsInput | string
   tentorId?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -632,19 +549,14 @@ export type AttendanceUncheckedUpdateInput = {
 
 export type AttendanceCreateManyInput = {
   id?: string
-  jobId?: string | null
   enrollmentId: string
   tentorId: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -660,16 +572,12 @@ export type AttendanceCreateManyInput = {
 
 export type AttendanceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -685,19 +593,14 @@ export type AttendanceUpdateManyMutationInput = {
 
 export type AttendanceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  jobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.StringFieldUpdateOperationsInput | string
   tentorId?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -723,16 +626,11 @@ export type AttendanceOrderByRelationAggregateInput = {
 
 export type AttendanceCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  jobId?: Prisma.SortOrder
   enrollmentId?: Prisma.SortOrder
   tentorId?: Prisma.SortOrder
-  subjectIds?: Prisma.SortOrder
-  classIds?: Prisma.SortOrder
   sessionDate?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  durationMinutes?: Prisma.SortOrder
-  sessionsCount?: Prisma.SortOrder
   topic?: Prisma.SortOrder
   studentNotes?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -750,8 +648,6 @@ export type AttendanceCountOrderByAggregateInput = {
 }
 
 export type AttendanceAvgOrderByAggregateInput = {
-  durationMinutes?: Prisma.SortOrder
-  sessionsCount?: Prisma.SortOrder
   latitudeCheckIn?: Prisma.SortOrder
   longitudeCheckIn?: Prisma.SortOrder
   studentRating?: Prisma.SortOrder
@@ -759,14 +655,11 @@ export type AttendanceAvgOrderByAggregateInput = {
 
 export type AttendanceMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  jobId?: Prisma.SortOrder
   enrollmentId?: Prisma.SortOrder
   tentorId?: Prisma.SortOrder
   sessionDate?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  durationMinutes?: Prisma.SortOrder
-  sessionsCount?: Prisma.SortOrder
   topic?: Prisma.SortOrder
   studentNotes?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -785,14 +678,11 @@ export type AttendanceMaxOrderByAggregateInput = {
 
 export type AttendanceMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  jobId?: Prisma.SortOrder
   enrollmentId?: Prisma.SortOrder
   tentorId?: Prisma.SortOrder
   sessionDate?: Prisma.SortOrder
   startTime?: Prisma.SortOrder
   endTime?: Prisma.SortOrder
-  durationMinutes?: Prisma.SortOrder
-  sessionsCount?: Prisma.SortOrder
   topic?: Prisma.SortOrder
   studentNotes?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -810,8 +700,6 @@ export type AttendanceMinOrderByAggregateInput = {
 }
 
 export type AttendanceSumOrderByAggregateInput = {
-  durationMinutes?: Prisma.SortOrder
-  sessionsCount?: Prisma.SortOrder
   latitudeCheckIn?: Prisma.SortOrder
   longitudeCheckIn?: Prisma.SortOrder
   studentRating?: Prisma.SortOrder
@@ -901,90 +789,14 @@ export type AttendanceUncheckedUpdateManyWithoutEnrollmentNestedInput = {
   deleteMany?: Prisma.AttendanceScalarWhereInput | Prisma.AttendanceScalarWhereInput[]
 }
 
-export type AttendanceCreateNestedManyWithoutJobInput = {
-  create?: Prisma.XOR<Prisma.AttendanceCreateWithoutJobInput, Prisma.AttendanceUncheckedCreateWithoutJobInput> | Prisma.AttendanceCreateWithoutJobInput[] | Prisma.AttendanceUncheckedCreateWithoutJobInput[]
-  connectOrCreate?: Prisma.AttendanceCreateOrConnectWithoutJobInput | Prisma.AttendanceCreateOrConnectWithoutJobInput[]
-  createMany?: Prisma.AttendanceCreateManyJobInputEnvelope
-  connect?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-}
-
-export type AttendanceUncheckedCreateNestedManyWithoutJobInput = {
-  create?: Prisma.XOR<Prisma.AttendanceCreateWithoutJobInput, Prisma.AttendanceUncheckedCreateWithoutJobInput> | Prisma.AttendanceCreateWithoutJobInput[] | Prisma.AttendanceUncheckedCreateWithoutJobInput[]
-  connectOrCreate?: Prisma.AttendanceCreateOrConnectWithoutJobInput | Prisma.AttendanceCreateOrConnectWithoutJobInput[]
-  createMany?: Prisma.AttendanceCreateManyJobInputEnvelope
-  connect?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-}
-
-export type AttendanceUpdateManyWithoutJobNestedInput = {
-  create?: Prisma.XOR<Prisma.AttendanceCreateWithoutJobInput, Prisma.AttendanceUncheckedCreateWithoutJobInput> | Prisma.AttendanceCreateWithoutJobInput[] | Prisma.AttendanceUncheckedCreateWithoutJobInput[]
-  connectOrCreate?: Prisma.AttendanceCreateOrConnectWithoutJobInput | Prisma.AttendanceCreateOrConnectWithoutJobInput[]
-  upsert?: Prisma.AttendanceUpsertWithWhereUniqueWithoutJobInput | Prisma.AttendanceUpsertWithWhereUniqueWithoutJobInput[]
-  createMany?: Prisma.AttendanceCreateManyJobInputEnvelope
-  set?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-  disconnect?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-  delete?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-  connect?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-  update?: Prisma.AttendanceUpdateWithWhereUniqueWithoutJobInput | Prisma.AttendanceUpdateWithWhereUniqueWithoutJobInput[]
-  updateMany?: Prisma.AttendanceUpdateManyWithWhereWithoutJobInput | Prisma.AttendanceUpdateManyWithWhereWithoutJobInput[]
-  deleteMany?: Prisma.AttendanceScalarWhereInput | Prisma.AttendanceScalarWhereInput[]
-}
-
-export type AttendanceUncheckedUpdateManyWithoutJobNestedInput = {
-  create?: Prisma.XOR<Prisma.AttendanceCreateWithoutJobInput, Prisma.AttendanceUncheckedCreateWithoutJobInput> | Prisma.AttendanceCreateWithoutJobInput[] | Prisma.AttendanceUncheckedCreateWithoutJobInput[]
-  connectOrCreate?: Prisma.AttendanceCreateOrConnectWithoutJobInput | Prisma.AttendanceCreateOrConnectWithoutJobInput[]
-  upsert?: Prisma.AttendanceUpsertWithWhereUniqueWithoutJobInput | Prisma.AttendanceUpsertWithWhereUniqueWithoutJobInput[]
-  createMany?: Prisma.AttendanceCreateManyJobInputEnvelope
-  set?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-  disconnect?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-  delete?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-  connect?: Prisma.AttendanceWhereUniqueInput | Prisma.AttendanceWhereUniqueInput[]
-  update?: Prisma.AttendanceUpdateWithWhereUniqueWithoutJobInput | Prisma.AttendanceUpdateWithWhereUniqueWithoutJobInput[]
-  updateMany?: Prisma.AttendanceUpdateManyWithWhereWithoutJobInput | Prisma.AttendanceUpdateManyWithWhereWithoutJobInput[]
-  deleteMany?: Prisma.AttendanceScalarWhereInput | Prisma.AttendanceScalarWhereInput[]
-}
-
-export type AttendanceCreatesubjectIdsInput = {
-  set: string[]
-}
-
-export type AttendanceCreateclassIdsInput = {
-  set: string[]
-}
-
-export type AttendanceUpdatesubjectIdsInput = {
-  set?: string[]
-  push?: string | string[]
-}
-
-export type AttendanceUpdateclassIdsInput = {
-  set?: string[]
-  push?: string | string[]
-}
-
-export type FloatFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
-export type EnumAttendanceStatusFieldUpdateOperationsInput = {
-  set?: $Enums.AttendanceStatus
-}
-
 export type AttendanceCreateWithoutTentorInput = {
   id?: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -996,24 +808,18 @@ export type AttendanceCreateWithoutTentorInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  job?: Prisma.JobCreateNestedOneWithoutAttendancesInput
   enrollment: Prisma.EnrollmentCreateNestedOneWithoutAttendancesInput
 }
 
 export type AttendanceUncheckedCreateWithoutTentorInput = {
   id?: string
-  jobId?: string | null
   enrollmentId: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -1058,19 +864,14 @@ export type AttendanceScalarWhereInput = {
   OR?: Prisma.AttendanceScalarWhereInput[]
   NOT?: Prisma.AttendanceScalarWhereInput | Prisma.AttendanceScalarWhereInput[]
   id?: Prisma.StringFilter<"Attendance"> | string
-  jobId?: Prisma.StringNullableFilter<"Attendance"> | string | null
   enrollmentId?: Prisma.StringFilter<"Attendance"> | string
   tentorId?: Prisma.StringFilter<"Attendance"> | string
-  subjectIds?: Prisma.StringNullableListFilter<"Attendance">
-  classIds?: Prisma.StringNullableListFilter<"Attendance">
   sessionDate?: Prisma.DateTimeFilter<"Attendance"> | Date | string
   startTime?: Prisma.StringFilter<"Attendance"> | string
   endTime?: Prisma.StringFilter<"Attendance"> | string
-  durationMinutes?: Prisma.IntFilter<"Attendance"> | number
-  sessionsCount?: Prisma.FloatFilter<"Attendance"> | number
   topic?: Prisma.StringFilter<"Attendance"> | string
   studentNotes?: Prisma.StringFilter<"Attendance"> | string
-  status?: Prisma.EnumAttendanceStatusFilter<"Attendance"> | $Enums.AttendanceStatus
+  status?: Prisma.StringFilter<"Attendance"> | string
   latitudeCheckIn?: Prisma.FloatNullableFilter<"Attendance"> | number | null
   longitudeCheckIn?: Prisma.FloatNullableFilter<"Attendance"> | number | null
   isRadiusValid?: Prisma.BoolFilter<"Attendance"> | boolean
@@ -1086,16 +887,12 @@ export type AttendanceScalarWhereInput = {
 
 export type AttendanceCreateWithoutEnrollmentInput = {
   id?: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -1107,24 +904,18 @@ export type AttendanceCreateWithoutEnrollmentInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
-  job?: Prisma.JobCreateNestedOneWithoutAttendancesInput
   tentor: Prisma.UserCreateNestedOneWithoutAttendancesInput
 }
 
 export type AttendanceUncheckedCreateWithoutEnrollmentInput = {
   id?: string
-  jobId?: string | null
   tentorId: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -1164,100 +955,15 @@ export type AttendanceUpdateManyWithWhereWithoutEnrollmentInput = {
   data: Prisma.XOR<Prisma.AttendanceUpdateManyMutationInput, Prisma.AttendanceUncheckedUpdateManyWithoutEnrollmentInput>
 }
 
-export type AttendanceCreateWithoutJobInput = {
-  id?: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
-  sessionDate: Date | string
-  startTime?: string
-  endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
-  topic?: string
-  studentNotes?: string
-  status?: $Enums.AttendanceStatus
-  latitudeCheckIn?: number | null
-  longitudeCheckIn?: number | null
-  isRadiusValid?: boolean
-  proofPhotoUrl?: string | null
-  studentConfirmed?: boolean
-  studentRating?: number | null
-  studentFeedback?: string | null
-  reviewNotes?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-  enrollment: Prisma.EnrollmentCreateNestedOneWithoutAttendancesInput
-  tentor: Prisma.UserCreateNestedOneWithoutAttendancesInput
-}
-
-export type AttendanceUncheckedCreateWithoutJobInput = {
-  id?: string
-  enrollmentId: string
-  tentorId: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
-  sessionDate: Date | string
-  startTime?: string
-  endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
-  topic?: string
-  studentNotes?: string
-  status?: $Enums.AttendanceStatus
-  latitudeCheckIn?: number | null
-  longitudeCheckIn?: number | null
-  isRadiusValid?: boolean
-  proofPhotoUrl?: string | null
-  studentConfirmed?: boolean
-  studentRating?: number | null
-  studentFeedback?: string | null
-  reviewNotes?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-}
-
-export type AttendanceCreateOrConnectWithoutJobInput = {
-  where: Prisma.AttendanceWhereUniqueInput
-  create: Prisma.XOR<Prisma.AttendanceCreateWithoutJobInput, Prisma.AttendanceUncheckedCreateWithoutJobInput>
-}
-
-export type AttendanceCreateManyJobInputEnvelope = {
-  data: Prisma.AttendanceCreateManyJobInput | Prisma.AttendanceCreateManyJobInput[]
-  skipDuplicates?: boolean
-}
-
-export type AttendanceUpsertWithWhereUniqueWithoutJobInput = {
-  where: Prisma.AttendanceWhereUniqueInput
-  update: Prisma.XOR<Prisma.AttendanceUpdateWithoutJobInput, Prisma.AttendanceUncheckedUpdateWithoutJobInput>
-  create: Prisma.XOR<Prisma.AttendanceCreateWithoutJobInput, Prisma.AttendanceUncheckedCreateWithoutJobInput>
-}
-
-export type AttendanceUpdateWithWhereUniqueWithoutJobInput = {
-  where: Prisma.AttendanceWhereUniqueInput
-  data: Prisma.XOR<Prisma.AttendanceUpdateWithoutJobInput, Prisma.AttendanceUncheckedUpdateWithoutJobInput>
-}
-
-export type AttendanceUpdateManyWithWhereWithoutJobInput = {
-  where: Prisma.AttendanceScalarWhereInput
-  data: Prisma.XOR<Prisma.AttendanceUpdateManyMutationInput, Prisma.AttendanceUncheckedUpdateManyWithoutJobInput>
-}
-
 export type AttendanceCreateManyTentorInput = {
   id?: string
-  jobId?: string | null
   enrollmentId: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -1273,16 +979,12 @@ export type AttendanceCreateManyTentorInput = {
 
 export type AttendanceUpdateWithoutTentorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1294,24 +996,18 @@ export type AttendanceUpdateWithoutTentorInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  job?: Prisma.JobUpdateOneWithoutAttendancesNestedInput
   enrollment?: Prisma.EnrollmentUpdateOneRequiredWithoutAttendancesNestedInput
 }
 
 export type AttendanceUncheckedUpdateWithoutTentorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  jobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1327,18 +1023,13 @@ export type AttendanceUncheckedUpdateWithoutTentorInput = {
 
 export type AttendanceUncheckedUpdateManyWithoutTentorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  jobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enrollmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1354,18 +1045,13 @@ export type AttendanceUncheckedUpdateManyWithoutTentorInput = {
 
 export type AttendanceCreateManyEnrollmentInput = {
   id?: string
-  jobId?: string | null
   tentorId: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
   sessionDate: Date | string
   startTime?: string
   endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
   topic?: string
   studentNotes?: string
-  status?: $Enums.AttendanceStatus
+  status?: string
   latitudeCheckIn?: number | null
   longitudeCheckIn?: number | null
   isRadiusValid?: boolean
@@ -1381,16 +1067,12 @@ export type AttendanceCreateManyEnrollmentInput = {
 
 export type AttendanceUpdateWithoutEnrollmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1402,24 +1084,18 @@ export type AttendanceUpdateWithoutEnrollmentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  job?: Prisma.JobUpdateOneWithoutAttendancesNestedInput
   tentor?: Prisma.UserUpdateOneRequiredWithoutAttendancesNestedInput
 }
 
 export type AttendanceUncheckedUpdateWithoutEnrollmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  jobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorId?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1435,126 +1111,13 @@ export type AttendanceUncheckedUpdateWithoutEnrollmentInput = {
 
 export type AttendanceUncheckedUpdateManyWithoutEnrollmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  jobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tentorId?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
   sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
-  latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  studentConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  studentRating?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  studentFeedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  reviewNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-}
-
-export type AttendanceCreateManyJobInput = {
-  id?: string
-  enrollmentId: string
-  tentorId: string
-  subjectIds?: Prisma.AttendanceCreatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceCreateclassIdsInput | string[]
-  sessionDate: Date | string
-  startTime?: string
-  endTime?: string
-  durationMinutes?: number
-  sessionsCount?: number
-  topic?: string
-  studentNotes?: string
-  status?: $Enums.AttendanceStatus
-  latitudeCheckIn?: number | null
-  longitudeCheckIn?: number | null
-  isRadiusValid?: boolean
-  proofPhotoUrl?: string | null
-  studentConfirmed?: boolean
-  studentRating?: number | null
-  studentFeedback?: string | null
-  reviewNotes?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  deletedAt?: Date | string | null
-}
-
-export type AttendanceUpdateWithoutJobInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
-  sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  startTime?: Prisma.StringFieldUpdateOperationsInput | string
-  endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
-  topic?: Prisma.StringFieldUpdateOperationsInput | string
-  studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
-  latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  studentConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  studentRating?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  studentFeedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  reviewNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  enrollment?: Prisma.EnrollmentUpdateOneRequiredWithoutAttendancesNestedInput
-  tentor?: Prisma.UserUpdateOneRequiredWithoutAttendancesNestedInput
-}
-
-export type AttendanceUncheckedUpdateWithoutJobInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  enrollmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  tentorId?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
-  sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  startTime?: Prisma.StringFieldUpdateOperationsInput | string
-  endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
-  topic?: Prisma.StringFieldUpdateOperationsInput | string
-  studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
-  latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  proofPhotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  studentConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  studentRating?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  studentFeedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  reviewNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-}
-
-export type AttendanceUncheckedUpdateManyWithoutJobInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  enrollmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  tentorId?: Prisma.StringFieldUpdateOperationsInput | string
-  subjectIds?: Prisma.AttendanceUpdatesubjectIdsInput | string[]
-  classIds?: Prisma.AttendanceUpdateclassIdsInput | string[]
-  sessionDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  startTime?: Prisma.StringFieldUpdateOperationsInput | string
-  endTime?: Prisma.StringFieldUpdateOperationsInput | string
-  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
-  sessionsCount?: Prisma.FloatFieldUpdateOperationsInput | number
-  topic?: Prisma.StringFieldUpdateOperationsInput | string
-  studentNotes?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumAttendanceStatusFieldUpdateOperationsInput | $Enums.AttendanceStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   latitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   longitudeCheckIn?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isRadiusValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1572,16 +1135,11 @@ export type AttendanceUncheckedUpdateManyWithoutJobInput = {
 
 export type AttendanceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  jobId?: boolean
   enrollmentId?: boolean
   tentorId?: boolean
-  subjectIds?: boolean
-  classIds?: boolean
   sessionDate?: boolean
   startTime?: boolean
   endTime?: boolean
-  durationMinutes?: boolean
-  sessionsCount?: boolean
   topic?: boolean
   studentNotes?: boolean
   status?: boolean
@@ -1596,23 +1154,17 @@ export type AttendanceSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
-  job?: boolean | Prisma.Attendance$jobArgs<ExtArgs>
   enrollment?: boolean | Prisma.EnrollmentDefaultArgs<ExtArgs>
   tentor?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["attendance"]>
 
 export type AttendanceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  jobId?: boolean
   enrollmentId?: boolean
   tentorId?: boolean
-  subjectIds?: boolean
-  classIds?: boolean
   sessionDate?: boolean
   startTime?: boolean
   endTime?: boolean
-  durationMinutes?: boolean
-  sessionsCount?: boolean
   topic?: boolean
   studentNotes?: boolean
   status?: boolean
@@ -1627,23 +1179,17 @@ export type AttendanceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
-  job?: boolean | Prisma.Attendance$jobArgs<ExtArgs>
   enrollment?: boolean | Prisma.EnrollmentDefaultArgs<ExtArgs>
   tentor?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["attendance"]>
 
 export type AttendanceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  jobId?: boolean
   enrollmentId?: boolean
   tentorId?: boolean
-  subjectIds?: boolean
-  classIds?: boolean
   sessionDate?: boolean
   startTime?: boolean
   endTime?: boolean
-  durationMinutes?: boolean
-  sessionsCount?: boolean
   topic?: boolean
   studentNotes?: boolean
   status?: boolean
@@ -1658,23 +1204,17 @@ export type AttendanceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
-  job?: boolean | Prisma.Attendance$jobArgs<ExtArgs>
   enrollment?: boolean | Prisma.EnrollmentDefaultArgs<ExtArgs>
   tentor?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["attendance"]>
 
 export type AttendanceSelectScalar = {
   id?: boolean
-  jobId?: boolean
   enrollmentId?: boolean
   tentorId?: boolean
-  subjectIds?: boolean
-  classIds?: boolean
   sessionDate?: boolean
   startTime?: boolean
   endTime?: boolean
-  durationMinutes?: boolean
-  sessionsCount?: boolean
   topic?: boolean
   studentNotes?: boolean
   status?: boolean
@@ -1691,19 +1231,16 @@ export type AttendanceSelectScalar = {
   deletedAt?: boolean
 }
 
-export type AttendanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "jobId" | "enrollmentId" | "tentorId" | "subjectIds" | "classIds" | "sessionDate" | "startTime" | "endTime" | "durationMinutes" | "sessionsCount" | "topic" | "studentNotes" | "status" | "latitudeCheckIn" | "longitudeCheckIn" | "isRadiusValid" | "proofPhotoUrl" | "studentConfirmed" | "studentRating" | "studentFeedback" | "reviewNotes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["attendance"]>
+export type AttendanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "enrollmentId" | "tentorId" | "sessionDate" | "startTime" | "endTime" | "topic" | "studentNotes" | "status" | "latitudeCheckIn" | "longitudeCheckIn" | "isRadiusValid" | "proofPhotoUrl" | "studentConfirmed" | "studentRating" | "studentFeedback" | "reviewNotes" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["attendance"]>
 export type AttendanceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  job?: boolean | Prisma.Attendance$jobArgs<ExtArgs>
   enrollment?: boolean | Prisma.EnrollmentDefaultArgs<ExtArgs>
   tentor?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type AttendanceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  job?: boolean | Prisma.Attendance$jobArgs<ExtArgs>
   enrollment?: boolean | Prisma.EnrollmentDefaultArgs<ExtArgs>
   tentor?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type AttendanceIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  job?: boolean | Prisma.Attendance$jobArgs<ExtArgs>
   enrollment?: boolean | Prisma.EnrollmentDefaultArgs<ExtArgs>
   tentor?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -1711,25 +1248,19 @@ export type AttendanceIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.E
 export type $AttendancePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Attendance"
   objects: {
-    job: Prisma.$JobPayload<ExtArgs> | null
     enrollment: Prisma.$EnrollmentPayload<ExtArgs>
     tentor: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    jobId: string | null
     enrollmentId: string
     tentorId: string
-    subjectIds: string[]
-    classIds: string[]
     sessionDate: Date
     startTime: string
     endTime: string
-    durationMinutes: number
-    sessionsCount: number
     topic: string
     studentNotes: string
-    status: $Enums.AttendanceStatus
+    status: string
     latitudeCheckIn: number | null
     longitudeCheckIn: number | null
     isRadiusValid: boolean
@@ -2135,7 +1666,6 @@ readonly fields: AttendanceFieldRefs;
  */
 export interface Prisma__AttendanceClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  job<T extends Prisma.Attendance$jobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Attendance$jobArgs<ExtArgs>>): Prisma.Prisma__JobClient<runtime.Types.Result.GetResult<Prisma.$JobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   enrollment<T extends Prisma.EnrollmentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EnrollmentDefaultArgs<ExtArgs>>): Prisma.Prisma__EnrollmentClient<runtime.Types.Result.GetResult<Prisma.$EnrollmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   tentor<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
@@ -2168,19 +1698,14 @@ export interface Prisma__AttendanceClient<T, Null = never, ExtArgs extends runti
  */
 export interface AttendanceFieldRefs {
   readonly id: Prisma.FieldRef<"Attendance", 'String'>
-  readonly jobId: Prisma.FieldRef<"Attendance", 'String'>
   readonly enrollmentId: Prisma.FieldRef<"Attendance", 'String'>
   readonly tentorId: Prisma.FieldRef<"Attendance", 'String'>
-  readonly subjectIds: Prisma.FieldRef<"Attendance", 'String[]'>
-  readonly classIds: Prisma.FieldRef<"Attendance", 'String[]'>
   readonly sessionDate: Prisma.FieldRef<"Attendance", 'DateTime'>
   readonly startTime: Prisma.FieldRef<"Attendance", 'String'>
   readonly endTime: Prisma.FieldRef<"Attendance", 'String'>
-  readonly durationMinutes: Prisma.FieldRef<"Attendance", 'Int'>
-  readonly sessionsCount: Prisma.FieldRef<"Attendance", 'Float'>
   readonly topic: Prisma.FieldRef<"Attendance", 'String'>
   readonly studentNotes: Prisma.FieldRef<"Attendance", 'String'>
-  readonly status: Prisma.FieldRef<"Attendance", 'AttendanceStatus'>
+  readonly status: Prisma.FieldRef<"Attendance", 'String'>
   readonly latitudeCheckIn: Prisma.FieldRef<"Attendance", 'Float'>
   readonly longitudeCheckIn: Prisma.FieldRef<"Attendance", 'Float'>
   readonly isRadiusValid: Prisma.FieldRef<"Attendance", 'Boolean'>
@@ -2590,25 +2115,6 @@ export type AttendanceDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many Attendances to delete.
    */
   limit?: number
-}
-
-/**
- * Attendance.job
- */
-export type Attendance$jobArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Job
-   */
-  select?: Prisma.JobSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Job
-   */
-  omit?: Prisma.JobOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.JobInclude<ExtArgs> | null
-  where?: Prisma.JobWhereInput
 }
 
 /**

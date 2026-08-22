@@ -1,16 +1,27 @@
 <script lang="ts">
   import { onMount, onDestroy, tick } from 'svelte';
   import type * as L from 'leaflet';
-  import { Icon } from '$lib/components/atoms';
+  import Icon from '$lib/components/atoms/icon.svelte';
 
-  export let latitude: number = -6.2;
-  export let longitude: number = 106.8;
-  export let height: string = '300px';
-  export let zoom: number = 16;
-  export let readonly: boolean = false;
-  export let radius: number = 50;
-  export let address: string = '';
-  export let onAddressChange: ((addr: string) => void) | undefined = undefined;
+  let {
+    latitude = $bindable(-6.2),
+    longitude = $bindable(106.8),
+    height = '300px',
+    zoom = 16,
+    readonly = false,
+    radius = 50,
+    address = $bindable(''),
+    onAddressChange = undefined
+  }: {
+    latitude?: number;
+    longitude?: number;
+    height?: string;
+    zoom?: number;
+    readonly?: boolean;
+    radius?: number;
+    address?: string;
+    onAddressChange?: ((addr: string) => void) | undefined;
+  } = $props();
 
   interface SearchResultItem {
     id: string;
@@ -31,14 +42,14 @@
   let invalidateTimers: ReturnType<typeof setTimeout>[] = [];
 
   // Search & Reverse Geocode state
-  let searchQuery: string = '';
-  let searchResults: SearchResultItem[] = [];
-  let isSearching: boolean = false;
-  let isReverseGeocoding: boolean = false;
-  let showDropdown: boolean = false;
+  let searchQuery = $state('');
+  let searchResults = $state<SearchResultItem[]>([]);
+  let isSearching = $state(false);
+  let isReverseGeocoding = $state(false);
+  let showDropdown = $state(false);
   let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   let reverseGeocodeTimer: ReturnType<typeof setTimeout> | null = null;
-  let searchError: string | null = null;
+  let searchError = $state<string | null>(null);
 
   function invalidateSize() {
     if (map) {
@@ -56,13 +67,15 @@
     }
   }
 
-  $: if (map && latitude !== undefined && longitude !== undefined) {
-    const lat = typeof latitude === 'string' ? parseFloat(latitude) : latitude;
-    const lng = typeof longitude === 'string' ? parseFloat(longitude) : longitude;
-    if (!isNaN(lat) && !isNaN(lng)) {
-      updateMarkerAndCircle(lat, lng);
+  $effect(() => {
+    if (map && latitude !== undefined && longitude !== undefined) {
+      const lat = typeof latitude === 'string' ? parseFloat(String(latitude)) : latitude;
+      const lng = typeof longitude === 'string' ? parseFloat(String(longitude)) : longitude;
+      if (!isNaN(lat) && !isNaN(lng)) {
+        updateMarkerAndCircle(lat, lng);
+      }
     }
-  }
+  });
 
   async function performReverseGeocode(lat: number, lng: number) {
     if (readonly) return;
@@ -216,7 +229,6 @@
 
     if (!mapEl) return;
 
-    // Set explicit dimensions on the map element before init
     const parsedHeight = parseInt(height, 10) || 300;
     mapEl.style.width = '100%';
     mapEl.style.height = `${parsedHeight}px`;
@@ -308,7 +320,6 @@
       });
     }
 
-    // Invalidate size with multiple delays to handle modal animations
     [100, 300, 600, 1000].forEach((ms) => {
       invalidateTimers.push(setTimeout(invalidateSize, ms));
     });
@@ -346,9 +357,9 @@
           class="search-input"
           placeholder="Cari lokasi, jalan, atau alamat..."
           bind:value={searchQuery}
-          on:input={handleInputSearch}
-          on:focus={() => { if (searchResults.length > 0) showDropdown = true; }}
-          on:keydown={(event) => {
+          oninput={handleInputSearch}
+          onfocus={() => { if (searchResults.length > 0) showDropdown = true; }}
+          onkeydown={(event) => {
             if (event.key === 'Enter') {
               event.preventDefault();
               event.stopPropagation();
@@ -366,7 +377,7 @@
           <button
             type="button"
             class="clear-btn"
-            on:click={handleClearSearch}
+            onclick={handleClearSearch}
             aria-label="Hapus pencarian"
           >
             <Icon name="close" size="xs" />
@@ -376,7 +387,7 @@
         <button
           type="button"
           class="gps-btn"
-          on:click={handleCurrentLocation}
+          onclick={handleCurrentLocation}
           title="Gunakan lokasi perangkat saat ini"
           aria-label="Lokasi saya saat ini"
         >
@@ -392,7 +403,7 @@
                 <button
                   type="button"
                   class="dropdown-item"
-                  on:click={() => handleSelectResult(item)}
+                  onclick={() => handleSelectResult(item)}
                 >
                   <span class="item-icon">
                     <Icon name="location_on" size="sm" />
@@ -417,7 +428,7 @@
     </div>
   {/if}
 
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div bind:this={mapEl} class="leaflet-map-el"></div>
 
   {#if !readonly}
@@ -599,7 +610,6 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   }
 
-  /* Leaflet overrides — minimal, just fix icon paths */
   :global(.gmaps-pin-container) {
     background: transparent !important;
     border: none !important;

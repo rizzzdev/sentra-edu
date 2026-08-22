@@ -10,9 +10,14 @@ import type { Invoice } from '$generated/prisma/client';
 
 /** Schema for creating a new Invoice */
 export const CreateInvoiceSchema = z.object({
+  id: z.string().optional(),
+  invoiceNumber: z.string().optional().default(() => 'INV-' + Date.now()),
   enrollmentId: z.string().min(1, 'Pendaftaran wajib dipilih'),
   amount: z.number().min(0, 'Jumlah tagihan tidak boleh negatif'),
-  dueDate: z.string().min(1, 'Tanggal jatuh tempo wajib diisi'),
+  dueDate: z.union([z.string(), z.date()]).transform((val) => typeof val === 'string' ? new Date(val) : val),
+  status: z.enum(['UNPAID', 'PAID', 'OVERDUE']).optional().default('UNPAID'),
+  paidAt: z.union([z.string(), z.date()]).nullable().optional(),
+  paymentProofUrl: z.string().nullable().optional(),
   periodMonth: z.number().min(1, 'Bulan periode tidak valid').max(12, 'Bulan periode tidak valid'),
   periodYear: z.number().min(2020, 'Tahun periode tidak valid'),
   notes: z.string().trim().max(500).optional().default(''),

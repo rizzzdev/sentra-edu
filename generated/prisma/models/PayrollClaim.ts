@@ -47,7 +47,7 @@ export type PayrollClaimMinAggregateOutputType = {
   periodMonth: number | null
   periodYear: number | null
   totalAmount: number | null
-  status: $Enums.PayrollStatus | null
+  status: string | null
   paidAt: Date | null
   transferProofUrl: string | null
   rejectionReason: string | null
@@ -65,7 +65,7 @@ export type PayrollClaimMaxAggregateOutputType = {
   periodMonth: number | null
   periodYear: number | null
   totalAmount: number | null
-  status: $Enums.PayrollStatus | null
+  status: string | null
   paidAt: Date | null
   transferProofUrl: string | null
   rejectionReason: string | null
@@ -259,7 +259,7 @@ export type PayrollClaimGroupByOutputType = {
   periodYear: number | null
   totalAmount: number
   attendanceIds: string[]
-  status: $Enums.PayrollStatus
+  status: string
   paidAt: Date | null
   transferProofUrl: string | null
   rejectionReason: string | null
@@ -301,7 +301,7 @@ export type PayrollClaimWhereInput = {
   periodYear?: Prisma.IntNullableFilter<"PayrollClaim"> | number | null
   totalAmount?: Prisma.IntFilter<"PayrollClaim"> | number
   attendanceIds?: Prisma.StringNullableListFilter<"PayrollClaim">
-  status?: Prisma.EnumPayrollStatusFilter<"PayrollClaim"> | $Enums.PayrollStatus
+  status?: Prisma.StringFilter<"PayrollClaim"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"PayrollClaim"> | Date | string | null
   transferProofUrl?: Prisma.StringNullableFilter<"PayrollClaim"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"PayrollClaim"> | string | null
@@ -344,7 +344,7 @@ export type PayrollClaimWhereUniqueInput = Prisma.AtLeast<{
   periodYear?: Prisma.IntNullableFilter<"PayrollClaim"> | number | null
   totalAmount?: Prisma.IntFilter<"PayrollClaim"> | number
   attendanceIds?: Prisma.StringNullableListFilter<"PayrollClaim">
-  status?: Prisma.EnumPayrollStatusFilter<"PayrollClaim"> | $Enums.PayrollStatus
+  status?: Prisma.StringFilter<"PayrollClaim"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"PayrollClaim"> | Date | string | null
   transferProofUrl?: Prisma.StringNullableFilter<"PayrollClaim"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"PayrollClaim"> | string | null
@@ -391,7 +391,7 @@ export type PayrollClaimScalarWhereWithAggregatesInput = {
   periodYear?: Prisma.IntNullableWithAggregatesFilter<"PayrollClaim"> | number | null
   totalAmount?: Prisma.IntWithAggregatesFilter<"PayrollClaim"> | number
   attendanceIds?: Prisma.StringNullableListFilter<"PayrollClaim">
-  status?: Prisma.EnumPayrollStatusWithAggregatesFilter<"PayrollClaim"> | $Enums.PayrollStatus
+  status?: Prisma.StringWithAggregatesFilter<"PayrollClaim"> | string
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PayrollClaim"> | Date | string | null
   transferProofUrl?: Prisma.StringNullableWithAggregatesFilter<"PayrollClaim"> | string | null
   rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"PayrollClaim"> | string | null
@@ -409,7 +409,7 @@ export type PayrollClaimCreateInput = {
   periodYear?: number | null
   totalAmount?: number
   attendanceIds?: Prisma.PayrollClaimCreateattendanceIdsInput | string[]
-  status?: $Enums.PayrollStatus
+  status?: string
   paidAt?: Date | string | null
   transferProofUrl?: string | null
   rejectionReason?: string | null
@@ -429,7 +429,7 @@ export type PayrollClaimUncheckedCreateInput = {
   periodYear?: number | null
   totalAmount?: number
   attendanceIds?: Prisma.PayrollClaimCreateattendanceIdsInput | string[]
-  status?: $Enums.PayrollStatus
+  status?: string
   paidAt?: Date | string | null
   transferProofUrl?: string | null
   rejectionReason?: string | null
@@ -447,7 +447,7 @@ export type PayrollClaimUpdateInput = {
   periodYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.IntFieldUpdateOperationsInput | number
   attendanceIds?: Prisma.PayrollClaimUpdateattendanceIdsInput | string[]
-  status?: Prisma.EnumPayrollStatusFieldUpdateOperationsInput | $Enums.PayrollStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   transferProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -467,7 +467,7 @@ export type PayrollClaimUncheckedUpdateInput = {
   periodYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.IntFieldUpdateOperationsInput | number
   attendanceIds?: Prisma.PayrollClaimUpdateattendanceIdsInput | string[]
-  status?: Prisma.EnumPayrollStatusFieldUpdateOperationsInput | $Enums.PayrollStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   transferProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -486,7 +486,7 @@ export type PayrollClaimCreateManyInput = {
   periodYear?: number | null
   totalAmount?: number
   attendanceIds?: Prisma.PayrollClaimCreateattendanceIdsInput | string[]
-  status?: $Enums.PayrollStatus
+  status?: string
   paidAt?: Date | string | null
   transferProofUrl?: string | null
   rejectionReason?: string | null
@@ -504,7 +504,7 @@ export type PayrollClaimUpdateManyMutationInput = {
   periodYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.IntFieldUpdateOperationsInput | number
   attendanceIds?: Prisma.PayrollClaimUpdateattendanceIdsInput | string[]
-  status?: Prisma.EnumPayrollStatusFieldUpdateOperationsInput | $Enums.PayrollStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   transferProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -523,7 +523,7 @@ export type PayrollClaimUncheckedUpdateManyInput = {
   periodYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.IntFieldUpdateOperationsInput | number
   attendanceIds?: Prisma.PayrollClaimUpdateattendanceIdsInput | string[]
-  status?: Prisma.EnumPayrollStatusFieldUpdateOperationsInput | $Enums.PayrollStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   transferProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -660,10 +660,6 @@ export type PayrollClaimUpdateattendanceIdsInput = {
   push?: string | string[]
 }
 
-export type EnumPayrollStatusFieldUpdateOperationsInput = {
-  set?: $Enums.PayrollStatus
-}
-
 export type PayrollClaimCreateWithoutTentorInput = {
   id?: string
   claimNumber: string
@@ -673,7 +669,7 @@ export type PayrollClaimCreateWithoutTentorInput = {
   periodYear?: number | null
   totalAmount?: number
   attendanceIds?: Prisma.PayrollClaimCreateattendanceIdsInput | string[]
-  status?: $Enums.PayrollStatus
+  status?: string
   paidAt?: Date | string | null
   transferProofUrl?: string | null
   rejectionReason?: string | null
@@ -691,7 +687,7 @@ export type PayrollClaimUncheckedCreateWithoutTentorInput = {
   periodYear?: number | null
   totalAmount?: number
   attendanceIds?: Prisma.PayrollClaimCreateattendanceIdsInput | string[]
-  status?: $Enums.PayrollStatus
+  status?: string
   paidAt?: Date | string | null
   transferProofUrl?: string | null
   rejectionReason?: string | null
@@ -739,7 +735,7 @@ export type PayrollClaimScalarWhereInput = {
   periodYear?: Prisma.IntNullableFilter<"PayrollClaim"> | number | null
   totalAmount?: Prisma.IntFilter<"PayrollClaim"> | number
   attendanceIds?: Prisma.StringNullableListFilter<"PayrollClaim">
-  status?: Prisma.EnumPayrollStatusFilter<"PayrollClaim"> | $Enums.PayrollStatus
+  status?: Prisma.StringFilter<"PayrollClaim"> | string
   paidAt?: Prisma.DateTimeNullableFilter<"PayrollClaim"> | Date | string | null
   transferProofUrl?: Prisma.StringNullableFilter<"PayrollClaim"> | string | null
   rejectionReason?: Prisma.StringNullableFilter<"PayrollClaim"> | string | null
@@ -757,7 +753,7 @@ export type PayrollClaimCreateManyTentorInput = {
   periodYear?: number | null
   totalAmount?: number
   attendanceIds?: Prisma.PayrollClaimCreateattendanceIdsInput | string[]
-  status?: $Enums.PayrollStatus
+  status?: string
   paidAt?: Date | string | null
   transferProofUrl?: string | null
   rejectionReason?: string | null
@@ -775,7 +771,7 @@ export type PayrollClaimUpdateWithoutTentorInput = {
   periodYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.IntFieldUpdateOperationsInput | number
   attendanceIds?: Prisma.PayrollClaimUpdateattendanceIdsInput | string[]
-  status?: Prisma.EnumPayrollStatusFieldUpdateOperationsInput | $Enums.PayrollStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   transferProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -793,7 +789,7 @@ export type PayrollClaimUncheckedUpdateWithoutTentorInput = {
   periodYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.IntFieldUpdateOperationsInput | number
   attendanceIds?: Prisma.PayrollClaimUpdateattendanceIdsInput | string[]
-  status?: Prisma.EnumPayrollStatusFieldUpdateOperationsInput | $Enums.PayrollStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   transferProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -811,7 +807,7 @@ export type PayrollClaimUncheckedUpdateManyWithoutTentorInput = {
   periodYear?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   totalAmount?: Prisma.IntFieldUpdateOperationsInput | number
   attendanceIds?: Prisma.PayrollClaimUpdateattendanceIdsInput | string[]
-  status?: Prisma.EnumPayrollStatusFieldUpdateOperationsInput | $Enums.PayrollStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   transferProofUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -927,7 +923,7 @@ export type $PayrollClaimPayload<ExtArgs extends runtime.Types.Extensions.Intern
     periodYear: number | null
     totalAmount: number
     attendanceIds: string[]
-    status: $Enums.PayrollStatus
+    status: string
     paidAt: Date | null
     transferProofUrl: string | null
     rejectionReason: string | null
@@ -1367,7 +1363,7 @@ export interface PayrollClaimFieldRefs {
   readonly periodYear: Prisma.FieldRef<"PayrollClaim", 'Int'>
   readonly totalAmount: Prisma.FieldRef<"PayrollClaim", 'Int'>
   readonly attendanceIds: Prisma.FieldRef<"PayrollClaim", 'String[]'>
-  readonly status: Prisma.FieldRef<"PayrollClaim", 'PayrollStatus'>
+  readonly status: Prisma.FieldRef<"PayrollClaim", 'String'>
   readonly paidAt: Prisma.FieldRef<"PayrollClaim", 'DateTime'>
   readonly transferProofUrl: Prisma.FieldRef<"PayrollClaim", 'String'>
   readonly rejectionReason: Prisma.FieldRef<"PayrollClaim", 'String'>

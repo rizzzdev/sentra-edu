@@ -10,6 +10,7 @@ import type { EducationLevel } from '$generated/prisma/client';
 
 /** Schema for creating a new EducationLevel */
 export const CreateEducationLevelSchema = z.object({
+  id: z.string().optional(),
   levelName: z.string().trim().min(1, 'Nama jenjang wajib diisi').max(50, 'Nama jenjang maksimal 50 karakter'),
   description: z.string().trim().max(500, 'Deskripsi maksimal 500 karakter').optional().default(''),
 });

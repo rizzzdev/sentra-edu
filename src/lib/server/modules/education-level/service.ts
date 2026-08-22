@@ -5,10 +5,10 @@
 
 import { educationLevelRepository } from './repository';
 import { getCached, setCache, invalidateCache } from '../../cache';
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreateEducationLevel, validateUpdateEducationLevel, getFieldErrors } from './domain';
-import type { EducationLevelEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreateEducationLevel, validateUpdateEducationLevel, getFieldErrors } from '$lib/api/modules/education-level/domain';
+import type { EducationLevelEntity } from '$lib/api/modules/education-level/domain';
 
 const CACHE_KEY = 'education-levels';
 
@@ -25,7 +25,8 @@ export const educationLevelService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[education-levelService] Error:`, err);
       return errorResponse('Failed to retrieve EducationLevel data.', 500);
     }
   },
@@ -34,27 +35,29 @@ export const educationLevelService = {
       const item = await educationLevelRepository.findById(id);
       if (!item) return errorResponse('EducationLevel not found.', 404);
       return successResponse(item, 'EducationLevel retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[education-levelService] Error:`, err);
       return errorResponse('Failed to retrieve EducationLevel.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<EducationLevelEntity>> {
     const parsed = validateCreateEducationLevel(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await educationLevelRepository.create(parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(created, 'EducationLevel created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[education-levelService] Error:`, err);
       return errorResponse('Failed to create EducationLevel.', 500);
     }
   },
   async update(id: string, data: any): Promise<ApiResponse<EducationLevelEntity>> {
     const parsed = validateUpdateEducationLevel(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const existing = await educationLevelRepository.findById(id);
@@ -62,7 +65,8 @@ export const educationLevelService = {
       const updated = await educationLevelRepository.update(id, parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(updated, 'EducationLevel updated successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[education-levelService] Error:`, err);
       return errorResponse('Failed to update EducationLevel.', 500);
     }
   },
@@ -73,7 +77,8 @@ export const educationLevelService = {
       await educationLevelRepository.softDelete(id);
       invalidateCache([CACHE_KEY]);
       return successResponse({ id }, 'EducationLevel deleted successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[education-levelService] Error:`, err);
       return errorResponse('Failed to delete EducationLevel.', 500);
     }
   }

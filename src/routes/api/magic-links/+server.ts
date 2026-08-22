@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { magicLinkService, requireAdmin, isValidId, sanitizeInput } from '$lib/api';
-import { generateEntityId } from '$lib/shared/utils';
+import { magicLinkService, requireAdmin, isValidId, sanitizeInput } from '$lib/server';
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
   const token = url.searchParams.get('token');
@@ -33,8 +32,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     return json(result);
   } else {
     const result = await magicLinkService.create({
-      id: generateEntityId('ml'),
-      token: body.token ? String(body.token) : generateEntityId('ml'),
+      token: body.token ? String(body.token) : undefined,
       title: sanitizeInput(String(body.title ?? '')),
       daysValid: Number(body.daysValid) || 7,
       expiresAt: body.expiresAt ? new Date(String(body.expiresAt)) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -48,6 +46,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     });
     return json(result);
   }
+};
+
+export const PUT: RequestHandler = async ({ request, cookies }) => {
+  const auth = requireAdmin(cookies);
+  if (!auth.allowed) return auth.error!;
+
+  const body = (await request.json()) as Record<string, any>;
+  const now = new Date();
+
+  const id = String(body.id ?? '');
+  if (!id || !isValidId(id)) return json({ error: true, statusCode: 400, message: 'ID tidak valid.', data: null }, { status: 400 });
+
+  const result = await magicLinkService.update(id, { ...body, updatedAt: now });
+  return json(result);
 };
 
 export const DELETE: RequestHandler = async ({ url, cookies }) => {

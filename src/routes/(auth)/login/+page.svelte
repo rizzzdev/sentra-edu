@@ -4,12 +4,10 @@
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/atoms';
 
-  let emailInput: string = '';
-  let passwordInput: string = '';
-  let errorMessage: string | null = null;
-
-
-  let isSubmitting: boolean = false;
+  let emailInput = $state('');
+  let passwordInput = $state('');
+  let errorMessage = $state<string | null>(null);
+  let isSubmitting = $state(false);
 
   async function handleSubmit() {
     errorMessage = null;
@@ -64,7 +62,7 @@
         size="md"
         ariaLabel="Ganti tema terang/gelap"
         icon={$themeStore === 'dark' ? 'light_mode' : 'dark_mode'}
-        on:click={themeStore.toggleTheme}
+        onclick={themeStore.toggleTheme}
       />
     </div>
 
@@ -73,7 +71,7 @@
     </p>
 
     <!-- Login Form -->
-    <form id="login-form" on:submit|preventDefault={handleSubmit} novalidate>
+    <form id="login-form" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} novalidate>
       <div class="field">
         <label for="login-email">Email</label>
         <div class="input-wrap">

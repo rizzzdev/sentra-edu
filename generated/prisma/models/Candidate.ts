@@ -42,8 +42,7 @@ export type CandidateMinAggregateOutputType = {
   education: string | null
   experienceYears: number | null
   cvUrl: string | null
-  source: string | null
-  status: $Enums.CandidateStatus | null
+  status: string | null
   notes: string | null
   interviewDate: Date | null
   createdAt: Date | null
@@ -59,8 +58,7 @@ export type CandidateMaxAggregateOutputType = {
   education: string | null
   experienceYears: number | null
   cvUrl: string | null
-  source: string | null
-  status: $Enums.CandidateStatus | null
+  status: string | null
   notes: string | null
   interviewDate: Date | null
   createdAt: Date | null
@@ -78,7 +76,6 @@ export type CandidateCountAggregateOutputType = {
   subjectIds: number
   levelIds: number
   cvUrl: number
-  source: number
   status: number
   notes: number
   interviewDate: number
@@ -105,7 +102,6 @@ export type CandidateMinAggregateInputType = {
   education?: true
   experienceYears?: true
   cvUrl?: true
-  source?: true
   status?: true
   notes?: true
   interviewDate?: true
@@ -122,7 +118,6 @@ export type CandidateMaxAggregateInputType = {
   education?: true
   experienceYears?: true
   cvUrl?: true
-  source?: true
   status?: true
   notes?: true
   interviewDate?: true
@@ -141,7 +136,6 @@ export type CandidateCountAggregateInputType = {
   subjectIds?: true
   levelIds?: true
   cvUrl?: true
-  source?: true
   status?: true
   notes?: true
   interviewDate?: true
@@ -247,8 +241,7 @@ export type CandidateGroupByOutputType = {
   subjectIds: string[]
   levelIds: string[]
   cvUrl: string | null
-  source: string | null
-  status: $Enums.CandidateStatus
+  status: string
   notes: string
   interviewDate: Date | null
   createdAt: Date
@@ -289,8 +282,7 @@ export type CandidateWhereInput = {
   subjectIds?: Prisma.StringNullableListFilter<"Candidate">
   levelIds?: Prisma.StringNullableListFilter<"Candidate">
   cvUrl?: Prisma.StringNullableFilter<"Candidate"> | string | null
-  source?: Prisma.StringNullableFilter<"Candidate"> | string | null
-  status?: Prisma.EnumCandidateStatusFilter<"Candidate"> | $Enums.CandidateStatus
+  status?: Prisma.StringFilter<"Candidate"> | string
   notes?: Prisma.StringFilter<"Candidate"> | string
   interviewDate?: Prisma.DateTimeNullableFilter<"Candidate"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Candidate"> | Date | string
@@ -308,7 +300,6 @@ export type CandidateOrderByWithRelationInput = {
   subjectIds?: Prisma.SortOrder
   levelIds?: Prisma.SortOrder
   cvUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  source?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   interviewDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -330,8 +321,7 @@ export type CandidateWhereUniqueInput = Prisma.AtLeast<{
   subjectIds?: Prisma.StringNullableListFilter<"Candidate">
   levelIds?: Prisma.StringNullableListFilter<"Candidate">
   cvUrl?: Prisma.StringNullableFilter<"Candidate"> | string | null
-  source?: Prisma.StringNullableFilter<"Candidate"> | string | null
-  status?: Prisma.EnumCandidateStatusFilter<"Candidate"> | $Enums.CandidateStatus
+  status?: Prisma.StringFilter<"Candidate"> | string
   notes?: Prisma.StringFilter<"Candidate"> | string
   interviewDate?: Prisma.DateTimeNullableFilter<"Candidate"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Candidate"> | Date | string
@@ -349,7 +339,6 @@ export type CandidateOrderByWithAggregationInput = {
   subjectIds?: Prisma.SortOrder
   levelIds?: Prisma.SortOrder
   cvUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  source?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   interviewDate?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -376,8 +365,7 @@ export type CandidateScalarWhereWithAggregatesInput = {
   subjectIds?: Prisma.StringNullableListFilter<"Candidate">
   levelIds?: Prisma.StringNullableListFilter<"Candidate">
   cvUrl?: Prisma.StringNullableWithAggregatesFilter<"Candidate"> | string | null
-  source?: Prisma.StringNullableWithAggregatesFilter<"Candidate"> | string | null
-  status?: Prisma.EnumCandidateStatusWithAggregatesFilter<"Candidate"> | $Enums.CandidateStatus
+  status?: Prisma.StringWithAggregatesFilter<"Candidate"> | string
   notes?: Prisma.StringWithAggregatesFilter<"Candidate"> | string
   interviewDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Candidate"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Candidate"> | Date | string
@@ -395,8 +383,7 @@ export type CandidateCreateInput = {
   subjectIds?: Prisma.CandidateCreatesubjectIdsInput | string[]
   levelIds?: Prisma.CandidateCreatelevelIdsInput | string[]
   cvUrl?: string | null
-  source?: string | null
-  status?: $Enums.CandidateStatus
+  status?: string
   notes?: string
   interviewDate?: Date | string | null
   createdAt?: Date | string
@@ -414,8 +401,7 @@ export type CandidateUncheckedCreateInput = {
   subjectIds?: Prisma.CandidateCreatesubjectIdsInput | string[]
   levelIds?: Prisma.CandidateCreatelevelIdsInput | string[]
   cvUrl?: string | null
-  source?: string | null
-  status?: $Enums.CandidateStatus
+  status?: string
   notes?: string
   interviewDate?: Date | string | null
   createdAt?: Date | string
@@ -433,8 +419,7 @@ export type CandidateUpdateInput = {
   subjectIds?: Prisma.CandidateUpdatesubjectIdsInput | string[]
   levelIds?: Prisma.CandidateUpdatelevelIdsInput | string[]
   cvUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
   interviewDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -452,8 +437,7 @@ export type CandidateUncheckedUpdateInput = {
   subjectIds?: Prisma.CandidateUpdatesubjectIdsInput | string[]
   levelIds?: Prisma.CandidateUpdatelevelIdsInput | string[]
   cvUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
   interviewDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -471,8 +455,7 @@ export type CandidateCreateManyInput = {
   subjectIds?: Prisma.CandidateCreatesubjectIdsInput | string[]
   levelIds?: Prisma.CandidateCreatelevelIdsInput | string[]
   cvUrl?: string | null
-  source?: string | null
-  status?: $Enums.CandidateStatus
+  status?: string
   notes?: string
   interviewDate?: Date | string | null
   createdAt?: Date | string
@@ -490,8 +473,7 @@ export type CandidateUpdateManyMutationInput = {
   subjectIds?: Prisma.CandidateUpdatesubjectIdsInput | string[]
   levelIds?: Prisma.CandidateUpdatelevelIdsInput | string[]
   cvUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
   interviewDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -509,8 +491,7 @@ export type CandidateUncheckedUpdateManyInput = {
   subjectIds?: Prisma.CandidateUpdatesubjectIdsInput | string[]
   levelIds?: Prisma.CandidateUpdatelevelIdsInput | string[]
   cvUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus
+  status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.StringFieldUpdateOperationsInput | string
   interviewDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -528,7 +509,6 @@ export type CandidateCountOrderByAggregateInput = {
   subjectIds?: Prisma.SortOrder
   levelIds?: Prisma.SortOrder
   cvUrl?: Prisma.SortOrder
-  source?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   interviewDate?: Prisma.SortOrder
@@ -549,7 +529,6 @@ export type CandidateMaxOrderByAggregateInput = {
   education?: Prisma.SortOrder
   experienceYears?: Prisma.SortOrder
   cvUrl?: Prisma.SortOrder
-  source?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   interviewDate?: Prisma.SortOrder
@@ -566,7 +545,6 @@ export type CandidateMinOrderByAggregateInput = {
   education?: Prisma.SortOrder
   experienceYears?: Prisma.SortOrder
   cvUrl?: Prisma.SortOrder
-  source?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   interviewDate?: Prisma.SortOrder
@@ -597,10 +575,6 @@ export type CandidateUpdatelevelIdsInput = {
   push?: string | string[]
 }
 
-export type EnumCandidateStatusFieldUpdateOperationsInput = {
-  set?: $Enums.CandidateStatus
-}
-
 
 
 export type CandidateSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -613,7 +587,6 @@ export type CandidateSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   subjectIds?: boolean
   levelIds?: boolean
   cvUrl?: boolean
-  source?: boolean
   status?: boolean
   notes?: boolean
   interviewDate?: boolean
@@ -632,7 +605,6 @@ export type CandidateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   subjectIds?: boolean
   levelIds?: boolean
   cvUrl?: boolean
-  source?: boolean
   status?: boolean
   notes?: boolean
   interviewDate?: boolean
@@ -651,7 +623,6 @@ export type CandidateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   subjectIds?: boolean
   levelIds?: boolean
   cvUrl?: boolean
-  source?: boolean
   status?: boolean
   notes?: boolean
   interviewDate?: boolean
@@ -670,7 +641,6 @@ export type CandidateSelectScalar = {
   subjectIds?: boolean
   levelIds?: boolean
   cvUrl?: boolean
-  source?: boolean
   status?: boolean
   notes?: boolean
   interviewDate?: boolean
@@ -679,7 +649,7 @@ export type CandidateSelectScalar = {
   deletedAt?: boolean
 }
 
-export type CandidateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fullName" | "email" | "phone" | "education" | "experienceYears" | "subjectIds" | "levelIds" | "cvUrl" | "source" | "status" | "notes" | "interviewDate" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["candidate"]>
+export type CandidateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fullName" | "email" | "phone" | "education" | "experienceYears" | "subjectIds" | "levelIds" | "cvUrl" | "status" | "notes" | "interviewDate" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["candidate"]>
 
 export type $CandidatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Candidate"
@@ -694,8 +664,7 @@ export type $CandidatePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     subjectIds: string[]
     levelIds: string[]
     cvUrl: string | null
-    source: string | null
-    status: $Enums.CandidateStatus
+    status: string
     notes: string
     interviewDate: Date | null
     createdAt: Date
@@ -1133,8 +1102,7 @@ export interface CandidateFieldRefs {
   readonly subjectIds: Prisma.FieldRef<"Candidate", 'String[]'>
   readonly levelIds: Prisma.FieldRef<"Candidate", 'String[]'>
   readonly cvUrl: Prisma.FieldRef<"Candidate", 'String'>
-  readonly source: Prisma.FieldRef<"Candidate", 'String'>
-  readonly status: Prisma.FieldRef<"Candidate", 'CandidateStatus'>
+  readonly status: Prisma.FieldRef<"Candidate", 'String'>
   readonly notes: Prisma.FieldRef<"Candidate", 'String'>
   readonly interviewDate: Prisma.FieldRef<"Candidate", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Candidate", 'DateTime'>

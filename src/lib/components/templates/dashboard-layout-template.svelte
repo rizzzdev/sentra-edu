@@ -3,12 +3,15 @@
   import { ToastContainer } from '$lib/components/molecules';
   import type { User } from '$lib/shared/types';
 
-  export let currentUser: User;
-  export let currentPath: string = '/dashboard';
-  export let pageTitle: string = 'Dashboard';
+  let {
+    currentUser,
+    currentPath = '/dashboard',
+    pageTitle = 'Dashboard',
+    children
+  } = $props();
 
-  let mobileSidebarOpen: boolean = false;
-  let notificationsOpen: boolean = false;
+  let mobileSidebarOpen = $state(false);
+  let notificationsOpen = $state(false);
 </script>
 
 <div class="app">
@@ -30,14 +33,14 @@
     />
 
     <main class="content">
-      <slot />
+      {#if children}{@render children()}{/if}
     </main>
   </div>
 
   <!-- Mobile Backdrop -->
   <div
     class="backdrop {mobileSidebarOpen ? 'show' : ''}"
-    on:click={() => { mobileSidebarOpen = false; }}
+    onclick={() => { mobileSidebarOpen = false; }}
     aria-hidden="true"
   ></div>
 

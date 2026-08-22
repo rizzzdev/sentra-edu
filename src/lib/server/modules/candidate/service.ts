@@ -5,10 +5,10 @@
 
 import { candidateRepository } from './repository';
 import { getCached, setCache, invalidateCache } from '../../cache';
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreateCandidate, validateUpdateCandidate, getFieldErrors } from './domain';
-import type { CandidateEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreateCandidate, validateUpdateCandidate, getFieldErrors } from '$lib/api/modules/candidate/domain';
+import type { CandidateEntity } from '$lib/api/modules/candidate/domain';
 
 const CACHE_KEY = 'candidates';
 
@@ -25,7 +25,8 @@ export const candidateService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[candidateService] Error:`, err);
       return errorResponse('Failed to retrieve Candidate data.', 500);
     }
   },
@@ -34,27 +35,29 @@ export const candidateService = {
       const item = await candidateRepository.findById(id);
       if (!item) return errorResponse('Candidate not found.', 404);
       return successResponse(item, 'Candidate retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[candidateService] Error:`, err);
       return errorResponse('Failed to retrieve Candidate.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<CandidateEntity>> {
     const parsed = validateCreateCandidate(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await candidateRepository.create(parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(created, 'Candidate created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[candidateService] Error:`, err);
       return errorResponse('Failed to create Candidate.', 500);
     }
   },
   async update(id: string, data: any): Promise<ApiResponse<CandidateEntity>> {
     const parsed = validateUpdateCandidate(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const existing = await candidateRepository.findById(id);
@@ -62,7 +65,8 @@ export const candidateService = {
       const updated = await candidateRepository.update(id, parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(updated, 'Candidate updated successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[candidateService] Error:`, err);
       return errorResponse('Failed to update Candidate.', 500);
     }
   },
@@ -73,7 +77,8 @@ export const candidateService = {
       await candidateRepository.softDelete(id);
       invalidateCache([CACHE_KEY]);
       return successResponse({ id }, 'Candidate deleted successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[candidateService] Error:`, err);
       return errorResponse('Failed to delete Candidate.', 500);
     }
   }

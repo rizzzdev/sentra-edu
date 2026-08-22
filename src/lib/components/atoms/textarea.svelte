@@ -1,13 +1,31 @@
 <script lang="ts">
-  export let value: string | undefined = '';
-  export let rows: number = 3;
-  export let placeholder: string = '';
-  export let disabled: boolean = false;
-  export let readonly: boolean = false;
-  export let required: boolean = false;
-  export let id: string | undefined = undefined;
-  export let name: string | undefined = undefined;
-  export let className: string = '';
+  let {
+    value = $bindable(''),
+    rows = 3,
+    placeholder = '',
+    disabled = false,
+    readonly = false,
+    required = false,
+    id = undefined,
+    name = undefined,
+    className = '',
+    oninput,
+    onchange,
+    ...restProps
+  }: {
+    value?: string | undefined;
+    rows?: number;
+    placeholder?: string;
+    disabled?: boolean;
+    readonly?: boolean;
+    required?: boolean;
+    id?: string | undefined;
+    name?: string | undefined;
+    className?: string;
+    oninput?: (e: Event) => void;
+    onchange?: (e: Event) => void;
+    [key: string]: any;
+  } = $props();
 </script>
 
 <textarea
@@ -20,6 +38,7 @@
   {required}
   bind:value
   class="w-full p-3 text-sm bg-surface text-fg border border-border rounded-xl outline-none transition-colors duration-150 focus:border-primary focus:ring-2 focus:ring-primary-soft disabled:opacity-50 disabled:bg-muted disabled:cursor-not-allowed resize-y {className}"
-  on:input
-  on:change
+  {oninput}
+  {onchange}
+  {...restProps}
 ></textarea>

@@ -1,15 +1,22 @@
 <script lang="ts">
-  export let name: string;
-  export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md';
-  export let filled: boolean = false;
-  export let className: string = '';
+  let {
+    name,
+    size = 'md',
+    filled = false,
+    className = ''
+  }: {
+    name: string;
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    filled?: boolean;
+    className?: string;
+  } = $props();
 
   const sizeClassMap: Record<string, string> = {
-    xs: 'text-base', // 16px
-    sm: 'text-lg',   // 18px
-    md: 'text-xl',   // 20px
-    lg: 'text-2xl',  // 24px
-    xl: 'text-4xl'   // 32px/36px
+    xs: 'text-base',
+    sm: 'text-lg',
+    md: 'text-xl',
+    lg: 'text-2xl',
+    xl: 'text-4xl'
   };
 </script>
 

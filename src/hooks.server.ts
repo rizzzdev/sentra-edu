@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { checkRateLimit } from '$lib/api';
+import { checkRateLimit } from '$lib/server';
 
 function getClientIp(request: Request): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()

@@ -10,10 +10,12 @@ import type { Notification } from '$generated/prisma/client';
 
 /** Schema for creating a new Notification */
 export const CreateNotificationSchema = z.object({
+  id: z.string().optional(),
   userId: z.string().min(1, 'Target pengguna wajib diisi'),
   title: z.string().trim().min(1, 'Judul notifikasi wajib diisi').max(100, 'Judul maksimal 100 karakter'),
   message: z.string().trim().min(1, 'Pesan notifikasi wajib diisi').max(500, 'Pesan maksimal 500 karakter'),
   icon: z.string().trim().optional().default('notifications'),
+  read: z.boolean().optional().default(false),
 });
 
 /** Schema for updating an existing Notification (all fields optional) */

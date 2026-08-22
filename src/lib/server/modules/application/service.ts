@@ -5,10 +5,10 @@
 
 import { applicationRepository } from './repository';
 import { getCached, setCache, invalidateCache } from '../../cache';
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreateJobApplication, validateUpdateJobApplication, getFieldErrors } from './domain';
-import type { JobApplicationEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreateJobApplication, validateUpdateJobApplication, getFieldErrors } from '$lib/api/modules/application/domain';
+import type { JobApplicationEntity } from '$lib/api/modules/application/domain';
 
 const CACHE_KEY = 'applications';
 
@@ -25,7 +25,8 @@ export const applicationService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[applicationService] Error:`, err);
       return errorResponse('Failed to retrieve JobApplication data.', 500);
     }
   },
@@ -34,27 +35,29 @@ export const applicationService = {
       const item = await applicationRepository.findById(id);
       if (!item) return errorResponse('JobApplication not found.', 404);
       return successResponse(item, 'JobApplication retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[applicationService] Error:`, err);
       return errorResponse('Failed to retrieve JobApplication.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<JobApplicationEntity>> {
     const parsed = validateCreateJobApplication(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await applicationRepository.create(parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(created, 'JobApplication created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[applicationService] Error:`, err);
       return errorResponse('Failed to create JobApplication.', 500);
     }
   },
   async update(id: string, data: any): Promise<ApiResponse<JobApplicationEntity>> {
     const parsed = validateUpdateJobApplication(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const existing = await applicationRepository.findById(id);
@@ -62,7 +65,8 @@ export const applicationService = {
       const updated = await applicationRepository.update(id, parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(updated, 'JobApplication updated successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[applicationService] Error:`, err);
       return errorResponse('Failed to update JobApplication.', 500);
     }
   },
@@ -73,7 +77,8 @@ export const applicationService = {
       await applicationRepository.softDelete(id);
       invalidateCache([CACHE_KEY]);
       return successResponse({ id }, 'JobApplication deleted successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[applicationService] Error:`, err);
       return errorResponse('Failed to delete JobApplication.', 500);
     }
   }

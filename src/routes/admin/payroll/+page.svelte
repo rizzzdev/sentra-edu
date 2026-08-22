@@ -12,35 +12,35 @@
 import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let statusFilter: string = '';
-  let tentorFilter: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  let statusFilter = $state('');
+  let tentorFilter = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
-  let claimModalOpen: boolean = false;
-  let paymentModalOpen: boolean = false;
-  let selectedClaim: PayrollClaim | null = null;
+  let claimModalOpen = $state(false);
+  let paymentModalOpen = $state(false);
+  let selectedClaim = $state<PayrollClaim | null>(null);
 
-  $: currentUser = $authStore;
-  $: isAdmin = currentUser?.role === 'SUPER_ADMIN';
+  const currentUser = $derived($authStore);
+  const isAdmin = $derived(currentUser?.role === 'SUPER_ADMIN');
 
   // ── Claims ──
-  $: allClaims = $payrollStore.filter((claimItem) => {
+  const allClaims = $derived($payrollStore.filter((claimItem) => {
     if (claimItem.deletedAt !== null) return false;
     if (!currentUser) return false;
     if (isAdmin) return true;
     return claimItem.tentorId === currentUser.id;
-  });
+  }));
 
-  $: requestedClaims = allClaims.filter((claimItem) => claimItem.status === 'REQUESTED');
-  $: requestedAmount = requestedClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
-  $: paidClaims = allClaims.filter((claimItem) => claimItem.status === 'PAID');
-  $: paidAmount = paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
+  const requestedClaims = $derived(allClaims.filter((claimItem) => claimItem.status === 'REQUESTED'));
+  const requestedAmount = $derived(requestedClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0));
+  const paidClaims = $derived(allClaims.filter((claimItem) => claimItem.status === 'PAID'));
+  const paidAmount = $derived(paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0));
 
   // ── Tentor summary for admin (pending approved attendances) ──
-  $: tentorList = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'TENTOR' && userItem.isActive);
+  const tentorList = $derived($userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'TENTOR' && userItem.isActive));
 
-  $: tentorSummary = tentorList.map((tentorUser) => {
+  const tentorSummary = $derived(tentorList.map((tentorUser) => {
     const existingClaimedIds = $payrollStore
       .filter((claimItem) => claimItem.deletedAt === null && claimItem.status !== 'REJECTED')
       .flatMap((claimItem) => claimItem.attendanceIds);
@@ -65,7 +65,7 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
       paidCount: tentorPaid.length,
       paidTotal: tentorPaidTotal
     };
-  }).filter((summaryItem) => summaryItem.pendingCount > 0 || summaryItem.paidCount > 0);
+  }).filter((summaryItem) => summaryItem.pendingCount > 0 || summaryItem.paidCount > 0));
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';
@@ -78,16 +78,19 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
     return `${months[month - 1] || month} ${year}`;
   }
 
-  $: filteredClaims = allClaims.filter((claimItem) => {
+  const filteredClaims = $derived(allClaims.filter((claimItem) => {
     if (statusFilter && claimItem.status !== statusFilter) return false;
     if (tentorFilter && claimItem.tentorId !== tentorFilter) return false;
     return true;
-  });
-  $: paginatedClaims = filteredClaims.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  $: totalPages = Math.max(1, Math.ceil(filteredClaims.length / itemsPerPage));
+  }));
+  const paginatedClaims = $derived(filteredClaims.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredClaims.length / itemsPerPage)));
 
-  // Reset page when filter changes
-  $: if (statusFilter || tentorFilter) currentPage = 1;
+  $effect(() => {
+    if (statusFilter || tentorFilter) {
+      currentPage = 1;
+    }
+  });
 
   function handleOpenPay(claim: PayrollClaim) {
     selectedClaim = claim;
@@ -107,10 +110,10 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
   }
 
   // Tentor filter options
-  $: tentorFilterOptions = [
+  const tentorFilterOptions = $derived([
     { value: '', label: 'Semua Tentor' },
     ...tentorList.map((tentorUser) => ({ value: tentorUser.id, label: tentorUser.fullName }))
-  ];
+  ]);
 </script>
 
 <div class="page-head">
@@ -125,7 +128,7 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
     </div>
   </div>
   {#if isAdmin}
-    <Button variant="primary" icon="add" on:click={() => { claimModalOpen = true; }}>
+    <Button variant="primary" icon="add" onclick={() => { claimModalOpen = true; }}>
       Buat Klaim
     </Button>
   {/if}
@@ -213,7 +216,7 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
                           type="button"
                           class="btn-icon"
                           data-tip="Buat Klaim"
-                          on:click={() => { claimModalOpen = true; }}
+                          onclick={() => { claimModalOpen = true; }}
                         >
                           <Icon name="add" size="sm" />
                         </button>
@@ -300,7 +303,7 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
                         type="button"
                         class="btn-icon"
                         data-tip="Proses Bayar"
-                        on:click={() => handleOpenPay(claimItem)}
+                        onclick={() => handleOpenPay(claimItem)}
                       >
                         <Icon name="payments" size="sm" />
                       </button>
@@ -308,7 +311,7 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
                         type="button"
                         class="btn-icon btn-icon-danger"
                         data-tip="Tolak"
-                        on:click={() => handleReject(claimItem)}
+                        onclick={() => handleReject(claimItem)}
                       >
                         <Icon name="close" size="sm" />
                       </button>
@@ -344,7 +347,7 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
             type="button"
             class="page-btn"
             disabled={currentPage <= 1}
-            on:click={() => currentPage--}
+            onclick={() => currentPage--}
           >
             &laquo;
           </button>
@@ -352,7 +355,7 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
             <button
               type="button"
               class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-              on:click={() => { currentPage = pageNumber; }}
+              onclick={() => { currentPage = pageNumber; }}
             >
               {pageNumber}
             </button>
@@ -361,7 +364,7 @@ import { userStore, packageStore, enrollmentStore, attendanceStore, payrollStore
             type="button"
             class="page-btn"
             disabled={currentPage >= totalPages}
-            on:click={() => currentPage++}
+            onclick={() => currentPage++}
           >
             &raquo;
           </button>

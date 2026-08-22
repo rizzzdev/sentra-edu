@@ -281,6 +281,27 @@ body {
 .notif-dot {
   @apply absolute -top-1 -right-1 min-w-4 h-4 rounded-full bg-accent text-white text-xs font-bold grid place-items-center px-1 border-2 border-surface;
 }
+/* Notification Panel */
+.notif-overlay { @apply fixed inset-0 z-50; }
+.notif-panel {
+  @apply fixed top-16 right-4 w-80 max-w-[calc(100vw-2rem)] bg-surface border border-border rounded-2xl shadow-xl z-50 flex flex-col max-h-[80vh];
+}
+.notif-head {
+  @apply flex items-center justify-between px-4 py-3 border-b border-border;
+}
+.notif-head h4 { @apply font-bold text-sm m-0; }
+.notif-body { @apply flex-1 overflow-y-auto p-2; }
+.notif-foot { @apply flex items-center justify-end gap-2 px-4 py-3 border-t border-border; }
+.notif-icon {
+  @apply w-10 h-10 flex-none rounded-xl grid place-items-center bg-primary-soft text-primary text-xl;
+}
+.notif-content { @apply flex-1 min-w-0; }
+.notif-title { @apply font-semibold text-sm leading-snug; }
+.notif-msg { @apply text-muted-fg text-xs mt-0.5 leading-relaxed; }
+.notif-time { @apply text-muted-fg text-xs mt-1; }
+.notif-dot {
+  @apply absolute -top-1 -right-1 min-w-4 h-4 rounded-full bg-accent text-white text-xs font-bold grid place-items-center px-1 border-2 border-surface;
+}
 .notif-list { @apply grid gap-1 max-h-96 overflow-y-auto; }
 .notif-item {
   @apply flex gap-3 items-start text-left w-full p-3 rounded-xl border-0 bg-transparent text-fg transition-colors duration-150 cursor-pointer hover:bg-muted;

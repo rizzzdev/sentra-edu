@@ -7,35 +7,33 @@
   import { formatDateIndonesian } from '$lib/shared/utils/formatting';
   import { ATTENDANCE_STATUS_LABEL, getStatusLabel, getStatusBadgeClass, getScheduleDaysList, DAY_OPTIONS } from '$lib/shared/utils/status-map';
   import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
-  import { onMount } from 'svelte';
-import { userStore, attendanceStore } from '$lib/api';
+import { userStore, attendanceStore, jobStore } from '$lib/api';
 import { database } from '$lib/shared/stores';
 
-  let isLoading = true;
+  const attendanceLoading = attendanceStore.loading;
+  const isLoading = $derived($attendanceLoading);
 
-  onMount(() => {
-    setTimeout(() => { isLoading = false; }, 300);
-  });
+  const currentUser = $derived($authStore);
+  const programId = $derived($page.params.id);
 
-  $: currentUser = $authStore;
-  $: programId = $page.params.id;
+  const allPrograms = $derived(
+    currentUser
+      ? getTutorPrograms($database, currentUser.id)
+      : []
+  );
 
-  $: allPrograms = currentUser
-    ? getTutorPrograms($database, currentUser.id)
-    : [];
+  const program = $derived(allPrograms.find((programItem: UnifiedProgram) => programItem.id === programId));
 
-  $: program = allPrograms.find((programItem: UnifiedProgram) => programItem.id === programId);
-
-  $: programAttendances = $attendanceStore.filter((attendanceItem) => {
+  const programAttendances = $derived($attendanceStore.filter((attendanceItem) => {
     if (attendanceItem.deletedAt !== null) return false;
     if (currentUser && attendanceItem.tentorId !== currentUser.id) return false;
     if (attendanceItem.enrollmentId === programId) return true;
     if (program && program.enrollmentId && attendanceItem.enrollmentId === program.enrollmentId) return true;
     return false;
-  }).sort((firstItem, secondItem) => (firstItem.sessionDate < secondItem.sessionDate ? 1 : -1));
+  }).sort((firstItem, secondItem) => (firstItem.sessionDate < secondItem.sessionDate ? 1 : -1)));
 
-  $: approvedCount = programAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length;
-  $: totalHours = Math.round(approvedCount * 1.5);
+  const approvedCount = $derived(programAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length);
+  const totalHours = $derived(Math.round(approvedCount * 1.5));
 
   function getStudentUser(studentId: string | null) {
     if (!studentId) return null;

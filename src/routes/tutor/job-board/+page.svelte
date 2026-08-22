@@ -10,28 +10,22 @@
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
   import { JOB_STATUS_LABEL, getStatusLabel, getStatusBadgeClass, getScheduleDaysList } from '$lib/shared/utils/status-map';
   import type { JobPosting } from '$lib/shared/types/common.types';
-  import { onMount } from 'svelte';
-import { subjectStore, classStore, packageStore, jobStore, applicationStore } from '$lib/api';
+  import { subjectStore, classStore, packageStore, jobStore, applicationStore } from '$lib/api';
 
-  let searchQuery: string = '';
-  let modeFilter: string = '';
-  let packageModeFilter: string = '';
-  let statusFilter: string = '';
-  let isLoading: boolean = true;
+  let searchQuery = $state('');
+  let modeFilter = $state('');
+  let packageModeFilter = $state('');
+  let statusFilter = $state('');
 
-  let applyModalOpen: boolean = false;
-  let applyingJob: JobPosting | null = null;
+  let applyModalOpen = $state(false);
+  let applyingJob = $state<JobPosting | null>(null);
 
-  let locationModalOpen: boolean = false;
-  let viewingLocationJob: JobPosting | null = null;
+  let locationModalOpen = $state(false);
+  let viewingLocationJob = $state<JobPosting | null>(null);
 
-  $: currentUser = $authStore;
-
-  onMount(() => {
-    setTimeout(() => {
-      isLoading = false;
-    }, 250);
-  });
+  const currentUser = $derived($authStore);
+  const jobLoading = jobStore.loading;
+  const isLoading = $derived($jobLoading);
 
   function getClassesList(jobPosting: JobPosting): string[] {
     const classIds = Array.isArray(jobPosting.classIds) && jobPosting.classIds.length > 0
@@ -84,7 +78,7 @@ import { subjectStore, classStore, packageStore, jobStore, applicationStore } fr
     return 'PRIVAT';
   }
 
-  $: openJobs = $jobStore.filter((jobItem) => {
+  const openJobs = $derived($jobStore.filter((jobItem) => {
     if (jobItem.deletedAt !== null) return false;
     if (jobItem.status !== 'AVAILABLE' && jobItem.status !== 'NEGOTIATING') return false;
 
@@ -111,7 +105,7 @@ import { subjectStore, classStore, packageStore, jobStore, applicationStore } fr
       packageName.includes(query) ||
       location.includes(query)
     );
-  });
+  }));
 
   function hasApplied(jobId: string): boolean {
     if (!currentUser) return false;
@@ -123,6 +117,10 @@ import { subjectStore, classStore, packageStore, jobStore, applicationStore } fr
   function handleOpenApply(jobPosting: JobPosting) {
     applyingJob = jobPosting;
     applyModalOpen = true;
+  }
+
+  async function handleAfterApply() {
+    await Promise.all([jobStore.refetch(), applicationStore.refetch()]);
   }
 
   function handleOpenLocation(jobPosting: JobPosting) {
@@ -322,7 +320,7 @@ import { subjectStore, classStore, packageStore, jobStore, applicationStore } fr
               <button
                 type="button"
                 class="btn btn-sm btn-outline inline-flex items-center gap-1.5"
-                on:click={() => handleOpenLocation(jobItem)}
+                onclick={() => handleOpenLocation(jobItem)}
               >
                 <Icon name="location_on" size="xs" /> Lihat Lokasi
               </button>
@@ -332,7 +330,7 @@ import { subjectStore, classStore, packageStore, jobStore, applicationStore } fr
               <button
                 type="button"
                 class="btn btn-sm btn-primary inline-flex items-center gap-1.5 shadow-sm"
-                on:click={() => handleOpenApply(jobItem)}
+                onclick={() => handleOpenApply(jobItem)}
               >
                 <Icon name="send" size="xs" /> Ajukan Lamaran
               </button>
@@ -355,6 +353,7 @@ import { subjectStore, classStore, packageStore, jobStore, applicationStore } fr
     job={applyingJob}
     tentor={currentUser}
     onClose={() => { applyModalOpen = false; }}
+    onSuccess={handleAfterApply}
   />
 {/if}
 
@@ -398,10 +397,10 @@ import { subjectStore, classStore, packageStore, jobStore, applicationStore } fr
       {/if}
     </div>
 
-    <svelte:fragment slot="footer">
-      <Button variant="outline" on:click={() => { locationModalOpen = false; }}>
+    {#snippet footer()}
+      <Button variant="outline" onclick={() => { locationModalOpen = false; }}>
         Tutup
       </Button>
-    </svelte:fragment>
+    {/snippet}
   </Modal>
 {/if}

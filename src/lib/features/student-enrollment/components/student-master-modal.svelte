@@ -1,7 +1,8 @@
 <script lang="ts">
 import { userStore } from '$lib/api';
-  import { Icon, Input } from '$lib/components/atoms';
-  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { Input } from '$lib/components/atoms';
+  import { SelectSearch } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {toastStore} from '$lib/shared/stores';
   import type { User } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
@@ -9,36 +10,44 @@ import { userStore } from '$lib/api';
   import { api } from '$lib/api/client';
   import { ZodError } from 'zod';
 
-  export let open: boolean = false;
-  export let editingStudent: User | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingStudent = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingStudent?: User | null;
+    onClose?: () => void;
+  } = $props();
 
-  let fullName: string = '';
-  let email: string = '';
-  let phone: string = '';
-  let school: string = '';
-  let address: string = '';
-  let parentId: string = '';
+  let fullName = $state('');
+  let email = $state('');
+  let phone = $state('');
+  let school = $state('');
+  let address = $state('');
+  let parentId = $state('');
 
-  $: parentList = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'PARENT');
+  let parentList = $derived($userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'PARENT'));
 
-  $: if (open) {
-    if (editingStudent) {
-      fullName = editingStudent.fullName;
-      email = editingStudent.email;
-      phone = editingStudent.phone || '';
-      school = editingStudent.school || '';
-      address = editingStudent.address || '';
-      parentId = editingStudent.parentId || '';
-    } else {
-      fullName = '';
-      email = '';
-      phone = '';
-      school = '';
-      address = '';
-      parentId = '';
+  $effect(() => {
+    if (open) {
+      if (editingStudent) {
+        fullName = editingStudent.fullName;
+        email = editingStudent.email;
+        phone = editingStudent.phone || '';
+        school = editingStudent.school || '';
+        address = editingStudent.address || '';
+        parentId = editingStudent.parentId || '';
+      } else {
+        fullName = '';
+        email = '';
+        phone = '';
+        school = '';
+        address = '';
+        parentId = '';
+      }
     }
-  }
+  });
 
   async function handleSubmit() {
     try {
@@ -78,7 +87,7 @@ import { userStore } from '$lib/api';
   title={editingStudent ? 'Ubah Data Murid' : 'Tambah Data Murid'}
   {onClose}
 >
-  <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-5 py-2">
+  <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="flex flex-col gap-5 py-2">
     <div class="field">
       <label for="sm-name">Nama Lengkap Murid <i class="req">*</i></label>
       <Input
@@ -146,7 +155,7 @@ import { userStore } from '$lib/api';
     </div>
 
     <div class="modal-foot pt-3.5 border-t-0">
-      <Button variant="outline" on:click={onClose}>
+      <Button variant="outline" onclick={onClose}>
         Batal
       </Button>
       <Button type="submit" variant="primary" icon="save">

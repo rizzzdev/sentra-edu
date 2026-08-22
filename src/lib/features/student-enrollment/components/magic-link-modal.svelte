@@ -1,7 +1,8 @@
 <script lang="ts">
-import { classStore, packageStore } from '$lib/api';
-  import { Icon, Input } from '$lib/components/atoms';
-  import { Modal, SelectSearch } from '$lib/components/molecules';
+import { classStore, packageStore, magicLinkStore } from '$lib/api';
+  import { Input } from '$lib/components/atoms';
+  import { SelectSearch } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {toastStore} from '$lib/shared/stores';
   import type { MagicLinkRegistration } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
@@ -9,27 +10,34 @@ import { classStore, packageStore } from '$lib/api';
   import { api } from '$lib/api/client';
   import { ZodError } from 'zod';
 
-  export let open: boolean = false;
-  export let defaultRole: 'STUDENT' | 'TENTOR' = 'STUDENT';
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    defaultRole = 'STUDENT',
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    defaultRole?: 'STUDENT' | 'TENTOR';
+    onClose?: () => void;
+  } = $props();
 
-  let targetRole: 'STUDENT' | 'TENTOR' = 'STUDENT';
-  let title: string = 'Pendaftaran Murid Baru';
-  let daysValid: number = 7;
-  let selectedClassId: string = '';
-  let selectedPackageId: string = '';
+  let targetRole = $state<'STUDENT' | 'TENTOR'>('STUDENT');
+  let title = $state('Pendaftaran Murid Baru');
+  let daysValid = $state(7);
+  let selectedClassId = $state('');
+  let selectedPackageId = $state('');
+  let generatedLink = $state<MagicLinkRegistration | null>(null);
+  let copied = $state(false);
 
-  let generatedLink: MagicLinkRegistration | null = null;
-  let copied: boolean = false;
-
-  $: if (open) {
-    targetRole = defaultRole;
-    if (defaultRole === 'TENTOR') {
-      title = 'Pendaftaran Tentor / Mentor Baru';
-    } else {
-      title = 'Pendaftaran Murid Baru';
+  $effect(() => {
+    if (open) {
+      targetRole = defaultRole;
+      if (defaultRole === 'TENTOR') {
+        title = 'Pendaftaran Tentor / Mentor Baru';
+      } else {
+        title = 'Pendaftaran Murid Baru';
+      }
     }
-  }
+  });
 
   async function handleCreate() {
     try {
@@ -46,6 +54,7 @@ import { classStore, packageStore } from '$lib/api';
       if (!response.error && response.data) {
         generatedLink = response.data;
         toastStore.success(response.message);
+        await magicLinkStore.fetch();
       } else {
         toastStore.error(response.message);
       }
@@ -90,10 +99,9 @@ import { classStore, packageStore } from '$lib/api';
 
 <Modal {open} title={targetRole === 'TENTOR' ? 'Buat Magic Link Tentor / Mentor' : 'Buat Magic Link Pendaftaran Murid'} onClose={handleCloseModal}>
   {#if generatedLink}
-    <!-- SUCCESS GENERATED STATE -->
     <div class="flex flex-col items-center gap-4 text-center py-3">
       <div class="w-14 h-14 rounded-full bg-success-soft text-success flex items-center justify-center">
-        <Icon name="check_circle" size="xl" />
+        <span class="material-symbols-rounded" style="font-size:2rem;">check_circle</span>
       </div>
       <div>
         <h4 class="font-bold text-lg">Magic Link {targetRole === 'TENTOR' ? 'Tentor' : 'Murid'} Berhasil Dibuat!</h4>
@@ -115,7 +123,7 @@ import { classStore, packageStore } from '$lib/api';
             variant="primary"
             size="sm"
             className="flex-none"
-            on:click={() => handleCopyUrl(getFullMagicUrl(generatedLink!))}
+            onclick={() => handleCopyUrl(getFullMagicUrl(generatedLink!))}
             icon={copied ? 'done' : 'content_copy'}
           >
             {copied ? 'Tersalin' : 'Salin'}
@@ -124,17 +132,16 @@ import { classStore, packageStore } from '$lib/api';
       </div>
 
       <div class="flex justify-end gap-2.5 w-full mt-2">
-        <Button variant="outline" on:click={handleReset} icon="add">
+        <Button variant="outline" onclick={handleReset} icon="add">
           Buat Link Lain
         </Button>
-        <Button variant="primary" on:click={handleCloseModal}>
+        <Button variant="primary" onclick={handleCloseModal}>
           Selesai
         </Button>
       </div>
     </div>
   {:else}
-    <!-- FORM CREATION STATE -->
-    <form on:submit|preventDefault={handleCreate} class="flex flex-col gap-5 py-2">
+    <form onsubmit={(e) => { e.preventDefault(); handleCreate(); }} class="flex flex-col gap-5 py-2">
       <div class="field">
         <label for="ml-title">Judul Magic Link <i class="req">*</i></label>
         <Input
@@ -165,7 +172,7 @@ import { classStore, packageStore } from '$lib/api';
             <Button
               variant={daysValid === dayOption ? 'primary' : 'outline'}
               className="rounded-xl px-3 py-1.5 text-xs h-auto shadow-2xs"
-              on:click={() => { daysValid = dayOption; }}
+              onclick={() => { daysValid = dayOption; }}
             >
               {dayOption} Hari
             </Button>
@@ -202,7 +209,7 @@ import { classStore, packageStore } from '$lib/api';
       {/if}
 
       <div class="modal-foot pt-3.5 border-t-0">
-        <Button variant="outline" on:click={handleCloseModal}>
+        <Button variant="outline" onclick={handleCloseModal}>
           Batal
         </Button>
         <Button type="submit" variant="primary" icon="link">

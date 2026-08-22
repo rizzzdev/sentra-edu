@@ -1,60 +1,63 @@
 <script lang="ts">
-  /**
-   * SelectSearch — Reusable dropdown with search & multi-select.
-   *
-   * Props:
-   *   options     – Array of { value: string; label: string }
-   *   value       – Selected value (single mode) or array of values (multi mode)
-   *   placeholder – Placeholder text when nothing selected
-   *   searchPlaceholder – Search input placeholder
-   *   multiple    – Enable multi-select mode
-   *   required    – HTML required attribute
-   *   disabled    – Disable the dropdown
-   *   id          – HTML id for the hidden input / label association
-   *   name        – HTML name attribute
-   *   searchable  – Show search input (auto when options > 10)
-   *   emptyText   – Text shown when no options match search
-   *   className   – Extra classes for the wrapper
-   */
-
   import { tick } from 'svelte';
 
-  export let options: Array<{ value: string; label: string }> = [];
-  export let value: string | string[] = '';
-  export let placeholder: string = '— Pilih —';
-  export let searchPlaceholder: string = 'Cari…';
-  export let multiple: boolean = false;
-  export let disabled: boolean = false;
-  export let id: string | undefined = undefined;
-  export let name: string | undefined = undefined;
-  export let searchable: boolean | undefined = undefined;
-  export let emptyText: string = 'Tidak ada data';
-  export let className: string = '';
-  export let required: boolean = false;
+  let {
+    options = [],
+    value = $bindable(''),
+    placeholder = '— Pilih —',
+    searchPlaceholder = 'Cari…',
+    multiple = false,
+    disabled = false,
+    id = undefined,
+    name = undefined,
+    searchable = undefined,
+    emptyText = 'Tidak ada data',
+    className = '',
+    required = false
+  }: {
+    options?: Array<{ value: string; label: string }>;
+    value?: string | string[];
+    placeholder?: string;
+    searchPlaceholder?: string;
+    multiple?: boolean;
+    disabled?: boolean;
+    id?: string | undefined;
+    name?: string | undefined;
+    searchable?: boolean | undefined;
+    emptyText?: string;
+    className?: string;
+    required?: boolean;
+  } = $props();
 
-  let isOpen: boolean = false;
-  let searchQuery: string = '';
-  let searchInput: HTMLInputElement | undefined;
-  let dropdownEl: HTMLDivElement | undefined;
+  let isOpen: boolean = $state(false);
+  let searchQuery: string = $state('');
+  let searchInput: HTMLInputElement | undefined = $state();
+  let dropdownEl: HTMLDivElement | undefined = $state();
 
-  $: showSearch = searchable ?? options.length > 10;
+  const showSearch = $derived(searchable ?? options.length > 10);
 
-  $: filteredOptions = options.filter((optionItem) =>
-    optionItem.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    optionItem.value.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredOptions = $derived(
+    options.filter((optionItem) =>
+      optionItem.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      optionItem.value.toLowerCase().includes(searchQuery.toLowerCase())
+    )
   );
 
-  $: selectedLabels = multiple
-    ? options.filter((optionItem) => (value as string[]).includes(optionItem.value)).map((optionItem) => optionItem.label)
-    : options.filter((optionItem) => optionItem.value === value).map((optionItem) => optionItem.label);
+  const selectedLabels = $derived(
+    multiple
+      ? options.filter((optionItem) => (value as string[]).includes(optionItem.value)).map((optionItem) => optionItem.label)
+      : options.filter((optionItem) => optionItem.value === value).map((optionItem) => optionItem.label)
+  );
 
-  $: displayText = selectedLabels.length > 0
-    ? multiple
-      ? selectedLabels.length <= 2
-        ? selectedLabels.join(', ')
-        : `${selectedLabels.length} dipilih`
-      : selectedLabels[0]
-    : '';
+  const displayText = $derived(
+    selectedLabels.length > 0
+      ? multiple
+        ? selectedLabels.length <= 2
+          ? selectedLabels.join(', ')
+          : `${selectedLabels.length} dipilih`
+        : selectedLabels[0]
+      : ''
+  );
 
   function toggleOpen() {
     if (disabled) return;
@@ -75,7 +78,6 @@
         arr.push(optValue);
       }
       value = arr;
-      // Keep open for multi-select, re-focus search
       tick().then(() => searchInput?.focus());
     } else {
       value = optValue;
@@ -102,7 +104,6 @@
   }
 
   function handleBlur(event: FocusEvent) {
-    // Delay close to allow click on option
     if (dropdownEl && !dropdownEl.contains(event.relatedTarget as Node)) {
       setTimeout(() => {
         isOpen = false;
@@ -122,9 +123,8 @@
 <div
   class="relative w-full {className} {disabled ? 'opacity-50 pointer-events-none' : ''}"
   bind:this={dropdownEl}
-  on:blur={handleBlur}
+  onblur={handleBlur}
 >
-  <!-- Hidden native input for form submission -->
   {#if name}
     {#if multiple}
       {#each (Array.isArray(value) ? value : []) as val}
@@ -135,14 +135,13 @@
     {/if}
   {/if}
 
-  <!-- Trigger button -->
   <button
     type="button"
     {id}
     {disabled}
     class="flex items-center w-full min-h-10 px-3 pr-8 bg-surface text-fg border rounded-xl text-sm text-left cursor-pointer transition-colors gap-1 outline-none {isOpen ? 'border-primary ring-2 ring-primary-soft' : 'border-border hover:border-primary'} {disabled ? 'bg-muted cursor-not-allowed' : ''}"
-    on:click|preventDefault={toggleOpen}
-    on:keydown={handleKeydown}
+    onclick={(e) => { e.preventDefault(); toggleOpen(); }}
+    onkeydown={handleKeydown}
   >
     {#if displayText}
       {#if multiple && selectedLabels.length > 0}
@@ -151,7 +150,7 @@
             <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-soft text-primary-strong rounded-full text-xs font-semibold whitespace-nowrap">
               {label}
               <!-- svelte-ignore a11y_no_static_element_interactions -->
-              <span class="text-primary text-sm leading-none p-0 cursor-pointer opacity-70 hover:opacity-100 bg-transparent border-0" role="button" tabindex="-1" on:mousedown={(mouseEvent) => {
+              <span class="text-primary text-sm leading-none p-0 cursor-pointer opacity-70 hover:opacity-100 bg-transparent border-0" role="button" tabindex="-1" onmousedown={(mouseEvent) => {
                 const opt = options.find((option) => option.label === label);
                 if (opt) removeTag(opt.value, mouseEvent);
               }}>&times;</span>
@@ -171,7 +170,6 @@
     </span>
   </button>
 
-  <!-- Dropdown panel -->
   {#if isOpen}
     <div class="absolute top-full mt-1 left-0 right-0 z-50 bg-surface border border-border rounded-xl shadow-md overflow-hidden" role="listbox">
       {#if showSearch}
@@ -182,7 +180,7 @@
             placeholder={searchPlaceholder}
             bind:value={searchQuery}
             bind:this={searchInput}
-            on:mousedown|stopPropagation
+            onmousedown={(e) => e.stopPropagation()}
           />
         </div>
       {/if}
@@ -195,7 +193,7 @@
             <button
               type="button"
               class="flex items-center gap-2 w-full p-2 border-0 bg-transparent text-fg text-xs text-left rounded-lg cursor-pointer transition-colors hover:bg-muted {isSelected(opt.value) ? 'bg-primary-soft text-primary-strong font-semibold' : ''}"
-              on:mousedown|preventDefault={() => selectOption(opt.value)}
+              onmousedown={(e) => { e.preventDefault(); selectOption(opt.value); }}
             >
               {#if multiple}
                 <span class="w-4 h-4 flex-none flex items-center justify-center border rounded text-xs text-primary transition-all {isSelected(opt.value) ? 'bg-primary border-primary text-white' : 'border-border'}">

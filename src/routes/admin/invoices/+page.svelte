@@ -12,20 +12,20 @@
 import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let statusFilter: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  let searchQuery = $state('');
+  let statusFilter = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
-  let invoiceModalOpen: boolean = false;
-  let paymentModalOpen: boolean = false;
-  let selectedInvoice: InvoiceRecord | null = null;
-  let deleteDialogOpen: boolean = false;
-  let deletingInvoiceId: string | null = null;
+  let invoiceModalOpen = $state(false);
+  let paymentModalOpen = $state(false);
+  let selectedInvoice = $state<InvoiceRecord | null>(null);
+  let deleteDialogOpen = $state(false);
+  let deletingInvoiceId = $state<string | null>(null);
 
-  $: currentUser = $authStore;
+  const currentUser = $derived($authStore);
 
-  $: allInvoices = $invoiceStore.filter((invoiceItem) => {
+  const allInvoices = $derived($invoiceStore.filter((invoiceItem) => {
     if (invoiceItem.deletedAt !== null) return false;
     if (!currentUser) return false;
     if (currentUser.role === 'SUPER_ADMIN') return true;
@@ -33,12 +33,12 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
     const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === invoiceItem.enrollmentId);
     if (!enrollmentItem) return false;
     return enrollmentItem.studentId === currentUser.id || enrollmentItem.parentId === currentUser.id;
-  });
+  }));
 
-  $: unpaidInvoices = allInvoices.filter((invoiceItem) => invoiceItem.status === 'UNPAID');
-  $: unpaidTotal = unpaidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
-  $: paidInvoices = allInvoices.filter((invoiceItem) => invoiceItem.status === 'PAID');
-  $: paidTotal = paidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
+  const unpaidInvoices = $derived(allInvoices.filter((invoiceItem) => invoiceItem.status === 'UNPAID'));
+  const unpaidTotal = $derived(unpaidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0));
+  const paidInvoices = $derived(allInvoices.filter((invoiceItem) => invoiceItem.status === 'PAID'));
+  const paidTotal = $derived(paidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0));
 
   function getStudentName(enrollmentId: string): string {
     const enrollmentItem = $enrollmentStore.find((enrollment) => enrollment.id === enrollmentId);
@@ -58,7 +58,7 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
     return `${months[month - 1] || month} ${year}`;
   }
 
-  $: filteredInvoices = allInvoices.filter((invoiceItem) => {
+  const filteredInvoices = $derived(allInvoices.filter((invoiceItem) => {
     const query = searchQuery.toLowerCase();
     const studentName = getStudentName(invoiceItem.enrollmentId).toLowerCase();
     const packageName = getPackageName(invoiceItem.enrollmentId).toLowerCase();
@@ -69,10 +69,10 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
       packageName.includes(query);
     const matchesStatus = !statusFilter || invoiceItem.status === statusFilter;
     return matchesSearch && matchesStatus;
-  });
+  }));
 
-  $: paginatedInvoices = filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  $: totalPages = Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage));
+  const paginatedInvoices = $derived(filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredInvoices.length / itemsPerPage)));
 
   function handleOpenPay(invoiceItem: InvoiceRecord) {
     selectedInvoice = invoiceItem;
@@ -98,7 +98,7 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
     <div class="desc">{currentUser?.role === 'SUPER_ADMIN' ? 'Kelola dan buat tagihan SPP bulanan siswa.' : 'Riwayat tagihan biaya les bimbingan belajar anak Anda.'}</div>
   </div>
   {#if currentUser?.role === 'SUPER_ADMIN'}
-    <button type="button" class="btn btn-primary" on:click={() => { invoiceModalOpen = true; }}>
+    <button type="button" class="btn btn-primary" onclick={() => { invoiceModalOpen = true; }}>
       <Icon name="add" size="sm" /> Buat Tagihan
     </button>
   {/if}
@@ -193,7 +193,7 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
                         type="button"
                         class="btn-icon"
                         data-tip={currentUser?.role === 'SUPER_ADMIN' ? 'Konfirmasi Bayar' : 'Bayar Sekarang'}
-                        on:click={() => handleOpenPay(invoiceItem)}
+                        onclick={() => handleOpenPay(invoiceItem)}
                       >
                         <Icon name="payments" size="sm" />
                       </button>
@@ -202,7 +202,7 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
                           type="button"
                           class="btn-icon btn-icon-danger"
                           data-tip="Hapus"
-                          on:click={() => {
+                          onclick={() => {
                             deletingInvoiceId = invoiceItem.id;
                             deleteDialogOpen = true;
                           }}
@@ -242,7 +242,7 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
             type="button"
             class="page-btn"
             disabled={currentPage <= 1}
-            on:click={() => currentPage--}
+            onclick={() => currentPage--}
           >
             &laquo;
           </button>
@@ -250,7 +250,7 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
             <button
               type="button"
               class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-              on:click={() => { currentPage = pageNumber; }}
+              onclick={() => { currentPage = pageNumber; }}
             >
               {pageNumber}
             </button>
@@ -259,7 +259,7 @@ import { userStore, packageStore, enrollmentStore, invoiceStore } from '$lib/api
             type="button"
             class="page-btn"
             disabled={currentPage >= totalPages}
-            on:click={() => currentPage++}
+            onclick={() => currentPage++}
           >
             &raquo;
           </button>

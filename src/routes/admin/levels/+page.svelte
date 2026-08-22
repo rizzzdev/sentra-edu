@@ -1,35 +1,41 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Icon from '$lib/components/atoms/icon.svelte';
   import LevelModal from '$lib/features/master-data/components/level-modal.svelte';
   import ConfirmationDialog from '$lib/components/organisms/confirmation-dialog.svelte';
   import { toastStore } from '$lib/shared/stores/toast-store';
   import type { EducationLevel } from '$lib/shared/types/common.types';
-import { educationLevelStore, classStore } from '$lib/api';
+  import { educationLevelStore, classStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  onMount(() => {
+    educationLevelStore.fetch();
+    classStore.fetch();
+  });
 
-  let levelModalOpen: boolean = false;
-  let editingLevel: EducationLevel | null = null;
-  let deleteDialogOpen: boolean = false;
-  let deletingLevelId: string | null = null;
+  let searchQuery = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
-  $: allLevels = $educationLevelStore.filter((levelItem) => levelItem.deletedAt === null);
+  let levelModalOpen = $state(false);
+  let editingLevel = $state<EducationLevel | null>(null);
+  let deleteDialogOpen = $state(false);
+  let deletingLevelId = $state<string | null>(null);
 
-  $: filteredLevels = allLevels.filter(
+  const allLevels = $derived($educationLevelStore.filter((levelItem) => levelItem.deletedAt === null));
+
+  const filteredLevels = $derived(allLevels.filter(
     (levelItem) =>
       !searchQuery ||
       levelItem.levelName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (levelItem.description || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ));
 
-  $: paginatedLevels = filteredLevels.slice(
+  const paginatedLevels = $derived(filteredLevels.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
-  $: totalPages = Math.max(1, Math.ceil(filteredLevels.length / itemsPerPage));
+  ));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredLevels.length / itemsPerPage)));
 
   function getClassCount(levelId: string): number {
     return $classStore.filter((classItem) => classItem.deletedAt === null && classItem.educationLevelId === levelId).length;
@@ -51,9 +57,10 @@ import { educationLevelStore, classStore } from '$lib/api';
     deleteDialogOpen = false;
     deletingLevelId = null;
     if (!response.error) {
-      toastStore.success(response.message);
+      toastStore.success(response.message || 'Jenjang berhasil dihapus.');
+      await educationLevelStore.fetch();
     } else {
-      toastStore.error(response.message);
+      toastStore.error(response.message || 'Gagal menghapus jenjang.');
     }
   }
 </script>
@@ -63,7 +70,7 @@ import { educationLevelStore, classStore } from '$lib/api';
     <h3><Icon name="school" size="lg" /> Jenjang</h3>
     <div class="desc">Master jenjang pendidikan. Tarif honor diatur per kelas pada menu Paket Les.</div>
   </div>
-  <button type="button" class="btn btn-primary" on:click={handleOpenCreate}>
+  <button type="button" class="btn btn-primary" onclick={handleOpenCreate}>
     <Icon name="add" size="sm" /> Tambah Jenjang
   </button>
 </div>
@@ -106,7 +113,7 @@ import { educationLevelStore, classStore } from '$lib/api';
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEdit(levelItem)}
+                      onclick={() => handleOpenEdit(levelItem)}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -114,7 +121,7 @@ import { educationLevelStore, classStore } from '$lib/api';
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => {
+                      onclick={() => {
                         deletingLevelId = levelItem.id;
                         deleteDialogOpen = true;
                       }}
@@ -140,7 +147,7 @@ import { educationLevelStore, classStore } from '$lib/api';
             type="button"
             class="page-btn"
             disabled={currentPage <= 1}
-            on:click={() => currentPage--}
+            onclick={() => currentPage--}
           >
             &laquo;
           </button>
@@ -148,7 +155,7 @@ import { educationLevelStore, classStore } from '$lib/api';
             <button
               type="button"
               class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-              on:click={() => { currentPage = pageNumber; }}
+              onclick={() => { currentPage = pageNumber; }}
             >
               {pageNumber}
             </button>
@@ -157,7 +164,7 @@ import { educationLevelStore, classStore } from '$lib/api';
             type="button"
             class="page-btn"
             disabled={currentPage >= totalPages}
-            on:click={() => currentPage++}
+            onclick={() => currentPage++}
           >
             &raquo;
           </button>

@@ -12,7 +12,7 @@ interface RateLimitConfig {
 }
 
 const RATE_LIMITS: Record<string, RateLimitConfig> = {
-  login: { windowMs: 15 * 60 * 1000, maxRequests: 10 },      // 5 attempts per 15 min
+  login: { windowMs: 15 * 60 * 1000, maxRequests: 10 },      // 10 attempts per 15 min
   register: { windowMs: 60 * 60 * 1000, maxRequests: 10 },   // 10 per hour
   default: { windowMs: 60 * 1000, maxRequests: 60 }          // 60 per minute
 };
@@ -99,76 +99,125 @@ export function isValidStatus(status: string, validStatuses: string[]): boolean 
 
 // ── CSRF Token ───────────────────────────────────────────
 
-const CSRF_SECRET = 'sentraedu-csrf-default-secret';
-
 export function generateCsrfToken(): string {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function validateCsrfToken(token: string, expected: string): boolean {
-  if (!token || !expected) return false;
-  return token === expected;
+export function validateCsrfToken(cookieToken: string | undefined, headerToken: string | null): boolean {
+  if (!cookieToken || !headerToken) return false;
+  if (cookieToken.length !== headerToken.length) return false;
+  // Constant-time comparison
+  let match = 0;
+  for (let i = 0; i < cookieToken.length; i++) {
+    match |= cookieToken.charCodeAt(i) ^ headerToken.charCodeAt(i);
+  }
+  return match === 0;
 }
 
-// ── Response Helpers ─────────────────────────────────────
+// ── Error Responses ──────────────────────────────────────
 
-import { json } from '@sveltejs/kit';
-
-export function forbiddenResponse(message: string = 'Akses ditolak.') {
-  return json({ error: true, statusCode: 403, message, data: null }, { status: 403 });
+export function forbiddenResponse(message: string = 'Akses ditolak.'): Response {
+  return new Response(JSON.stringify({
+    error: true,
+    statusCode: 403,
+    message,
+    data: null
+  }), {
+    status: 403,
+    headers: { 'Content-Type': 'application/json' }
+  });
 }
 
-export function rateLimitedResponse() {
-  return json(
-    { error: true, statusCode: 429, message: 'Terlalu banyak percobaan. Silakan coba lagi dalam beberapa menit.', data: null },
-    { status: 429, headers: { 'Retry-After': '900' } }
-  );
+export function rateLimitedResponse(message: string = 'Terlalu banyak permintaan. Coba lagi nanti.', retryAfter: number = 60): Response {
+  return new Response(JSON.stringify({
+    error: true,
+    statusCode: 429,
+    message,
+    data: null
+  }), {
+    status: 429,
+    headers: {
+      'Content-Type': 'application/json',
+      'Retry-After': String(retryAfter)
+    }
+  });
 }
 
-export function badRequestResponse(message: string) {
-  return json({ error: true, statusCode: 400, message, data: null }, { status: 400 });
+export function badRequestResponse(message: string = 'Permintaan tidak valid.'): Response {
+  return new Response(JSON.stringify({
+    error: true,
+    statusCode: 400,
+    message,
+    data: null
+  }), {
+    status: 400,
+    headers: { 'Content-Type': 'application/json' }
+  });
 }
 
-export function unauthorizedResponse(message: string = 'Tidak terautentikasi.') {
-  return json({ error: true, statusCode: 401, message, data: null }, { status: 401 });
+export function unauthorizedResponse(message: string = 'Autentikasi diperlukan.'): Response {
+  return new Response(JSON.stringify({
+    error: true,
+    statusCode: 401,
+    message,
+    data: null
+  }), {
+    status: 401,
+    headers: { 'Content-Type': 'application/json' }
+  });
 }
 
-// ── Content-Type Check ───────────────────────────────────
+// ── Content-Type Verification ────────────────────────────
 
 export function isJsonRequest(request: Request): boolean {
   const contentType = request.headers.get('content-type');
   return !!contentType && contentType.includes('application/json');
 }
 
-// ── Auth Helpers ─────────────────────────────────────────
+// ── Cookie Helpers ───────────────────────────────────────
 
-export function getSessionUser(cookies: Cookies): { id: string; email: string; fullName: string; role: string } | null {
-  const session = cookies.get('session');
+export function getSessionUser(cookies: Cookies): User | null {
   const sessionUser = cookies.get('session_user');
-  if (!session || !sessionUser) return null;
-
-  // Validate session token format (UUID)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(session)) return null;
-
-  // Validate session_user JSON structure
+  if (!sessionUser) return null;
   try {
-    const user = JSON.parse(sessionUser);
-    if (!user.id || !user.email || !user.role) return null;
-    // Validate role is a known value
-    const validRoles = ['SUPER_ADMIN', 'TENTOR', 'STUDENT', 'PARENT'];
-    if (!validRoles.includes(user.role)) return null;
-    return user;
+    return JSON.parse(decodeURIComponent(sessionUser)) as User;
   } catch {
-    return null;
+    try {
+      return JSON.parse(sessionUser) as User;
+    } catch {
+      return null;
+    }
   }
 }
 
-export function requireAdmin(cookies: Cookies): { allowed: boolean; user: User | null; error?: Response } {
-  const user = getSessionUser(cookies) as User | null;
-  if (!user) return { allowed: false, user: null, error: unauthorizedResponse() };
-  if (user.role !== 'SUPER_ADMIN') return { allowed: false, user, error: forbiddenResponse('Hanya admin yang dapat melakukan aksi ini.') };
+export function requireAdmin(cookies: Cookies): { allowed: boolean; user?: User; error?: Response } {
+  const user = getSessionUser(cookies);
+  if (!user) {
+    return { allowed: false, error: unauthorizedResponse('Silakan login terlebih dahulu.') };
+  }
+  if (user.role !== 'SUPER_ADMIN') {
+    return { allowed: false, error: forbiddenResponse('Akses hanya untuk Super Admin.') };
+  }
+  return { allowed: true, user };
+}
+
+export function requireAuthenticated(cookies: Cookies): { allowed: boolean; user?: User; error?: Response } {
+  const user = getSessionUser(cookies);
+  if (!user) {
+    return { allowed: false, error: unauthorizedResponse('Silakan login terlebih dahulu.') };
+  }
+  return { allowed: true, user };
+}
+
+export function requireAdminOrTentor(cookies: Cookies): { allowed: boolean; user?: User; error?: Response } {
+  const user = getSessionUser(cookies);
+  if (!user) {
+    return { allowed: false, error: unauthorizedResponse('Silakan login terlebih dahulu.') };
+  }
+  if (user.role !== 'SUPER_ADMIN' && user.role !== 'TENTOR') {
+    return { allowed: false, error: forbiddenResponse('Akses hanya untuk Admin atau Tentor.') };
+  }
   return { allowed: true, user };
 }

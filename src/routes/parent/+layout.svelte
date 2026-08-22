@@ -4,20 +4,29 @@
   import { authStore } from '$lib/shared/stores/auth-store';
   import DashboardLayoutTemplate from '$lib/components/templates/dashboard-layout-template.svelte';
   import Icon from '$lib/components/atoms/icon.svelte';
-  import Skeleton from '$lib/components/atoms/skeleton.svelte';
-import { database, fetchAllStores } from '$lib/shared/stores';
+  import { fetchAllStores } from '$lib/shared/stores';
+  import type { Snippet } from 'svelte';
   import { onMount } from 'svelte';
-  onMount(() => fetchAllStores());
 
-  $: currentPath = $page.url.pathname;
+  let { children }: { children?: Snippet } = $props();
 
-  $: if (typeof window !== 'undefined' && !$authStore) {
-    goto('/login');
-  }
+  onMount(() => {
+    fetchAllStores();
+  });
 
-  $: if ($authStore && $authStore.role !== 'PARENT') {
-    goto('/login');
-  }
+  const currentPath = $derived($page.url.pathname);
+
+  $effect(() => {
+    if (typeof window !== 'undefined' && !$authStore) {
+      goto('/login');
+    }
+  });
+
+  $effect(() => {
+    if ($authStore && $authStore.role !== 'PARENT') {
+      goto('/login');
+    }
+  });
 
   const pageTitleMap: Record<string, string> = {
     '/parent': 'Dashboard Ikhtisar',
@@ -29,27 +38,19 @@ import { database, fetchAllStores } from '$lib/shared/stores';
     '/parent/profile': 'Profil Akun Pengguna'
   };
 
-  $: currentPageTitle = (() => {
+  const currentPageTitle = $derived((() => {
     if (currentPath.startsWith('/parent/children/')) return 'Detail Program Les Anak';
     return pageTitleMap[currentPath] || 'SentraEdu';
-  })();
+  })());
 </script>
 
-{#if !$database.isLoaded}
-  <div class="flex items-center justify-center min-h-screen bg-bg">
-    <div class="flex flex-col items-center gap-4">
-      <Skeleton width="w-48" height="h-8" />
-      <Skeleton width="w-32" height="h-4" />
-      <span class="text-xs text-muted-fg mt-2">Memuat data...</span>
-    </div>
-  </div>
-{:else if $authStore}
+{#if $authStore}
   <DashboardLayoutTemplate
     currentUser={$authStore}
     {currentPath}
     pageTitle={currentPageTitle}
   >
-    <slot />
+    {#if children}{@render children()}{/if}
   </DashboardLayoutTemplate>
 {:else}
   <div class="flex items-center justify-center min-h-screen bg-bg">

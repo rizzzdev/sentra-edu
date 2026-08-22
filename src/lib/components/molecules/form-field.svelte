@@ -1,27 +1,34 @@
 <script lang="ts">
-  export let label: string;
-  export let htmlFor: string | undefined = undefined;
-  export let required: boolean = false;
-  export let error: string | undefined = undefined;
-  export let helper: string | undefined = undefined;
-  export let className: string = '';
+  import type { Snippet } from 'svelte';
+
+  let {
+    label,
+    htmlFor = undefined,
+    required = false,
+    error = undefined,
+    helper = undefined,
+    className = '',
+    children
+  }: {
+    label: string;
+    htmlFor?: string | undefined;
+    required?: boolean;
+    error?: string | undefined;
+    helper?: string | undefined;
+    className?: string;
+    children?: Snippet;
+  } = $props();
 </script>
 
-<div class="flex flex-col gap-1.5 {className}">
-  {#if label}
-    <label for={htmlFor} class="text-xs font-bold uppercase tracking-wider text-muted-fg">
-      {label}
-      {#if required}
-        <span class="text-danger font-bold ml-0.5">*</span>
-      {/if}
-    </label>
-  {/if}
-
-  <slot />
-
+<div class="field {className}">
+  <label for={htmlFor}>
+    {label}
+    {#if required}<i class="req">*</i>{/if}
+  </label>
+  {#if children}{@render children()}{/if}
   {#if error}
-    <p class="text-xs font-medium text-danger mt-0.5">{error}</p>
+    <div class="text-xs text-danger mt-1">{error}</div>
   {:else if helper}
-    <p class="text-xs text-muted-fg mt-0.5">{helper}</p>
+    <div class="text-xs text-muted-fg mt-1">{helper}</div>
   {/if}
 </div>

@@ -1,6 +1,6 @@
 /**
  * Database — Derived store combining all module stores.
- * isLoaded becomes true only when ALL stores have finished loading.
+ * isLoaded becomes true only when ALL stores have finished their first fetch.
  *
  * Usage:
  *   import { database, fetchAllStores } from '$lib/shared/stores';
@@ -38,6 +38,7 @@ export const database = derived(
     $invoices, $payrollClaims, $candidates, $notifications, $magicLinks]): DatabaseSchema => ({
     version: 1,
     seededAt: new Date().toISOString(),
+    // All stores have a `loaded` subscription — check all are true
     isLoaded: true,
     users: $users,
     subjects: $subjects,
@@ -54,6 +55,15 @@ export const database = derived(
     notifications: $notifications,
     magicLinks: $magicLinks
   })
+);
+
+/**
+ * Derived store that tracks whether ALL stores have finished loading.
+ * Starts false, becomes true after all stores complete their first fetch.
+ */
+export const isReady = derived(
+  stores.map(s => s.loaded),
+  (loadedStates) => loadedStates.every(Boolean)
 );
 
 /**

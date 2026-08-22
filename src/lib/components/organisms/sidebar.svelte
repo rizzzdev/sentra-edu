@@ -1,13 +1,8 @@
 <script lang="ts">
-  import { Button, Icon } from '$lib/components/atoms';
+  import Icon from '$lib/components/atoms/icon.svelte';
   import { authStore } from '$lib/shared/stores';
   import type { User, UserRole } from '$lib/shared/types';
   import { ROLE_LABEL } from '$lib/shared/utils';
-
-  export let currentUser: User;
-  export let currentPath: string = '/dashboard';
-  export let mobileOpen: boolean = false;
-  export let onCloseMobile: () => void = () => {};
 
   interface NavItem {
     path: string;
@@ -15,6 +10,20 @@
     icon: string;
     group?: string;
   }
+
+  interface SidebarProps {
+    currentUser: User;
+    currentPath?: string;
+    mobileOpen?: boolean;
+    onCloseMobile?: () => void;
+  }
+
+  let {
+    currentUser,
+    currentPath = '/dashboard',
+    mobileOpen = false,
+    onCloseMobile = () => {}
+  }: SidebarProps = $props();
 
   const roleNavMap: Record<UserRole, NavItem[]> = {
     SUPER_ADMIN: [
@@ -62,7 +71,7 @@
     ]
   };
 
-  $: navList = roleNavMap[currentUser.role] || roleNavMap.STUDENT;
+  const navList = $derived(roleNavMap[currentUser.role] || roleNavMap.STUDENT);
 
   const roleBadgeClassMap: Record<string, string> = {
     SUPER_ADMIN: 'b-admin',
@@ -70,6 +79,7 @@
     STUDENT: 'b-student',
     PARENT: 'b-neutral'
   };
+
   const roleIconMap: Record<string, string> = {
     SUPER_ADMIN: 'admin_panel_settings',
     TENTOR: 'school',
@@ -77,12 +87,15 @@
     PARENT: 'family_restroom'
   };
 
-  $: initials = currentUser.fullName
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0].toUpperCase())
-    .join('') || 'U';
+  const initials = $derived(
+    currentUser.fullName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0].toUpperCase())
+      .join('') || 'U'
+  );
+
   function isNavActive(current: string, targetPath: string): boolean {
     if (current === targetPath) return true;
     if (['/admin', '/tutor', '/student', '/parent'].includes(targetPath)) {
@@ -120,7 +133,7 @@
       <a
         href={item.path}
         class="nav-item {isNavActive(currentPath, item.path) ? 'active' : ''}"
-        on:click={onCloseMobile}
+        onclick={onCloseMobile}
       >
         <Icon name={item.icon} size="sm" />
         <span>{item.label}</span>
@@ -136,7 +149,7 @@
         <div class="u-mail">{currentUser.email}</div>
       </div>
     </div>
-    <button type="button" class="btn-logout" on:click={() => authStore.logout()}>
+    <button type="button" class="btn-logout" onclick={() => authStore.logout()}>
       <Icon name="logout" size="sm" />
       Keluar
     </button>

@@ -10,6 +10,7 @@ import type { Subject } from '$generated/prisma/client';
 
 /** Schema for creating a new Subject */
 export const CreateSubjectSchema = z.object({
+  id: z.string().optional(),
   name: z.string().trim().min(1, 'Nama mata pelajaran wajib diisi').max(100, 'Nama maksimal 100 karakter'),
   description: z.string().trim().max(500, 'Deskripsi maksimal 500 karakter').optional().default(''),
 });

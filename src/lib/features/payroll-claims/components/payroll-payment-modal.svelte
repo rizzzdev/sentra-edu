@@ -1,6 +1,6 @@
 <script lang="ts">
 import { userStore, notificationStore } from '$lib/api';
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon, Input } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import { formatCurrencyIDR } from '$lib/shared/utils';
@@ -8,13 +8,19 @@ import { userStore, notificationStore } from '$lib/api';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let claim: PayrollClaim | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    claim = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    claim?: PayrollClaim | null;
+    onClose?: () => void;
+  } = $props();
 
-  let transferProofUrl: string = '';
+  let transferProofUrl: string = $state('');
 
-  $: tentor = claim ? $userStore.find((userItem) => userItem.id === claim?.tentorId) : null;
+  let tentor = $derived(claim ? $userStore.find((userItem) => userItem.id === claim?.tentorId) : null);
 
   async function handleProcessPayment() {
     if (!claim) return;
@@ -60,12 +66,12 @@ import { userStore, notificationStore } from '$lib/api';
     </div>
   {/if}
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
-    <Button variant="primary" on:click={handleProcessPayment} icon="check">
+    <Button variant="primary" onclick={handleProcessPayment} icon="check">
       Konfirmasi Telah Ditransfer
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

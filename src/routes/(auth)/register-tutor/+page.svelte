@@ -1,52 +1,73 @@
-<!-- svelte-options runes=false -->
 <script lang="ts">
-import { subjectStore } from '$lib/api';
+  import { subjectStore } from '$lib/api';
   import { page } from '$app/stores';
   import { Icon, Input } from '$lib/components/atoms';
-  import {themeStore} from '$lib/shared/stores';
+  import { themeStore } from '$lib/shared/stores';
   import { goto } from '$app/navigation';
-  import type { User } from '$lib/shared/types';
+  import type { User, MagicLinkRegistration } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
   import { SelectSearch } from '$lib/components/molecules';
 
-  $: token = $page.url.searchParams.get('token') || '';
+  const token = $derived($page.url.searchParams.get('token') || '');
 
   // Stepper State: Step 1 (Tentor Account Data) -> Step 2 (Teaching Skills & Address)
-  let currentStep: 1 | 2 = 1;
+  let currentStep = $state<1 | 2>(1);
 
   // Tentor Form Fields
-  let fullName: string = '';
-  let email: string = '';
-  let password: string = '';
-  let phone: string = '';
-  let education: string = '';
-  let address: string = '';
-  let selectedSubjectIds: string[] = [];
+  let fullName = $state('');
+  let email = $state('');
+  let password = $state('');
+  let phone = $state('');
+  let education = $state('');
+  let address = $state('');
+  let selectedSubjectIds = $state<string[]>([]);
 
-  let errorMessage: string | null = null;
-  let createdTentor: User | null = null;
+  let errorMessage = $state<string | null>(null);
+  let createdTentor = $state<User | null>(null);
 
-  let tokenValidation: { valid: boolean; message: string; magicLink: any; isLoading: boolean } = { valid: false, message: 'Memuat token...', magicLink: null, isLoading: true };
+  let tokenValidation = $state<{ valid: boolean; message: string; magicLink: MagicLinkRegistration | null; isLoading: boolean }>({ valid: false, message: 'Memuat token...', magicLink: null, isLoading: true });
 
   async function validateMagicTokenValue(tokenStr: string) {
-    const res = await fetch(`/api/magic-links?token=${tokenStr}`);
-    const result = await res.json();
-    if (!result.error && result.data && result.data.length > 0) {
-      const link = result.data[0];
-      const expired = new Date(link.expiresAt) < new Date();
-      tokenValidation = {
-        valid: link.active && !expired && link.targetRole === 'TENTOR',
-        message: expired ? 'Token telah kadaluarsa.' : (!link.active ? 'Token tidak aktif.' : ''),
-        magicLink: link,
-        isLoading: false
-      };
-    } else {
-      tokenValidation = { valid: false, message: 'Token pendaftaran tentor tidak ditemukan.', magicLink: null, isLoading: false };
+    tokenValidation.isLoading = true;
+    try {
+      const res = await fetch(`/api/magic-links?token=${encodeURIComponent(tokenStr.trim())}`);
+      const result = await res.json();
+      const link = result.data ? (Array.isArray(result.data) ? result.data[0] : result.data) : null;
+
+      if (!result.error && link && link.token) {
+        const expiresAtTime = new Date(link.expiresAt).getTime();
+        const expired = !isNaN(expiresAtTime) && expiresAtTime < Date.now();
+        const isRoleValid = link.targetRole === 'TENTOR';
+        const isValid = Boolean(link.active && !expired && isRoleValid);
+
+        let msg = '';
+        if (expired) {
+          msg = 'Token telah kadaluarsa.';
+        } else if (!link.active) {
+          msg = 'Token tidak aktif.';
+        } else if (!isRoleValid) {
+          msg = 'Link ini khusus untuk pendaftaran murid/siswa.';
+        }
+
+        tokenValidation = {
+          valid: isValid,
+          message: msg,
+          magicLink: link,
+          isLoading: false
+        };
+      } else {
+        tokenValidation = { valid: false, message: result.message || 'Token pendaftaran tentor tidak ditemukan.', magicLink: null, isLoading: false };
+      }
+    } catch {
+      tokenValidation = { valid: false, message: 'Gagal memvalidasi token pendaftaran tentor.', magicLink: null, isLoading: false };
     }
   }
 
-  import { onMount } from 'svelte';
-  onMount(() => { if (token) validateMagicTokenValue(token); });
+  $effect(() => {
+    if (token) {
+      validateMagicTokenValue(token);
+    }
+  });
 
   function toggleSubject(id: string) {
     if (selectedSubjectIds.includes(id)) {
@@ -128,7 +149,7 @@ import { subjectStore } from '$lib/api';
         size="md"
         ariaLabel="Ganti tema"
         icon={$themeStore === 'dark' ? 'light_mode' : 'dark_mode'}
-        on:click={themeStore.toggleTheme}
+        onclick={themeStore.toggleTheme}
       />
     </div>
 
@@ -164,7 +185,7 @@ import { subjectStore } from '$lib/api';
           variant="primary"
           fullWidth
           icon="login"
-          on:click={() => goto('/login')}
+          onclick={() => goto('/login')}
         >
           Masuk ke Halaman Login
         </Button>
@@ -192,7 +213,7 @@ import { subjectStore } from '$lib/api';
         <Button
           variant="outline"
           fullWidth
-          on:click={() => goto('/login')}
+          onclick={() => goto('/login')}
         >
           Kembali ke Halaman Login
         </Button>
@@ -214,7 +235,7 @@ import { subjectStore } from '$lib/api';
 
       {#if currentStep === 1}
         <!-- STEP 1: DATA DIRI & AKUN TENTOR -->
-        <form on:submit|preventDefault={handleNextToStep2} novalidate>
+        <form onsubmit={(e) => { e.preventDefault(); handleNextToStep2(); }} novalidate>
           <div class="pb-2 mb-3 border-b border-border">
             <h3 class="text-base font-bold">Langkah 1: Data Diri & Akun Tentor.</h3>
             <p class="text-muted-fg text-xs mt-0.5">Isi rincian informasi calon pengajar / mentor.</p>
@@ -290,7 +311,7 @@ import { subjectStore } from '$lib/api';
 
       {:else}
         <!-- STEP 2: KEAHLIAN MENGAJAR & ALAMAT -->
-        <form on:submit|preventDefault={handleRegister} novalidate>
+        <form onsubmit={(e) => { e.preventDefault(); handleRegister(); }} novalidate>
           <div class="pb-2 mb-3 border-b border-border">
             <h3 class="text-base font-bold">Langkah 2: Keahlian Pelajaran & Alamat.</h3>
             <p class="text-muted-fg text-xs mt-0.5">Pilih mata pelajaran yang Anda kuasai untuk mengajar.</p>
@@ -327,7 +348,7 @@ import { subjectStore } from '$lib/api';
             <Button
               variant="outline"
               isIconOnly
-              on:click={() => { currentStep = 1; }}
+              onclick={() => { currentStep = 1; }}
               icon="arrow_back"
             />
 

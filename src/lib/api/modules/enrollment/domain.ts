@@ -10,6 +10,7 @@ import type { Enrollment } from '$generated/prisma/client';
 
 /** Schema for creating a new Enrollment */
 export const CreateEnrollmentSchema = z.object({
+  id: z.string().optional(),
   studentId: z.string().min(1, 'Siswa wajib dipilih'),
   subjectId: z.string().min(1, 'Mata pelajaran wajib dipilih'),
   classId: z.string().min(1, 'Kelas wajib dipilih'),

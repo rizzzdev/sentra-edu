@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { userService, notificationService, checkRateLimit, isValidEmail } from '$lib/api';
+import { userService, notificationService, checkRateLimit, isValidEmail } from '$lib/server';
 
 function getClientIp(request: Request): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -49,8 +49,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     const sessionToken = crypto.randomUUID();
     const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    cookies.set('session', sessionToken, { path: '/', httpOnly: true, secure: true, sameSite: 'lax', expires: sessionExpiry });
-    cookies.set('session_user', JSON.stringify({ id: user.id, email: user.email, fullName: user.fullName, role: user.role }), { path: '/', httpOnly: false, secure: true, sameSite: 'lax', expires: sessionExpiry });
+    const isSecure = request.headers.get('x-forwarded-proto') === 'https' || (typeof location !== 'undefined' && location.protocol === 'https:');
+
+    cookies.set('session', sessionToken, { path: '/', httpOnly: true, secure: isSecure, sameSite: 'lax', expires: sessionExpiry });
+    cookies.set('session_user', JSON.stringify({ id: user.id, email: user.email, fullName: user.fullName, role: user.role }), { path: '/', httpOnly: false, secure: isSecure, sameSite: 'lax', expires: sessionExpiry });
 
     // Log login
     await notificationService.create({

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { subjectStore, educationLevelStore } from '$lib/api';
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon, Input } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import type { RecruitmentCandidate } from '$lib/shared/types';
@@ -8,38 +8,46 @@ import { subjectStore, educationLevelStore } from '$lib/api';
   import { SelectSearch } from '$lib/components/molecules';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let editingCandidate: RecruitmentCandidate | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingCandidate = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingCandidate?: RecruitmentCandidate | null;
+    onClose?: () => void;
+  } = $props();
 
-  let fullName: string = '';
-  let email: string = '';
-  let phone: string = '';
-  let education: string = '';
-  let experienceYears: number = 0;
-  let subjectIds: string[] = [];
-  let levelIds: string[] = [];
-  let source: string = 'Media Sosial';
+  let fullName = $state('');
+  let email = $state('');
+  let phone = $state('');
+  let education = $state('');
+  let experienceYears = $state(0);
+  let subjectIds = $state<string[]>([]);
+  let levelIds = $state<string[]>([]);
+  let source = $state('Media Sosial');
 
-  $: if (editingCandidate) {
-    fullName = editingCandidate.fullName;
-    email = editingCandidate.email;
-    phone = editingCandidate.phone || '';
-    education = editingCandidate.education || '';
-    experienceYears = editingCandidate.experienceYears || 0;
-    subjectIds = editingCandidate.subjectIds || [];
-    levelIds = editingCandidate.levelIds || [];
-    source = editingCandidate.source || 'Media Sosial';
-  } else {
-    fullName = '';
-    email = '';
-    phone = '';
-    education = '';
-    experienceYears = 0;
-    subjectIds = [];
-    levelIds = [];
-    source = 'Media Sosial';
-  }
+  $effect(() => {
+    if (editingCandidate) {
+      fullName = editingCandidate.fullName;
+      email = editingCandidate.email;
+      phone = editingCandidate.phone || '';
+      education = editingCandidate.education || '';
+      experienceYears = editingCandidate.experienceYears || 0;
+      subjectIds = editingCandidate.subjectIds || [];
+      levelIds = editingCandidate.levelIds || [];
+      source = editingCandidate.source || 'Media Sosial';
+    } else {
+      fullName = '';
+      email = '';
+      phone = '';
+      education = '';
+      experienceYears = 0;
+      subjectIds = [];
+      levelIds = [];
+      source = 'Media Sosial';
+    }
+  });
 
   function handleToggleSubject(targetSubjectId: string) {
     if (subjectIds.includes(targetSubjectId)) {
@@ -96,7 +104,7 @@ import { subjectStore, educationLevelStore } from '$lib/api';
 </script>
 
 <Modal {open} {onClose} title={editingCandidate ? 'Ubah Kandidat' : 'Daftarkan Kandidat'} icon="person_add" maxWidth="620px">
-  <form id="form-candidate" on:submit|preventDefault={handleSubmit}>
+  <form id="form-candidate" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <div class="field">
       <label for="f_fullName">Nama Lengkap <i class="req">*</i></label>
       <Input
@@ -165,7 +173,7 @@ import { subjectStore, educationLevelStore } from '$lib/api';
               type="checkbox"
               value={subjectItem.id}
               checked={subjectIds.includes(subjectItem.id)}
-              on:change={() => handleToggleSubject(subjectItem.id)}
+              onchange={() => handleToggleSubject(subjectItem.id)}
             /> {subjectItem.name}
           </label>
         {/each}
@@ -183,7 +191,7 @@ import { subjectStore, educationLevelStore } from '$lib/api';
               type="checkbox"
               value={levelItem.id}
               checked={levelIds.includes(levelItem.id)}
-              on:change={() => handleToggleLevel(levelItem.id)}
+              onchange={() => handleToggleLevel(levelItem.id)}
             /> {levelItem.levelName}
           </label>
         {/each}
@@ -207,12 +215,12 @@ import { subjectStore, educationLevelStore } from '$lib/api';
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-candidate" icon="save">
       {editingCandidate ? 'Simpan Perubahan' : 'Daftarkan Kandidat'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

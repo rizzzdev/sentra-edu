@@ -1,7 +1,8 @@
 <script lang="ts">
 import { subjectStore } from '$lib/api';
-  import { Icon, Input } from '$lib/components/atoms';
-  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { Input } from '$lib/components/atoms';
+  import { SelectSearch } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {toastStore} from '$lib/shared/stores';
   import type { User } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
@@ -9,34 +10,42 @@ import { subjectStore } from '$lib/api';
   import { api } from '$lib/api/client';
   import { ZodError } from 'zod';
 
-  export let open: boolean = false;
-  export let editingTentor: User | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingTentor = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingTentor?: User | null;
+    onClose?: () => void;
+  } = $props();
 
-  let fullName: string = '';
-  let email: string = '';
-  let phone: string = '';
-  let education: string = '';
-  let address: string = '';
-  let selectedSubjectIds: string[] = [];
+  let fullName = $state('');
+  let email = $state('');
+  let phone = $state('');
+  let education = $state('');
+  let address = $state('');
+  let selectedSubjectIds = $state<string[]>([]);
 
-  $: if (open) {
-    if (editingTentor) {
-      fullName = editingTentor.fullName;
-      email = editingTentor.email;
-      phone = editingTentor.phone || '';
-      education = editingTentor.education || '';
-      address = editingTentor.address || '';
-      selectedSubjectIds = editingTentor.subjectIds || [];
-    } else {
-      fullName = '';
-      email = '';
-      phone = '';
-      education = '';
-      address = '';
-      selectedSubjectIds = [];
+  $effect(() => {
+    if (open) {
+      if (editingTentor) {
+        fullName = editingTentor.fullName;
+        email = editingTentor.email;
+        phone = editingTentor.phone || '';
+        education = editingTentor.education || '';
+        address = editingTentor.address || '';
+        selectedSubjectIds = editingTentor.subjectIds || [];
+      } else {
+        fullName = '';
+        email = '';
+        phone = '';
+        education = '';
+        address = '';
+        selectedSubjectIds = [];
+      }
     }
-  }
+  });
 
   async function handleSubmit() {
     try {
@@ -76,7 +85,7 @@ import { subjectStore } from '$lib/api';
   title={editingTentor ? 'Ubah Data Tentor' : 'Tambah Data Tentor'}
   {onClose}
 >
-  <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-5 py-2">
+  <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="flex flex-col gap-5 py-2">
     <div class="field">
       <label for="tm-name">Nama Lengkap Tentor / Mentor <i class="req">*</i></label>
       <Input
@@ -143,7 +152,7 @@ import { subjectStore } from '$lib/api';
     </div>
 
     <div class="modal-foot pt-3.5 border-t-0">
-      <Button variant="outline" on:click={onClose}>
+      <Button variant="outline" onclick={onClose}>
         Batal
       </Button>
       <Button type="submit" variant="primary" icon="save">

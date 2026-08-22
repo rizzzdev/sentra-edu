@@ -5,23 +5,23 @@
   import { formatCurrencyIDR } from '$lib/shared/utils/formatting';
 import { userStore, subjectStore, educationLevelStore, classStore, packageStore, enrollmentStore, jobStore, applicationStore, attendanceStore, invoiceStore, payrollStore, candidateStore, notificationStore, magicLinkStore } from '$lib/api';
 
-  let resetDialogOpen: boolean = false;
+  let resetDialogOpen = $state(false);
   let fileInput: HTMLInputElement;
 
-  $: paidInvoices = $invoiceStore.filter((invoiceItem) => invoiceItem.deletedAt === null && invoiceItem.status === 'PAID');
-  $: totalRevenue = paidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
+  const paidInvoices = $derived($invoiceStore.filter((invoiceItem) => invoiceItem.deletedAt === null && invoiceItem.status === 'PAID'));
+  const totalRevenue = $derived(paidInvoices.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0));
 
-  $: paidClaims = $payrollStore.filter((claimItem) => claimItem.deletedAt === null && claimItem.status === 'PAID');
-  $: totalHonor = paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
+  const paidClaims = $derived($payrollStore.filter((claimItem) => claimItem.deletedAt === null && claimItem.status === 'PAID'));
+  const totalHonor = $derived(paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0));
 
-  $: allAtt = $attendanceStore.filter((attendanceItem) => attendanceItem.deletedAt === null);
-  $: approvedN = allAtt.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length;
-  $: decidedN = allAtt.filter((attendanceItem) => attendanceItem.status === 'APPROVED' || attendanceItem.status === 'REJECTED').length;
-  $: verifyRate = decidedN ? Math.round((approvedN / decidedN) * 100) : 0;
+  const allAtt = $derived($attendanceStore.filter((attendanceItem) => attendanceItem.deletedAt === null));
+  const approvedN = $derived(allAtt.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length);
+  const decidedN = $derived(allAtt.filter((attendanceItem) => attendanceItem.status === 'APPROVED' || attendanceItem.status === 'REJECTED').length);
+  const verifyRate = $derived(decidedN ? Math.round((approvedN / decidedN) * 100) : 0);
 
   // Monthly 6-month SPP & Honor
   const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-  $: monthItems = Array.from({ length: 6 }, (_, index) => {
+  const monthItems = $derived(Array.from({ length: 6 }, (_, index) => {
     const monthOffset = 5 - index;
     const now = new Date();
     const targetDate = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
@@ -41,12 +41,12 @@ import { userStore, subjectStore, educationLevelStore, classStore, packageStore,
       spp: sppVal,
       honor: honorVal
     };
-  });
+  }));
 
-  $: maxMonthVal = Math.max(1, ...monthItems.map((monthItem) => Math.max(monthItem.spp, monthItem.honor)));
+  const maxMonthVal = $derived(Math.max(1, ...monthItems.map((monthItem) => Math.max(monthItem.spp, monthItem.honor))));
 
   // Top Tentors
-  $: topTentors = (() => {
+  const topTentors = $derived.by(() => {
     const tentorSessions: Record<string, number> = {};
     $attendanceStore
       .filter((attendanceItem) => attendanceItem.deletedAt === null && attendanceItem.status === 'APPROVED')
@@ -61,12 +61,12 @@ import { userStore, subjectStore, educationLevelStore, classStore, packageStore,
         const user = $userStore.find((userItem) => userItem.id === tentorId);
         return { label: user?.fullName || 'Tentor', value: tentorSessions[tentorId] };
       });
-  })();
+  });
 
-  $: maxTentorSessions = Math.max(1, ...topTentors.map((tentorItem) => tentorItem.value));
+  const maxTentorSessions = $derived(Math.max(1, ...topTentors.map((tentorItem) => tentorItem.value)));
 
   // Job Status counts
-  $: jobStatusCount = (() => {
+  const jobStatusCount = $derived.by(() => {
     const counts: Record<string, number> = {};
     $jobStore
       .filter((jobItem) => jobItem.deletedAt === null)
@@ -74,10 +74,10 @@ import { userStore, subjectStore, educationLevelStore, classStore, packageStore,
         counts[jobItem.status] = (counts[jobItem.status] || 0) + 1;
       });
     return counts;
-  })();
+  });
 
   // Candidate Status counts
-  $: candStatusCount = (() => {
+  const candStatusCount = $derived.by(() => {
     const counts: Record<string, number> = {};
     $candidateStore
       .filter((candidateItem) => candidateItem.deletedAt === null)
@@ -85,7 +85,7 @@ import { userStore, subjectStore, educationLevelStore, classStore, packageStore,
         counts[candidateItem.status] = (counts[candidateItem.status] || 0) + 1;
       });
     return counts;
-  })();
+  });
 
   function handleExportJson() {
     const dataSnapshot = () => ({ users: $userStore, jobs: $jobStore, subjects: $subjectStore, educationLevels: $educationLevelStore, classes: $classStore, packages: $packageStore, enrollments: $enrollmentStore, applications: $applicationStore, attendances: $attendanceStore, invoices: $invoiceStore, payrollClaims: $payrollStore, candidates: $candidateStore, notifications: $notificationStore, magicLinks: $magicLinkStore, version: 1, seededAt: new Date().toISOString(), isLoaded: true } as any)();
@@ -266,7 +266,7 @@ import { userStore, subjectStore, educationLevelStore, classStore, packageStore,
       Seluruh data tersimpan di localStorage browser. Export untuk backup/pindah perangkat, import untuk memuat data dari file JSON.
     </p>
     <div class="quick-actions">
-      <button type="button" class="btn btn-outline" on:click={handleExportJson}>
+      <button type="button" class="btn btn-outline" onclick={handleExportJson}>
         <Icon name="download" size="sm" /> Export Data
       </button>
       <input
@@ -274,12 +274,12 @@ import { userStore, subjectStore, educationLevelStore, classStore, packageStore,
         accept=".json"
         class="hidden"
         bind:this={fileInput}
-        on:change={handleFileChange}
+        onchange={handleFileChange}
       />
-      <button type="button" class="btn btn-outline" on:click={() => fileInput.click()}>
+      <button type="button" class="btn btn-outline" onclick={() => fileInput.click()}>
         <Icon name="upload" size="sm" /> Import Data
       </button>
-      <button type="button" class="btn btn-danger" on:click={() => { resetDialogOpen = true; }}>
+      <button type="button" class="btn btn-danger" onclick={() => { resetDialogOpen = true; }}>
         <Icon name="restart_alt" size="sm" /> Reset Data
       </button>
     </div>

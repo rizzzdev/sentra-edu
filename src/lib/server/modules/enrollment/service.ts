@@ -5,10 +5,10 @@
 
 import { enrollmentRepository } from './repository';
 import { getCached, setCache, invalidateCache } from '../../cache';
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreateEnrollment, validateUpdateEnrollment, getFieldErrors } from './domain';
-import type { EnrollmentEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreateEnrollment, validateUpdateEnrollment, getFieldErrors } from '$lib/api/modules/enrollment/domain';
+import type { EnrollmentEntity } from '$lib/api/modules/enrollment/domain';
 
 const CACHE_KEY = 'enrollments';
 
@@ -25,7 +25,8 @@ export const enrollmentService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[enrollmentService] Error:`, err);
       return errorResponse('Failed to retrieve Enrollment data.', 500);
     }
   },
@@ -34,27 +35,29 @@ export const enrollmentService = {
       const item = await enrollmentRepository.findById(id);
       if (!item) return errorResponse('Enrollment not found.', 404);
       return successResponse(item, 'Enrollment retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[enrollmentService] Error:`, err);
       return errorResponse('Failed to retrieve Enrollment.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<EnrollmentEntity>> {
     const parsed = validateCreateEnrollment(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await enrollmentRepository.create(parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(created, 'Enrollment created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[enrollmentService] Error:`, err);
       return errorResponse('Failed to create Enrollment.', 500);
     }
   },
   async update(id: string, data: any): Promise<ApiResponse<EnrollmentEntity>> {
     const parsed = validateUpdateEnrollment(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const existing = await enrollmentRepository.findById(id);
@@ -62,7 +65,8 @@ export const enrollmentService = {
       const updated = await enrollmentRepository.update(id, parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(updated, 'Enrollment updated successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[enrollmentService] Error:`, err);
       return errorResponse('Failed to update Enrollment.', 500);
     }
   },
@@ -73,7 +77,8 @@ export const enrollmentService = {
       await enrollmentRepository.softDelete(id);
       invalidateCache([CACHE_KEY]);
       return successResponse({ id }, 'Enrollment deleted successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[enrollmentService] Error:`, err);
       return errorResponse('Failed to delete Enrollment.', 500);
     }
   }

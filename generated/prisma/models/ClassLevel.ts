@@ -20,8 +20,18 @@ export type ClassLevelModel = runtime.Types.Result.DefaultSelection<Prisma.$Clas
 
 export type AggregateClassLevel = {
   _count: ClassLevelCountAggregateOutputType | null
+  _avg: ClassLevelAvgAggregateOutputType | null
+  _sum: ClassLevelSumAggregateOutputType | null
   _min: ClassLevelMinAggregateOutputType | null
   _max: ClassLevelMaxAggregateOutputType | null
+}
+
+export type ClassLevelAvgAggregateOutputType = {
+  baseRatePer90min: number | null
+}
+
+export type ClassLevelSumAggregateOutputType = {
+  baseRatePer90min: number | null
 }
 
 export type ClassLevelMinAggregateOutputType = {
@@ -29,6 +39,7 @@ export type ClassLevelMinAggregateOutputType = {
   className: string | null
   educationLevelId: string | null
   description: string | null
+  baseRatePer90min: number | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -39,6 +50,7 @@ export type ClassLevelMaxAggregateOutputType = {
   className: string | null
   educationLevelId: string | null
   description: string | null
+  baseRatePer90min: number | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -49,6 +61,7 @@ export type ClassLevelCountAggregateOutputType = {
   className: number
   educationLevelId: number
   description: number
+  baseRatePer90min: number
   createdAt: number
   updatedAt: number
   deletedAt: number
@@ -56,11 +69,20 @@ export type ClassLevelCountAggregateOutputType = {
 }
 
 
+export type ClassLevelAvgAggregateInputType = {
+  baseRatePer90min?: true
+}
+
+export type ClassLevelSumAggregateInputType = {
+  baseRatePer90min?: true
+}
+
 export type ClassLevelMinAggregateInputType = {
   id?: true
   className?: true
   educationLevelId?: true
   description?: true
+  baseRatePer90min?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -71,6 +93,7 @@ export type ClassLevelMaxAggregateInputType = {
   className?: true
   educationLevelId?: true
   description?: true
+  baseRatePer90min?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -81,6 +104,7 @@ export type ClassLevelCountAggregateInputType = {
   className?: true
   educationLevelId?: true
   description?: true
+  baseRatePer90min?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -125,6 +149,18 @@ export type ClassLevelAggregateArgs<ExtArgs extends runtime.Types.Extensions.Int
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ClassLevelAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ClassLevelSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ClassLevelMinAggregateInputType
@@ -155,6 +191,8 @@ export type ClassLevelGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   _count?: ClassLevelCountAggregateInputType | true
+  _avg?: ClassLevelAvgAggregateInputType
+  _sum?: ClassLevelSumAggregateInputType
   _min?: ClassLevelMinAggregateInputType
   _max?: ClassLevelMaxAggregateInputType
 }
@@ -164,10 +202,13 @@ export type ClassLevelGroupByOutputType = {
   className: string
   educationLevelId: string
   description: string
+  baseRatePer90min: number | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
   _count: ClassLevelCountAggregateOutputType | null
+  _avg: ClassLevelAvgAggregateOutputType | null
+  _sum: ClassLevelSumAggregateOutputType | null
   _min: ClassLevelMinAggregateOutputType | null
   _max: ClassLevelMaxAggregateOutputType | null
 }
@@ -195,6 +236,7 @@ export type ClassLevelWhereInput = {
   className?: Prisma.StringFilter<"ClassLevel"> | string
   educationLevelId?: Prisma.StringFilter<"ClassLevel"> | string
   description?: Prisma.StringFilter<"ClassLevel"> | string
+  baseRatePer90min?: Prisma.IntNullableFilter<"ClassLevel"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ClassLevel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClassLevel"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"ClassLevel"> | Date | string | null
@@ -209,6 +251,7 @@ export type ClassLevelOrderByWithRelationInput = {
   className?: Prisma.SortOrder
   educationLevelId?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  baseRatePer90min?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -226,6 +269,7 @@ export type ClassLevelWhereUniqueInput = Prisma.AtLeast<{
   className?: Prisma.StringFilter<"ClassLevel"> | string
   educationLevelId?: Prisma.StringFilter<"ClassLevel"> | string
   description?: Prisma.StringFilter<"ClassLevel"> | string
+  baseRatePer90min?: Prisma.IntNullableFilter<"ClassLevel"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ClassLevel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClassLevel"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"ClassLevel"> | Date | string | null
@@ -240,12 +284,15 @@ export type ClassLevelOrderByWithAggregationInput = {
   className?: Prisma.SortOrder
   educationLevelId?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  baseRatePer90min?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ClassLevelCountOrderByAggregateInput
+  _avg?: Prisma.ClassLevelAvgOrderByAggregateInput
   _max?: Prisma.ClassLevelMaxOrderByAggregateInput
   _min?: Prisma.ClassLevelMinOrderByAggregateInput
+  _sum?: Prisma.ClassLevelSumOrderByAggregateInput
 }
 
 export type ClassLevelScalarWhereWithAggregatesInput = {
@@ -256,6 +303,7 @@ export type ClassLevelScalarWhereWithAggregatesInput = {
   className?: Prisma.StringWithAggregatesFilter<"ClassLevel"> | string
   educationLevelId?: Prisma.StringWithAggregatesFilter<"ClassLevel"> | string
   description?: Prisma.StringWithAggregatesFilter<"ClassLevel"> | string
+  baseRatePer90min?: Prisma.IntNullableWithAggregatesFilter<"ClassLevel"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ClassLevel"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ClassLevel"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ClassLevel"> | Date | string | null
@@ -265,6 +313,7 @@ export type ClassLevelCreateInput = {
   id?: string
   className: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -279,6 +328,7 @@ export type ClassLevelUncheckedCreateInput = {
   className: string
   educationLevelId: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -291,6 +341,7 @@ export type ClassLevelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   className?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -305,6 +356,7 @@ export type ClassLevelUncheckedUpdateInput = {
   className?: Prisma.StringFieldUpdateOperationsInput | string
   educationLevelId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -318,6 +370,7 @@ export type ClassLevelCreateManyInput = {
   className: string
   educationLevelId: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -327,6 +380,7 @@ export type ClassLevelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   className?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -337,6 +391,7 @@ export type ClassLevelUncheckedUpdateManyInput = {
   className?: Prisma.StringFieldUpdateOperationsInput | string
   educationLevelId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -357,9 +412,14 @@ export type ClassLevelCountOrderByAggregateInput = {
   className?: Prisma.SortOrder
   educationLevelId?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  baseRatePer90min?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+}
+
+export type ClassLevelAvgOrderByAggregateInput = {
+  baseRatePer90min?: Prisma.SortOrder
 }
 
 export type ClassLevelMaxOrderByAggregateInput = {
@@ -367,6 +427,7 @@ export type ClassLevelMaxOrderByAggregateInput = {
   className?: Prisma.SortOrder
   educationLevelId?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  baseRatePer90min?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -377,9 +438,14 @@ export type ClassLevelMinOrderByAggregateInput = {
   className?: Prisma.SortOrder
   educationLevelId?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  baseRatePer90min?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+}
+
+export type ClassLevelSumOrderByAggregateInput = {
+  baseRatePer90min?: Prisma.SortOrder
 }
 
 export type ClassLevelScalarRelationFilter = {
@@ -484,6 +550,7 @@ export type ClassLevelCreateWithoutLevelInput = {
   id?: string
   className: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -496,6 +563,7 @@ export type ClassLevelUncheckedCreateWithoutLevelInput = {
   id?: string
   className: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -538,6 +606,7 @@ export type ClassLevelScalarWhereInput = {
   className?: Prisma.StringFilter<"ClassLevel"> | string
   educationLevelId?: Prisma.StringFilter<"ClassLevel"> | string
   description?: Prisma.StringFilter<"ClassLevel"> | string
+  baseRatePer90min?: Prisma.IntNullableFilter<"ClassLevel"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ClassLevel"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClassLevel"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"ClassLevel"> | Date | string | null
@@ -547,6 +616,7 @@ export type ClassLevelCreateWithoutEnrollmentsInput = {
   id?: string
   className: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -560,6 +630,7 @@ export type ClassLevelUncheckedCreateWithoutEnrollmentsInput = {
   className: string
   educationLevelId: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -587,6 +658,7 @@ export type ClassLevelUpdateWithoutEnrollmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   className?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -600,6 +672,7 @@ export type ClassLevelUncheckedUpdateWithoutEnrollmentsInput = {
   className?: Prisma.StringFieldUpdateOperationsInput | string
   educationLevelId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -611,6 +684,7 @@ export type ClassLevelCreateWithoutJobsInput = {
   id?: string
   className: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -624,6 +698,7 @@ export type ClassLevelUncheckedCreateWithoutJobsInput = {
   className: string
   educationLevelId: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -651,6 +726,7 @@ export type ClassLevelUpdateWithoutJobsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   className?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -664,6 +740,7 @@ export type ClassLevelUncheckedUpdateWithoutJobsInput = {
   className?: Prisma.StringFieldUpdateOperationsInput | string
   educationLevelId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -675,6 +752,7 @@ export type ClassLevelCreateWithoutMagicLinksInput = {
   id?: string
   className: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -688,6 +766,7 @@ export type ClassLevelUncheckedCreateWithoutMagicLinksInput = {
   className: string
   educationLevelId: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -715,6 +794,7 @@ export type ClassLevelUpdateWithoutMagicLinksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   className?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -728,6 +808,7 @@ export type ClassLevelUncheckedUpdateWithoutMagicLinksInput = {
   className?: Prisma.StringFieldUpdateOperationsInput | string
   educationLevelId?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -739,6 +820,7 @@ export type ClassLevelCreateManyLevelInput = {
   id?: string
   className: string
   description?: string
+  baseRatePer90min?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -748,6 +830,7 @@ export type ClassLevelUpdateWithoutLevelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   className?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -760,6 +843,7 @@ export type ClassLevelUncheckedUpdateWithoutLevelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   className?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -772,6 +856,7 @@ export type ClassLevelUncheckedUpdateManyWithoutLevelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   className?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  baseRatePer90min?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -831,6 +916,7 @@ export type ClassLevelSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   className?: boolean
   educationLevelId?: boolean
   description?: boolean
+  baseRatePer90min?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -846,6 +932,7 @@ export type ClassLevelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   className?: boolean
   educationLevelId?: boolean
   description?: boolean
+  baseRatePer90min?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -857,6 +944,7 @@ export type ClassLevelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   className?: boolean
   educationLevelId?: boolean
   description?: boolean
+  baseRatePer90min?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -868,12 +956,13 @@ export type ClassLevelSelectScalar = {
   className?: boolean
   educationLevelId?: boolean
   description?: boolean
+  baseRatePer90min?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type ClassLevelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "className" | "educationLevelId" | "description" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["classLevel"]>
+export type ClassLevelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "className" | "educationLevelId" | "description" | "baseRatePer90min" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["classLevel"]>
 export type ClassLevelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   level?: boolean | Prisma.ClassLevel$levelArgs<ExtArgs>
   enrollments?: boolean | Prisma.ClassLevel$enrollmentsArgs<ExtArgs>
@@ -901,6 +990,7 @@ export type $ClassLevelPayload<ExtArgs extends runtime.Types.Extensions.Internal
     className: string
     educationLevelId: string
     description: string
+    baseRatePer90min: number | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -1335,6 +1425,7 @@ export interface ClassLevelFieldRefs {
   readonly className: Prisma.FieldRef<"ClassLevel", 'String'>
   readonly educationLevelId: Prisma.FieldRef<"ClassLevel", 'String'>
   readonly description: Prisma.FieldRef<"ClassLevel", 'String'>
+  readonly baseRatePer90min: Prisma.FieldRef<"ClassLevel", 'Int'>
   readonly createdAt: Prisma.FieldRef<"ClassLevel", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ClassLevel", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"ClassLevel", 'DateTime'>

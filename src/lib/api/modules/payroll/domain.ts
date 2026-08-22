@@ -10,11 +10,16 @@ import type { PayrollClaim } from '$generated/prisma/client';
 
 /** Schema for creating a new PayrollClaim */
 export const CreatePayrollClaimSchema = z.object({
+  id: z.string().optional(),
+  claimNumber: z.string().optional().default(() => 'PAY-' + Date.now()),
   tentorId: z.string().min(1, 'Tentor wajib dipilih'),
-  periodStart: z.string().min(1, 'Tanggal mulai periode wajib diisi'),
-  periodEnd: z.string().min(1, 'Tanggal akhir periode wajib diisi'),
+  periodStart: z.union([z.string(), z.date()]).transform((val) => typeof val === 'string' ? new Date(val) : val),
+  periodEnd: z.union([z.string(), z.date()]).transform((val) => typeof val === 'string' ? new Date(val) : val),
+  periodMonth: z.number().optional().nullable(),
+  periodYear: z.number().optional().nullable(),
   totalAmount: z.number().min(0, 'Total jumlah tidak boleh negatif'),
-  attendanceIds: z.array(z.string()).min(1, 'Minimal 1 presensi harus dipilih'),
+  attendanceIds: z.array(z.string()).default([]),
+  status: z.enum(['DRAFT', 'REQUESTED', 'PAID', 'REJECTED']).optional().default('REQUESTED'),
 });
 
 /** Schema for updating an existing PayrollClaim (all fields optional) */

@@ -1,16 +1,23 @@
 <script lang="ts">
 import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '$lib/api';
-  import { LeafletMap, Modal } from '$lib/components/molecules';
+  import { LeafletMap } from '$lib/components/molecules';
   import { Icon, Input } from '$lib/components/atoms';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {toastStore} from '$lib/shared/stores';
   import type { User, JobPost, Enrollment } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
   import { SelectSearch } from '$lib/components/molecules';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let tentor: User;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    tentor,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    tentor: User;
+    onClose?: () => void;
+  } = $props();
 
   interface JobOptionItem {
     id: string;
@@ -30,12 +37,10 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
     studentNames: string[];
   }
 
-  // Extract all jobs and active assignments for this tentor
-  $: tentorJobOptions = (() => {
+  let tentorJobOptions = $derived((() => {
     const list: JobOptionItem[] = [];
     const seenJobIds = new Set<string>();
 
-    // 1. Assigned Jobs
     const assignedJobs = $jobStore.filter(
       (jobItem) => jobItem.deletedAt === null && jobItem.assignedTentorId === tentor.id && jobItem.status === 'ASSIGNED'
     );
@@ -79,7 +84,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       });
     }
 
-    // 2. Direct Active Enrollments
     const directEnrollments = $enrollmentStore.filter(
       (enrollmentItem) => enrollmentItem.deletedAt === null && enrollmentItem.tentorId === tentor.id && enrollmentItem.status === 'ACTIVE'
     );
@@ -108,48 +112,50 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
     }
 
     return list;
-  })();
+  })());
 
-  let selectedJobId: string = '';
-  let selectedSubjectIds: string[] = [];
-  let selectedClassIds: string[] = [];
-  let selectedStudentIds: string[] = [];
-  let sessionDate: string = new Date().toISOString().split('T')[0];
-  let startTime: string = '09:00';
-  let endTime: string = '10:30';
-  let topicTaught: string = '';
-  let activityNotes: string = '';
-  let latitudeCheckIn: number = -6.2;
-  let longitudeCheckIn: number = 106.8;
-  let isFetchingGps: boolean = false;
-  let hasGpsDevice: boolean = false;
+  let selectedJobId = $state('');
+  let selectedSubjectIds = $state<string[]>([]);
+  let selectedClassIds = $state<string[]>([]);
+  let selectedStudentIds = $state<string[]>([]);
+  let sessionDate = $state(new Date().toISOString().split('T')[0]);
+  let startTime = $state('09:00');
+  let endTime = $state('10:30');
+  let topicTaught = $state('');
+  let activityNotes = $state('');
+  let latitudeCheckIn = $state(-6.2);
+  let longitudeCheckIn = $state(106.8);
+  let isFetchingGps = $state(false);
+  let hasGpsDevice = $state(false);
 
-  $: if (tentorJobOptions.length > 0 && !selectedJobId) {
-    selectedJobId = tentorJobOptions[0].id;
-  }
+  $effect(() => {
+    if (tentorJobOptions.length > 0 && !selectedJobId) {
+      selectedJobId = tentorJobOptions[0].id;
+    }
+  });
 
-  $: currentJobOption = tentorJobOptions.find((jobOption) => jobOption.id === selectedJobId) || null;
+  let currentJobOption = $derived(tentorJobOptions.find((jobOption) => jobOption.id === selectedJobId) || null);
 
-  // Whenever selected job changes, auto-populate multi-selects and schedule
-  let lastLoadedJobId: string = '';
-  $: if (currentJobOption && currentJobOption.id !== lastLoadedJobId) {
-    lastLoadedJobId = currentJobOption.id;
-    selectedSubjectIds = [...currentJobOption.subjectIds];
-    selectedClassIds = [...currentJobOption.classIds];
-    selectedStudentIds = currentJobOption.studentIds.length > 0
-      ? [...currentJobOption.studentIds]
-      : (currentJobOption.studentNames.length > 0 ? [...currentJobOption.studentNames] : []);
-    
-    if (currentJobOption.scheduleTime) startTime = currentJobOption.scheduleTime;
-    if (currentJobOption.scheduleEndTime) endTime = currentJobOption.scheduleEndTime;
-    
-    latitudeCheckIn = currentJobOption.latitude;
-    longitudeCheckIn = currentJobOption.longitude;
-    hasGpsDevice = false;
-  }
+  let lastLoadedJobId = $state('');
+  $effect(() => {
+    if (currentJobOption && currentJobOption.id !== lastLoadedJobId) {
+      lastLoadedJobId = currentJobOption.id;
+      selectedSubjectIds = [...currentJobOption.subjectIds];
+      selectedClassIds = [...currentJobOption.classIds];
+      selectedStudentIds = currentJobOption.studentIds.length > 0
+        ? [...currentJobOption.studentIds]
+        : (currentJobOption.studentNames.length > 0 ? [...currentJobOption.studentNames] : []);
+      
+      if (currentJobOption.scheduleTime) startTime = currentJobOption.scheduleTime;
+      if (currentJobOption.scheduleEndTime) endTime = currentJobOption.scheduleEndTime;
+      
+      latitudeCheckIn = currentJobOption.latitude;
+      longitudeCheckIn = currentJobOption.longitude;
+      hasGpsDevice = false;
+    }
+  });
 
-  // Available options for current job
-  $: subjectOptions = (() => {
+  let subjectOptions = $derived((() => {
     if (!currentJobOption) return [];
     if (currentJobOption.subjectIds.length > 0) {
       return $subjectStore
@@ -157,9 +163,9 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
         .map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }));
     }
     return $subjectStore.map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }));
-  })();
+  })());
 
-  $: classOptions = (() => {
+  let classOptions = $derived((() => {
     if (!currentJobOption) return [];
     if (currentJobOption.classIds.length > 0) {
       return $classStore
@@ -167,9 +173,9 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
         .map((classItem) => ({ value: classItem.id, label: classItem.className }));
     }
     return $classStore.map((classItem) => ({ value: classItem.id, label: classItem.className }));
-  })();
+  })());
 
-  $: studentOptions = (() => {
+  let studentOptions = $derived((() => {
     if (!currentJobOption) return [];
     if (currentJobOption.studentIds.length > 0) {
       return $userStore
@@ -180,22 +186,21 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       return currentJobOption.studentNames.map((name) => ({ value: name, label: name }));
     }
     return [];
-  })();
+  })());
 
-  // Duration calculation
   function time24ToMin(timeString: string): number | null {
     const match = /^([01][0-9]|2[0-3]):([0-5][0-9])$/.exec(String(timeString || '').trim());
     return match ? +match[1] * 60 + +match[2] : null;
   }
 
-  $: durationMinutes = (() => {
+  let durationMinutes = $derived((() => {
     const startMinutes = time24ToMin(startTime);
     const endMinutes = time24ToMin(endTime);
     if (startMinutes === null || endMinutes === null || startMinutes === endMinutes) return 90;
     return endMinutes > startMinutes ? endMinutes - startMinutes : endMinutes - startMinutes + 1440;
-  })();
+  })());
 
-  $: sessionsCount = Math.round((durationMinutes / 90) * 10) / 10;
+  let sessionsCount = $derived(Math.round((durationMinutes / 90) * 10) / 10);
 
   function handleGetGps() {
     if (!navigator.geolocation) {
@@ -242,7 +247,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       return;
     }
 
-    // Resolve student names from IDs or raw strings
     const studentNamesResolved: string[] = [];
     const studentIdsResolved: string[] = [];
 
@@ -287,8 +291,7 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
 </script>
 
 <Modal {open} {onClose} title="Check-in Presensi" icon="location_on" maxWidth="max-w-2xl">
-  <form id="form-checkin" on:submit|preventDefault={handleSubmit} class="space-y-4">
-    <!-- 1. Lowongan Selection -->
+  <form id="form-checkin" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
     <div class="field">
       <label for="f_job">Data Lowongan <i class="req">*</i></label>
       <SelectSearch
@@ -299,7 +302,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       />
     </div>
 
-    <!-- Readonly Info from Job: Mode, Jadwal, Alamat -->
     {#if currentJobOption}
       <div class="form-grid">
         <div class="field">
@@ -336,7 +338,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       {/if}
     {/if}
 
-    <!-- 2. Dropdown Mapel & Kelas from Job -->
     <div class="form-grid">
       <div class="field">
         <label for="f_subjects">Mata Pelajaran <i class="req">*</i></label>
@@ -363,7 +364,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       </div>
     </div>
 
-    <!-- 3. Dropdown Murid from Job -->
     {#if studentOptions.length > 0}
       <div class="field">
         <label for="f_students">Murid yang Hadir <i class="req">*</i></label>
@@ -377,7 +377,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       </div>
     {/if}
 
-    <!-- 4. Tanggal & Waktu -->
     <div class="form-grid">
       <div class="field">
         <label for="f_sessionDate">Tanggal Sesi <i class="req">*</i></label>
@@ -397,7 +396,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       </div>
     </div>
 
-    <!-- 5. Durasi & Sesi Otomatis -->
     <div class="form-grid">
       <div class="field">
         <label for="f_durationMinutes">Lama Pembelajaran</label>
@@ -410,7 +408,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       </div>
     </div>
 
-    <!-- 6. GPS dengan Leaflet jika Program Offline -->
     {#if currentJobOption?.isOffline}
       <div class="field">
         <div class="flex items-center justify-between mb-1.5 flex-wrap gap-2">
@@ -420,7 +417,7 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
             variant="outline"
             size="sm"
             disabled={isFetchingGps}
-            on:click={handleGetGps}
+            onclick={handleGetGps}
             icon={isFetchingGps ? 'sync' : 'gps_fixed'}
           >
             {isFetchingGps ? 'Mengambil GPS...' : (hasGpsDevice ? 'Perbarui GPS' : 'Ambil GPS Perangkat')}
@@ -450,7 +447,6 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
       </div>
     {/if}
 
-    <!-- 7. Topik Materi & Catatan Kegiatan -->
     <div class="field">
       <label for="f_topicTaught">Topik Materi <i class="req">*</i></label>
       <Input
@@ -474,12 +470,12 @@ import { userStore, subjectStore, classStore, enrollmentStore, jobStore } from '
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-checkin" icon="check_circle">
       Kirim Presensi
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

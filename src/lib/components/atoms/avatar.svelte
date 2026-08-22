@@ -1,20 +1,28 @@
 <script lang="ts">
-  export let name: string = '';
-  export let size: 'sm' | 'md' | 'lg' = 'md';
-  export let className: string = '';
+  let {
+    name = '',
+    size = 'md',
+    className = ''
+  }: {
+    name?: string;
+    size?: 'sm' | 'md' | 'lg';
+    className?: string;
+  } = $props();
 
-  $: initials = name
-    .trim()
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0].toUpperCase())
-    .join('') || 'U';
+  const initials = $derived(
+    name
+      .trim()
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0].toUpperCase())
+      .join('') || 'U'
+  );
 
   const sizeClassMap: Record<string, string> = {
-    sm: 'w-8 h-8 text-xs',   // 32px
-    md: 'w-10 h-10 text-sm', // 40px
-    lg: 'w-12 h-12 text-base' // 48px
+    sm: 'w-8 h-8 text-xs',
+    md: 'w-10 h-10 text-sm',
+    lg: 'w-12 h-12 text-base'
   };
 </script>
 

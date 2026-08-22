@@ -1,20 +1,20 @@
 <script lang="ts">
   import { Icon } from '$lib/components/atoms';
+  import type { Snippet } from 'svelte';
 
-  export let variant:
-    | 'primary'
-    | 'success'
-    | 'warning'
-    | 'danger'
-    | 'info'
-    | 'neutral'
-    | 'role-admin'
-    | 'role-tentor'
-    | 'role-student'
-    | 'role-parent' = 'neutral';
-  export let size: 'sm' | 'md' = 'sm';
-  export let icon: string | undefined = undefined;
-  export let className: string = '';
+  let {
+    variant = 'neutral',
+    size = 'sm',
+    icon = undefined,
+    className = '',
+    children
+  }: {
+    variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'role-admin' | 'role-tentor' | 'role-student' | 'role-parent';
+    size?: 'sm' | 'md';
+    icon?: string | undefined;
+    className?: string;
+    children?: Snippet;
+  } = $props();
 
   const variantClassMap: Record<string, string> = {
     primary: 'bg-primary-soft text-primary border-transparent',
@@ -41,5 +41,5 @@
   {#if icon}
     <Icon name={icon} size="xs" />
   {/if}
-  <slot />
+  {#if children}{@render children()}{/if}
 </span>

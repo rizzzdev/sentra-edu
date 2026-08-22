@@ -8,33 +8,39 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
   import { DAY_OPTIONS, getScheduleDaysList } from '$lib/shared/utils';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let editingJob: JobPost | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingJob = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingJob?: JobPost | null;
+    onClose?: () => void;
+  } = $props();
 
   // Form fields
-  let title: string = '';
-  let packageId: string = '';
-  let mode: string = 'OFFLINE';
-  let selectedStudentIds: string[] = [];
-  let selectedClassIds: string[] = [];
-  let selectedSubjectIds: string[] = [];
-  let preferredDays: string[] = ['MONDAY', 'WEDNESDAY'];
-  let startTime: string = '16:00';
-  let endTime: string = '17:30';
-  let transportAllowance: number = 0;
-  let location: string = '';
-  let latitude: number = -6.2;
-  let longitude: number = 106.8;
-  let description: string = '';
+  let title = $state('');
+  let packageId = $state('');
+  let mode = $state('OFFLINE');
+  let selectedStudentIds = $state<string[]>([]);
+  let selectedClassIds = $state<string[]>([]);
+  let selectedSubjectIds = $state<string[]>([]);
+  let preferredDays = $state<string[]>(['MONDAY', 'WEDNESDAY']);
+  let startTime = $state('16:00');
+  let endTime = $state('17:30');
+  let transportAllowance = $state(0);
+  let location = $state('');
+  let latitude = $state(-6.2);
+  let longitude = $state(106.8);
+  let description = $state('');
 
   // Derived data
-  $: enrollments = $enrollmentStore.filter((enrollmentItem) => enrollmentItem.deletedAt === null);
-  $: selectedPackage = $packageStore.find((packageItem) => packageItem.id === packageId);
-  $: isGroupMode = selectedPackage?.mode === 'KELOMPOK';
+  let enrollments = $derived($enrollmentStore.filter((enrollmentItem) => enrollmentItem.deletedAt === null));
+  let selectedPackage = $derived($packageStore.find((packageItem) => packageItem.id === packageId));
+  let isGroupMode = $derived(selectedPackage?.mode === 'KELOMPOK');
 
   // Package options
-  $: packageOptions = [
+  let packageOptions = $derived([
     { value: '', label: '— Pilih paket les —' },
     ...$packageStore
       .filter((packageItem) => packageItem.deletedAt === null && packageItem.active !== false)
@@ -42,10 +48,10 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
         value: packageItem.id,
         label: `${packageItem.name} (${packageItem.mode === 'PRIVATE' ? 'Privat' : 'Kelompok'} · Rp ${packageItem.price.toLocaleString('id-ID')})`
       }))
-  ];
+  ]);
 
   // Student options (from all active students in database)
-  $: studentOptions = $userStore
+  let studentOptions = $derived($userStore
     .filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT' && userItem.isActive !== false)
     .map((userItem) => {
       const studentEnrollment = enrollments.find((enrollmentItem) => enrollmentItem.studentId === userItem.id);
@@ -56,55 +62,64 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
         value: userItem.id,
         label: `${userItem.fullName}${extra}`
       };
-    });
+    })
+  );
 
-  $: classOptions = $classStore
-    .filter((classItem) => classItem.deletedAt === null)
-    .map((classItem) => ({ value: classItem.id, label: classItem.className }));
+  let classOptions = $derived(
+    $classStore
+      .filter((classItem) => classItem.deletedAt === null)
+      .map((classItem) => ({ value: classItem.id, label: classItem.className }))
+  );
 
-  $: subjectOptions = $subjectStore
-    .filter((subjectItem) => subjectItem.deletedAt === null)
-    .map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }));
+  let subjectOptions = $derived(
+    $subjectStore
+      .filter((subjectItem) => subjectItem.deletedAt === null)
+      .map((subjectItem) => ({ value: subjectItem.id, label: subjectItem.name }))
+  );
 
-  let previousOpen = false;
-  let previousJobId: string | null = null;
+  let previousOpen = $state(false);
+  let previousJobId = $state<string | null>(null);
 
   // Initialize form ONLY when modal opens or when editingJob ID changes
-  $: if (open && (!previousOpen || (editingJob?.id !== previousJobId))) {
-    previousOpen = true;
-    previousJobId = editingJob?.id || null;
-    if (editingJob) {
-      title = editingJob.title || '';
-      packageId = editingJob.packageId || '';
-      mode = editingJob.mode || editingJob.jobMode || 'OFFLINE';
-      selectedStudentIds = editingJob.studentIds && editingJob.studentIds.length > 0
-        ? editingJob.studentIds
-        : (editingJob.studentId ? [editingJob.studentId] : []);
-      selectedClassIds = editingJob.classIds && editingJob.classIds.length > 0
-        ? editingJob.classIds
-        : (editingJob.classId ? [editingJob.classId] : []);
-      selectedSubjectIds = editingJob.subjectIds && editingJob.subjectIds.length > 0
-        ? editingJob.subjectIds
-        : (editingJob.subjectId ? [editingJob.subjectId] : []);
-      preferredDays = editingJob.scheduleDays && editingJob.scheduleDays.length > 0
-        ? editingJob.scheduleDays
-        : ['MONDAY', 'WEDNESDAY'];
-      startTime = editingJob.scheduleTime || '16:00';
-      endTime = editingJob.scheduleEndTime || '17:30';
-      transportAllowance = editingJob.transportAllowance || 0;
-      location = editingJob.location || '';
-      latitude = editingJob.latitude ?? -6.2;
-      longitude = editingJob.longitude ?? 106.8;
-      description = editingJob.additionalNotes || editingJob.notes || '';
-    } else {
-      resetForm();
+  $effect(() => {
+    if (open && (!previousOpen || (editingJob?.id !== previousJobId))) {
+      previousOpen = true;
+      previousJobId = editingJob?.id || null;
+      if (editingJob) {
+        title = editingJob.title || '';
+        packageId = editingJob.packageId || '';
+        mode = editingJob.mode || editingJob.jobMode || 'OFFLINE';
+        selectedStudentIds = editingJob.studentIds && editingJob.studentIds.length > 0
+          ? editingJob.studentIds
+          : (editingJob.studentId ? [editingJob.studentId] : []);
+        selectedClassIds = editingJob.classIds && editingJob.classIds.length > 0
+          ? editingJob.classIds
+          : (editingJob.classId ? [editingJob.classId] : []);
+        selectedSubjectIds = editingJob.subjectIds && editingJob.subjectIds.length > 0
+          ? editingJob.subjectIds
+          : (editingJob.subjectId ? [editingJob.subjectId] : []);
+        preferredDays = editingJob.scheduleDays && editingJob.scheduleDays.length > 0
+          ? editingJob.scheduleDays
+          : ['MONDAY', 'WEDNESDAY'];
+        startTime = editingJob.scheduleTime || '16:00';
+        endTime = editingJob.scheduleEndTime || '17:30';
+        transportAllowance = editingJob.transportAllowance || 0;
+        location = editingJob.location || '';
+        latitude = editingJob.latitude ?? -6.2;
+        longitude = editingJob.longitude ?? 106.8;
+        description = editingJob.additionalNotes || editingJob.notes || '';
+      } else {
+        resetForm();
+      }
     }
-  }
+  });
 
-  $: if (!open && previousOpen) {
-    previousOpen = false;
-    previousJobId = null;
-  }
+  $effect(() => {
+    if (!open && previousOpen) {
+      previousOpen = false;
+      previousJobId = null;
+    }
+  });
 
   function resetForm() {
     title = '';
@@ -227,7 +242,7 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
 </script>
 
 <Modal {open} {onClose} title={editingJob ? 'Ubah Lowongan' : 'Buat Lowongan Les'} icon="add_circle" maxWidth="680px">
-  <form id="form-job" on:submit|preventDefault={handleSubmit}>
+  <form id="form-job" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <!-- 1. Judul -->
     <div class="field">
       <label for="f_title">Judul Lowongan <i class="req">*</i></label>
@@ -367,7 +382,7 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
       <div class="field">
         <label for="f_map">Lokasi Les <i class="req">*</i></label>
         <div class="quick-actions mb-2">
-          <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" on:click={handleTakeFromStudent} icon="home_pin">
+          <Button variant="outline" size="sm" className="bg-primary-soft text-primary border-primary-soft" onclick={handleTakeFromStudent} icon="home_pin">
             Ambil Lokasi dari Murid
           </Button>
         </div>
@@ -399,12 +414,12 @@ import { userStore, subjectStore, classStore, packageStore, enrollmentStore } fr
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-job" icon="save">
       {editingJob ? 'Simpan Perubahan' : 'Buat Lowongan'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

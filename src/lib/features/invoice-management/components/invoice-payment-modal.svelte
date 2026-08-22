@@ -1,6 +1,6 @@
 <script lang="ts">
 import { userStore, subjectStore, enrollmentStore } from '$lib/api';
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon, Input } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import { formatCurrencyIDR } from '$lib/shared/utils';
@@ -8,16 +8,23 @@ import { userStore, subjectStore, enrollmentStore } from '$lib/api';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let invoice: InvoiceRecord | null = null;
-  export let currentUser: User;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    invoice = null,
+    currentUser,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    invoice?: InvoiceRecord | null;
+    currentUser: User;
+    onClose?: () => void;
+  } = $props();
 
-  let paymentProofUrl: string = '';
+  let paymentProofUrl: string = $state('');
 
-  $: enrollment = invoice ? $enrollmentStore.find((enrollmentItem) => enrollmentItem.id === invoice?.enrollmentId) : null;
-  $: student = enrollment ? $userStore.find((userItem) => userItem.id === enrollment?.studentId) : null;
-  $: subject = enrollment ? $subjectStore.find((subjectItem) => subjectItem.id === enrollment?.subjectId) : null;
+  let enrollment = $derived(invoice ? $enrollmentStore.find((enrollmentItem) => enrollmentItem.id === invoice?.enrollmentId) : null);
+  let student = $derived(enrollment ? $userStore.find((userItem) => userItem.id === enrollment?.studentId) : null);
+  let subject = $derived(enrollment ? $subjectStore.find((subjectItem) => subjectItem.id === enrollment?.subjectId) : null);
 
   async function handleConfirmPayment() {
     if (!invoice) return;
@@ -65,18 +72,18 @@ import { userStore, subjectStore, enrollmentStore } from '$lib/api';
     </div>
   {/if}
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Tutup
     </Button>
     {#if currentUser.role === 'SUPER_ADMIN'}
-      <Button variant="primary" on:click={handleConfirmPayment} icon="check_circle">
+      <Button variant="primary" onclick={handleConfirmPayment} icon="check_circle">
         Konfirmasi Lunas (Admin)
       </Button>
     {:else}
-      <Button variant="primary" on:click={handleConfirmPayment} icon="upload">
+      <Button variant="primary" onclick={handleConfirmPayment} icon="upload">
         Kirim Bukti Pembayaran
       </Button>
     {/if}
-  </svelte:fragment>
+  {/snippet}
 </Modal>

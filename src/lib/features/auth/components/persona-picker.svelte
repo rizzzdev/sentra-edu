@@ -72,7 +72,7 @@
       <button
         type="button"
         class="flex flex-col items-start p-3 text-left bg-surface border border-border rounded-xl hover:border-primary hover:bg-primary-soft/30 transition-all duration-150 cursor-pointer group"
-        on:click={() => handlePersonaSelect(persona.email)}
+        onclick={() => handlePersonaSelect(persona.email)}
       >
         <div class="flex items-center gap-2 mb-1">
           <div class="flex items-center justify-center w-7 h-7 rounded-lg border {persona.toneColor}">

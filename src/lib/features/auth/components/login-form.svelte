@@ -1,17 +1,16 @@
 <script lang="ts">
-  import { FormField } from '$lib/components/molecules';
+  import FormField from '$lib/components/molecules/form-field.svelte';
   import { Button, Input } from '$lib/components/atoms';
-  import { AlertBanner } from '$lib/components/molecules';
+  import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
   import { authStore, toastStore } from '$lib/shared/stores';
   import { LoginSchema } from '$lib/features/auth';
   import { goto } from '$app/navigation';
 
-  let emailInput: string = '';
-  let passwordInput: string = '';
-  let formErrorMessage: string | null = null;
-  let validationErrors: Record<string, string> = {};
-
-  let isSubmitting: boolean = false;
+  let emailInput = $state('');
+  let passwordInput = $state('');
+  let formErrorMessage = $state<string | null>(null);
+  let validationErrors = $state<Record<string, string>>({});
+  let isSubmitting = $state(false);
 
   async function handleSubmit() {
     formErrorMessage = null;
@@ -47,7 +46,7 @@
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="space-y-4" novalidate>
+<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4" novalidate>
   {#if formErrorMessage}
     <AlertBanner message={formErrorMessage} variant="destructive" />
   {/if}

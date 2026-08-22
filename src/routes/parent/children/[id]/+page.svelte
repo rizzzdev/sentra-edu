@@ -9,7 +9,7 @@
   import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
   import LeafletMap from '$lib/components/molecules/leaflet-map.svelte';
 
-  let isLoading: boolean = true;
+  let isLoading = $state(true);
 
   import { onMount } from 'svelte';
 import { userStore, attendanceStore } from '$lib/api';
@@ -20,23 +20,25 @@ import { database } from '$lib/shared/stores';
     }, 300);
   });
 
-  $: currentUser = $authStore;
-  $: programId = $page.params.id;
+  const currentUser = $derived($authStore);
+  const programId = $derived($page.params.id);
 
-  $: allPrograms = currentUser
-    ? getParentPrograms($database, currentUser.id)
-    : [];
+  const allPrograms = $derived(
+    currentUser
+      ? getParentPrograms($database, currentUser.id)
+      : []
+  );
 
-  $: program = allPrograms.find((programItem: UnifiedProgram) => programItem.id === programId);
+  const program = $derived(allPrograms.find((programItem: UnifiedProgram) => programItem.id === programId));
 
-  $: programAttendances = $attendanceStore.filter((attendanceItem) => {
+  const programAttendances = $derived($attendanceStore.filter((attendanceItem) => {
     if (attendanceItem.deletedAt !== null) return false;
     if (attendanceItem.enrollmentId === programId) return true;
     if (program && program.enrollmentId && attendanceItem.enrollmentId === program.enrollmentId) return true;
     return false;
-  }).sort((firstItem, secondItem) => (firstItem.sessionDate < secondItem.sessionDate ? 1 : -1));
+  }).sort((firstItem, secondItem) => (firstItem.sessionDate < secondItem.sessionDate ? 1 : -1)));
 
-  $: approvedCount = programAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length;
+  const approvedCount = $derived(programAttendances.filter((attendanceItem) => attendanceItem.status === 'APPROVED').length);
 
   function getUserName(userId: string | null | undefined): string {
     if (!userId) return '—';

@@ -40,7 +40,7 @@ export type UserMinAggregateOutputType = {
   password: string | null
   fullName: string | null
   phone: string | null
-  role: $Enums.UserRole | null
+  role: string | null
   position: string | null
   education: string | null
   experienceYears: number | null
@@ -48,7 +48,7 @@ export type UserMinAggregateOutputType = {
   address: string | null
   occupation: string | null
   isActive: boolean | null
-  candidateStatus: $Enums.CandidateStatus | null
+  candidateStatus: string | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -61,7 +61,7 @@ export type UserMaxAggregateOutputType = {
   password: string | null
   fullName: string | null
   phone: string | null
-  role: $Enums.UserRole | null
+  role: string | null
   position: string | null
   education: string | null
   experienceYears: number | null
@@ -69,7 +69,7 @@ export type UserMaxAggregateOutputType = {
   address: string | null
   occupation: string | null
   isActive: boolean | null
-  candidateStatus: $Enums.CandidateStatus | null
+  candidateStatus: string | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -86,6 +86,8 @@ export type UserCountAggregateOutputType = {
   position: number
   education: number
   experienceYears: number
+  subjectIds: number
+  levelIds: number
   school: number
   address: number
   occupation: number
@@ -159,6 +161,8 @@ export type UserCountAggregateInputType = {
   position?: true
   education?: true
   experienceYears?: true
+  subjectIds?: true
+  levelIds?: true
   school?: true
   address?: true
   occupation?: true
@@ -263,15 +267,17 @@ export type UserGroupByOutputType = {
   password: string | null
   fullName: string
   phone: string
-  role: $Enums.UserRole
+  role: string
   position: string | null
   education: string | null
   experienceYears: number | null
+  subjectIds: string[]
+  levelIds: string[]
   school: string | null
   address: string | null
   occupation: string | null
   isActive: boolean
-  candidateStatus: $Enums.CandidateStatus | null
+  candidateStatus: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -307,15 +313,17 @@ export type UserWhereInput = {
   password?: Prisma.StringNullableFilter<"User"> | string | null
   fullName?: Prisma.StringFilter<"User"> | string
   phone?: Prisma.StringFilter<"User"> | string
-  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
+  role?: Prisma.StringFilter<"User"> | string
   position?: Prisma.StringNullableFilter<"User"> | string | null
   education?: Prisma.StringNullableFilter<"User"> | string | null
   experienceYears?: Prisma.IntNullableFilter<"User"> | number | null
+  subjectIds?: Prisma.StringNullableListFilter<"User">
+  levelIds?: Prisma.StringNullableListFilter<"User">
   school?: Prisma.StringNullableFilter<"User"> | string | null
   address?: Prisma.StringNullableFilter<"User"> | string | null
   occupation?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
-  candidateStatus?: Prisma.EnumCandidateStatusNullableFilter<"User"> | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -344,6 +352,8 @@ export type UserOrderByWithRelationInput = {
   position?: Prisma.SortOrderInput | Prisma.SortOrder
   education?: Prisma.SortOrderInput | Prisma.SortOrder
   experienceYears?: Prisma.SortOrderInput | Prisma.SortOrder
+  subjectIds?: Prisma.SortOrder
+  levelIds?: Prisma.SortOrder
   school?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
   occupation?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -376,15 +386,17 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   password?: Prisma.StringNullableFilter<"User"> | string | null
   fullName?: Prisma.StringFilter<"User"> | string
   phone?: Prisma.StringFilter<"User"> | string
-  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
+  role?: Prisma.StringFilter<"User"> | string
   position?: Prisma.StringNullableFilter<"User"> | string | null
   education?: Prisma.StringNullableFilter<"User"> | string | null
   experienceYears?: Prisma.IntNullableFilter<"User"> | number | null
+  subjectIds?: Prisma.StringNullableListFilter<"User">
+  levelIds?: Prisma.StringNullableListFilter<"User">
   school?: Prisma.StringNullableFilter<"User"> | string | null
   address?: Prisma.StringNullableFilter<"User"> | string | null
   occupation?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
-  candidateStatus?: Prisma.EnumCandidateStatusNullableFilter<"User"> | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -413,6 +425,8 @@ export type UserOrderByWithAggregationInput = {
   position?: Prisma.SortOrderInput | Prisma.SortOrder
   education?: Prisma.SortOrderInput | Prisma.SortOrder
   experienceYears?: Prisma.SortOrderInput | Prisma.SortOrder
+  subjectIds?: Prisma.SortOrder
+  levelIds?: Prisma.SortOrder
   school?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
   occupation?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -438,15 +452,17 @@ export type UserScalarWhereWithAggregatesInput = {
   password?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   fullName?: Prisma.StringWithAggregatesFilter<"User"> | string
   phone?: Prisma.StringWithAggregatesFilter<"User"> | string
-  role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
+  role?: Prisma.StringWithAggregatesFilter<"User"> | string
   position?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   education?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   experienceYears?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
+  subjectIds?: Prisma.StringNullableListFilter<"User">
+  levelIds?: Prisma.StringNullableListFilter<"User">
   school?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   occupation?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
-  candidateStatus?: Prisma.EnumCandidateStatusNullableWithAggregatesFilter<"User"> | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -459,15 +475,17 @@ export type UserCreateInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -491,15 +509,17 @@ export type UserUncheckedCreateInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -523,15 +543,17 @@ export type UserUpdateInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -555,15 +577,17 @@ export type UserUncheckedUpdateInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -587,15 +611,17 @@ export type UserCreateManyInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -608,15 +634,17 @@ export type UserUpdateManyMutationInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -628,19 +656,29 @@ export type UserUncheckedUpdateManyInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -668,6 +706,8 @@ export type UserCountOrderByAggregateInput = {
   position?: Prisma.SortOrder
   education?: Prisma.SortOrder
   experienceYears?: Prisma.SortOrder
+  subjectIds?: Prisma.SortOrder
+  levelIds?: Prisma.SortOrder
   school?: Prisma.SortOrder
   address?: Prisma.SortOrder
   occupation?: Prisma.SortOrder
@@ -734,6 +774,14 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
+export type UserCreatesubjectIdsInput = {
+  set: string[]
+}
+
+export type UserCreatelevelIdsInput = {
+  set: string[]
+}
+
 export type UserCreateNestedOneWithoutChildrenInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutChildrenInput, Prisma.UserUncheckedCreateWithoutChildrenInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutChildrenInput
@@ -762,10 +810,6 @@ export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
-export type EnumUserRoleFieldUpdateOperationsInput = {
-  set?: $Enums.UserRole
-}
-
 export type NullableIntFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
@@ -774,12 +818,18 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
+export type UserUpdatesubjectIdsInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
-export type NullableEnumCandidateStatusFieldUpdateOperationsInput = {
-  set?: $Enums.CandidateStatus | null
+export type UserUpdatelevelIdsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -984,15 +1034,17 @@ export type UserCreateWithoutChildrenInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1015,15 +1067,17 @@ export type UserUncheckedCreateWithoutChildrenInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1051,15 +1105,17 @@ export type UserCreateWithoutParentInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1082,15 +1138,17 @@ export type UserUncheckedCreateWithoutParentInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1134,15 +1192,17 @@ export type UserUpdateWithoutChildrenInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1165,15 +1225,17 @@ export type UserUncheckedUpdateWithoutChildrenInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1215,15 +1277,17 @@ export type UserScalarWhereInput = {
   password?: Prisma.StringNullableFilter<"User"> | string | null
   fullName?: Prisma.StringFilter<"User"> | string
   phone?: Prisma.StringFilter<"User"> | string
-  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
+  role?: Prisma.StringFilter<"User"> | string
   position?: Prisma.StringNullableFilter<"User"> | string | null
   education?: Prisma.StringNullableFilter<"User"> | string | null
   experienceYears?: Prisma.IntNullableFilter<"User"> | number | null
+  subjectIds?: Prisma.StringNullableListFilter<"User">
+  levelIds?: Prisma.StringNullableListFilter<"User">
   school?: Prisma.StringNullableFilter<"User"> | string | null
   address?: Prisma.StringNullableFilter<"User"> | string | null
   occupation?: Prisma.StringNullableFilter<"User"> | string | null
   isActive?: Prisma.BoolFilter<"User"> | boolean
-  candidateStatus?: Prisma.EnumCandidateStatusNullableFilter<"User"> | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -1236,15 +1300,17 @@ export type UserCreateWithoutEnrollmentsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1267,15 +1333,17 @@ export type UserUncheckedCreateWithoutEnrollmentsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1303,15 +1371,17 @@ export type UserCreateWithoutTentorEnrollmentsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1334,15 +1404,17 @@ export type UserUncheckedCreateWithoutTentorEnrollmentsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1370,15 +1442,17 @@ export type UserCreateWithoutParentEnrollmentsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1401,15 +1475,17 @@ export type UserUncheckedCreateWithoutParentEnrollmentsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1448,15 +1524,17 @@ export type UserUpdateWithoutEnrollmentsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1479,15 +1557,17 @@ export type UserUncheckedUpdateWithoutEnrollmentsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1521,15 +1601,17 @@ export type UserUpdateWithoutTentorEnrollmentsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1552,15 +1634,17 @@ export type UserUncheckedUpdateWithoutTentorEnrollmentsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1594,15 +1678,17 @@ export type UserUpdateWithoutParentEnrollmentsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1625,15 +1711,17 @@ export type UserUncheckedUpdateWithoutParentEnrollmentsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1656,15 +1744,17 @@ export type UserCreateWithoutAssignedJobsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1687,15 +1777,17 @@ export type UserUncheckedCreateWithoutAssignedJobsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1723,15 +1815,17 @@ export type UserCreateWithoutStudentJobsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1754,15 +1848,17 @@ export type UserUncheckedCreateWithoutStudentJobsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1801,15 +1897,17 @@ export type UserUpdateWithoutAssignedJobsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1832,15 +1930,17 @@ export type UserUncheckedUpdateWithoutAssignedJobsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1874,15 +1974,17 @@ export type UserUpdateWithoutStudentJobsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1905,15 +2007,17 @@ export type UserUncheckedUpdateWithoutStudentJobsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1936,15 +2040,17 @@ export type UserCreateWithoutApplicationsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1967,15 +2073,17 @@ export type UserUncheckedCreateWithoutApplicationsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2014,15 +2122,17 @@ export type UserUpdateWithoutApplicationsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2045,15 +2155,17 @@ export type UserUncheckedUpdateWithoutApplicationsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2076,15 +2188,17 @@ export type UserCreateWithoutAttendancesInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2107,15 +2221,17 @@ export type UserUncheckedCreateWithoutAttendancesInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2154,15 +2270,17 @@ export type UserUpdateWithoutAttendancesInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2185,15 +2303,17 @@ export type UserUncheckedUpdateWithoutAttendancesInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2216,15 +2336,17 @@ export type UserCreateWithoutPayrollClaimsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2247,15 +2369,17 @@ export type UserUncheckedCreateWithoutPayrollClaimsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2294,15 +2418,17 @@ export type UserUpdateWithoutPayrollClaimsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2325,15 +2451,17 @@ export type UserUncheckedUpdateWithoutPayrollClaimsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2356,15 +2484,17 @@ export type UserCreateWithoutNotificationsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2387,15 +2517,17 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2434,15 +2566,17 @@ export type UserUpdateWithoutNotificationsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2465,15 +2599,17 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2496,15 +2632,17 @@ export type UserCreateWithoutMagicLinksInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2527,15 +2665,17 @@ export type UserUncheckedCreateWithoutMagicLinksInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2574,15 +2714,17 @@ export type UserUpdateWithoutMagicLinksInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2605,15 +2747,17 @@ export type UserUncheckedUpdateWithoutMagicLinksInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2636,15 +2780,17 @@ export type UserCreateManyParentInput = {
   password?: string | null
   fullName: string
   phone?: string
-  role?: $Enums.UserRole
+  role?: string
   position?: string | null
   education?: string | null
   experienceYears?: number | null
+  subjectIds?: Prisma.UserCreatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserCreatelevelIdsInput | string[]
   school?: string | null
   address?: string | null
   occupation?: string | null
   isActive?: boolean
-  candidateStatus?: $Enums.CandidateStatus | null
+  candidateStatus?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -2656,15 +2802,17 @@ export type UserUpdateWithoutParentInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2687,15 +2835,17 @@ export type UserUncheckedUpdateWithoutParentInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2718,15 +2868,17 @@ export type UserUncheckedUpdateManyWithoutParentInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  role?: Prisma.StringFieldUpdateOperationsInput | string
   position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   education?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceYears?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subjectIds?: Prisma.UserUpdatesubjectIdsInput | string[]
+  levelIds?: Prisma.UserUpdatelevelIdsInput | string[]
   school?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occupation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  candidateStatus?: Prisma.NullableEnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus | null
+  candidateStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2863,6 +3015,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   position?: boolean
   education?: boolean
   experienceYears?: boolean
+  subjectIds?: boolean
+  levelIds?: boolean
   school?: boolean
   address?: boolean
   occupation?: boolean
@@ -2897,6 +3051,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   position?: boolean
   education?: boolean
   experienceYears?: boolean
+  subjectIds?: boolean
+  levelIds?: boolean
   school?: boolean
   address?: boolean
   occupation?: boolean
@@ -2919,6 +3075,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   position?: boolean
   education?: boolean
   experienceYears?: boolean
+  subjectIds?: boolean
+  levelIds?: boolean
   school?: boolean
   address?: boolean
   occupation?: boolean
@@ -2941,6 +3099,8 @@ export type UserSelectScalar = {
   position?: boolean
   education?: boolean
   experienceYears?: boolean
+  subjectIds?: boolean
+  levelIds?: boolean
   school?: boolean
   address?: boolean
   occupation?: boolean
@@ -2952,7 +3112,7 @@ export type UserSelectScalar = {
   parentId?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "fullName" | "phone" | "role" | "position" | "education" | "experienceYears" | "school" | "address" | "occupation" | "isActive" | "candidateStatus" | "createdAt" | "updatedAt" | "deletedAt" | "parentId", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "fullName" | "phone" | "role" | "position" | "education" | "experienceYears" | "subjectIds" | "levelIds" | "school" | "address" | "occupation" | "isActive" | "candidateStatus" | "createdAt" | "updatedAt" | "deletedAt" | "parentId", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   parent?: boolean | Prisma.User$parentArgs<ExtArgs>
   children?: boolean | Prisma.User$childrenArgs<ExtArgs>
@@ -2997,15 +3157,17 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     password: string | null
     fullName: string
     phone: string
-    role: $Enums.UserRole
+    role: string
     position: string | null
     education: string | null
     experienceYears: number | null
+    subjectIds: string[]
+    levelIds: string[]
     school: string | null
     address: string | null
     occupation: string | null
     isActive: boolean
-    candidateStatus: $Enums.CandidateStatus | null
+    candidateStatus: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -3450,15 +3612,17 @@ export interface UserFieldRefs {
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly fullName: Prisma.FieldRef<"User", 'String'>
   readonly phone: Prisma.FieldRef<"User", 'String'>
-  readonly role: Prisma.FieldRef<"User", 'UserRole'>
+  readonly role: Prisma.FieldRef<"User", 'String'>
   readonly position: Prisma.FieldRef<"User", 'String'>
   readonly education: Prisma.FieldRef<"User", 'String'>
   readonly experienceYears: Prisma.FieldRef<"User", 'Int'>
+  readonly subjectIds: Prisma.FieldRef<"User", 'String[]'>
+  readonly levelIds: Prisma.FieldRef<"User", 'String[]'>
   readonly school: Prisma.FieldRef<"User", 'String'>
   readonly address: Prisma.FieldRef<"User", 'String'>
   readonly occupation: Prisma.FieldRef<"User", 'String'>
   readonly isActive: Prisma.FieldRef<"User", 'Boolean'>
-  readonly candidateStatus: Prisma.FieldRef<"User", 'CandidateStatus'>
+  readonly candidateStatus: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"User", 'DateTime'>

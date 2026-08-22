@@ -1,57 +1,78 @@
-<!-- svelte-options runes=false -->
 <script lang="ts">
   import { page } from '$app/stores';
   import { Icon, Input } from '$lib/components/atoms';
-  import {themeStore} from '$lib/shared/stores';
+  import { themeStore } from '$lib/shared/stores';
   import { goto } from '$app/navigation';
-  import type { User } from '$lib/shared/types';
+  import type { User, MagicLinkRegistration } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
 
-  $: token = $page.url.searchParams.get('token') || '';
+  const token = $derived($page.url.searchParams.get('token') || '');
 
   // Stepper State: Step 1 (Student Data) -> Step 2 (Orang Tua Data)
-  let currentStep: 1 | 2 = 1;
+  let currentStep = $state<1 | 2>(1);
 
   // Student Form Fields
-  let studentFullName: string = '';
-  let studentEmail: string = '';
-  let studentPassword: string = '';
-  let studentPhone: string = '';
-  let school: string = '';
+  let studentFullName = $state('');
+  let studentEmail = $state('');
+  let studentPassword = $state('');
+  let studentPhone = $state('');
+  let school = $state('');
 
   // Orang Tua Form Fields
-  let isExistingParent: boolean = false;
-  let parentFullName: string = '';
-  let parentEmail: string = '';
-  let parentPassword: string = '';
-  let parentPhone: string = '';
-  let parentOccupation: string = '';
-  let address: string = '';
+  let isExistingParent = $state(false);
+  let parentFullName = $state('');
+  let parentEmail = $state('');
+  let parentPassword = $state('');
+  let parentPhone = $state('');
+  let parentOccupation = $state('');
+  let address = $state('');
 
-  let errorMessage: string | null = null;
-  let createdAccounts: { student: User; parent: User } | null = null;
+  let errorMessage = $state<string | null>(null);
+  let createdAccounts = $state<{ student: User; parent: User } | null>(null);
 
-  let tokenValidation: { valid: boolean; message: string; magicLink: any; isLoading: boolean } = { valid: false, message: 'Memuat token...', magicLink: null, isLoading: true };
+  let tokenValidation = $state<{ valid: boolean; message: string; magicLink: MagicLinkRegistration | null; isLoading: boolean }>({ valid: false, message: 'Memuat token...', magicLink: null, isLoading: true });
 
   async function validateMagicTokenValue(tokenStr: string) {
-    const response = await fetch(`/api/magic-links?token=${tokenStr}`);
-    const result = await response.json();
-    if (!result.error && result.data && result.data.length > 0) {
-      const link = result.data[0];
-      const expired = new Date(link.expiresAt) < new Date();
-      tokenValidation = {
-        valid: link.active && !expired && link.targetRole === 'STUDENT',
-        message: expired ? 'Token telah kadaluarsa.' : (!link.active ? 'Token tidak aktif.' : ''),
-        magicLink: link,
-        isLoading: false
-      };
-    } else {
-      tokenValidation = { valid: false, message: 'Token pendaftaran tidak ditemukan.', magicLink: null, isLoading: false };
+    tokenValidation.isLoading = true;
+    try {
+      const response = await fetch(`/api/magic-links?token=${encodeURIComponent(tokenStr.trim())}`);
+      const result = await response.json();
+      const link = result.data ? (Array.isArray(result.data) ? result.data[0] : result.data) : null;
+
+      if (!result.error && link && link.token) {
+        const expiresAtTime = new Date(link.expiresAt).getTime();
+        const expired = !isNaN(expiresAtTime) && expiresAtTime < Date.now();
+        const isRoleValid = !link.targetRole || link.targetRole === 'STUDENT';
+        const isValid = Boolean(link.active && !expired && isRoleValid);
+
+        let msg = '';
+        if (expired) {
+          msg = 'Token telah kadaluarsa.';
+        } else if (!link.active) {
+          msg = 'Token tidak aktif.';
+        } else if (!isRoleValid) {
+          msg = 'Link ini khusus untuk pendaftaran tentor/pengajar.';
+        }
+
+        tokenValidation = {
+          valid: isValid,
+          message: msg,
+          magicLink: link,
+          isLoading: false
+        };
+      } else {
+        tokenValidation = { valid: false, message: result.message || 'Token pendaftaran tidak ditemukan.', magicLink: null, isLoading: false };
+      }
+    } catch {
+      tokenValidation = { valid: false, message: 'Gagal memvalidasi token pendaftaran.', magicLink: null, isLoading: false };
     }
   }
 
-  import { onMount } from 'svelte';
-  onMount(() => { if (token) validateMagicTokenValue(token); });
+  $effect(() => {
+    if (token) {
+      validateMagicTokenValue(token);
+    }
+  });
 
   function handleNextToStep2() {
     errorMessage = null;
@@ -151,7 +172,7 @@
         size="md"
         ariaLabel="Ganti tema"
         icon={$themeStore === 'dark' ? 'light_mode' : 'dark_mode'}
-        on:click={themeStore.toggleTheme}
+        onclick={themeStore.toggleTheme}
       />
     </div>
 
@@ -200,7 +221,7 @@
           variant="primary"
           fullWidth
           icon="login"
-          on:click={() => goto('/login')}
+          onclick={() => goto('/login')}
         >
           Masuk ke Halaman Login
         </Button>
@@ -228,7 +249,7 @@
         <Button
           variant="outline"
           fullWidth
-          on:click={() => goto('/login')}
+          onclick={() => goto('/login')}
         >
           Kembali ke Halaman Login
         </Button>
@@ -250,7 +271,7 @@
 
       {#if currentStep === 1}
         <!-- STEP 1: DATA SISWA -->
-        <form on:submit|preventDefault={handleNextToStep2} novalidate>
+        <form onsubmit={(e) => { e.preventDefault(); handleNextToStep2(); }} novalidate>
           <div class="pb-2 mb-3 border-b border-border">
             <h3 class="text-base font-bold">Mari kita mulai dari Data Siswa.</h3>
             <p class="text-muted-fg text-xs mt-0.5">Isi rincian data calon siswa yang akan didaftarkan.</p>
@@ -326,7 +347,7 @@
 
       {:else}
         <!-- STEP 2: DATA ORANG TUA -->
-        <form on:submit|preventDefault={handleRegister} novalidate>
+        <form onsubmit={(e) => { e.preventDefault(); handleRegister(); }} novalidate>
           <div class="pb-2 mb-3 border-b border-border">
             <h3 class="text-base font-bold">Selanjutnya, Data Orang Tua.</h3>
             <p class="text-muted-fg text-xs mt-0.5">Pilih status akun orang tua untuk penautan.</p>
@@ -342,7 +363,7 @@
                 name="parent-mode"
                 class="sr-only"
                 checked={isExistingParent === false}
-                on:change={() => { isExistingParent = false; }}
+                onchange={() => { isExistingParent = false; }}
               />
               Orang Tua Baru (Buat Akun)
             </label>
@@ -355,7 +376,7 @@
                 name="parent-mode"
                 class="sr-only"
                 checked={isExistingParent === true}
-                on:change={() => { isExistingParent = true; }}
+                onchange={() => { isExistingParent = true; }}
               />
               Orang Tua Sudah Punya Akun
             </label>
@@ -452,7 +473,7 @@
             <Button
               variant="outline"
               isIconOnly
-              on:click={() => { currentStep = 1; }}
+              onclick={() => { currentStep = 1; }}
               icon="arrow_back"
             />
 

@@ -5,10 +5,10 @@
 
 import { subjectRepository } from './repository';
 import { getCached, setCache, invalidateCache } from '../../cache';
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreateSubject, validateUpdateSubject, getFieldErrors } from './domain';
-import type { SubjectEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreateSubject, validateUpdateSubject, getFieldErrors } from '$lib/api/modules/subject/domain';
+import type { SubjectEntity } from '$lib/api/modules/subject/domain';
 
 const CACHE_KEY = 'subjects';
 
@@ -25,7 +25,8 @@ export const subjectService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[subjectService] Error:`, err);
       return errorResponse('Failed to retrieve Subject data.', 500);
     }
   },
@@ -34,27 +35,29 @@ export const subjectService = {
       const item = await subjectRepository.findById(id);
       if (!item) return errorResponse('Subject not found.', 404);
       return successResponse(item, 'Subject retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[subjectService] Error:`, err);
       return errorResponse('Failed to retrieve Subject.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<SubjectEntity>> {
     const parsed = validateCreateSubject(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await subjectRepository.create(parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(created, 'Subject created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[subjectService] Error:`, err);
       return errorResponse('Failed to create Subject.', 500);
     }
   },
   async update(id: string, data: any): Promise<ApiResponse<SubjectEntity>> {
     const parsed = validateUpdateSubject(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const existing = await subjectRepository.findById(id);
@@ -62,7 +65,8 @@ export const subjectService = {
       const updated = await subjectRepository.update(id, parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(updated, 'Subject updated successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[subjectService] Error:`, err);
       return errorResponse('Failed to update Subject.', 500);
     }
   },
@@ -73,7 +77,8 @@ export const subjectService = {
       await subjectRepository.softDelete(id);
       invalidateCache([CACHE_KEY]);
       return successResponse({ id }, 'Subject deleted successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[subjectService] Error:`, err);
       return errorResponse('Failed to delete Subject.', 500);
     }
   }

@@ -7,29 +7,29 @@
 import { subjectStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  let searchQuery = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
-  let subjectModalOpen: boolean = false;
-  let editingSubject: Subject | null = null;
-  let deleteDialogOpen: boolean = false;
-  let deletingSubjectId: string | null = null;
+  let subjectModalOpen = $state(false);
+  let editingSubject = $state<Subject | null>(null);
+  let deleteDialogOpen = $state(false);
+  let deletingSubjectId = $state<string | null>(null);
 
-  $: allSubjects = $subjectStore.filter((subjectItem) => subjectItem.deletedAt === null);
+  const allSubjects = $derived($subjectStore.filter((subjectItem) => subjectItem.deletedAt === null));
 
-  $: filteredSubjects = allSubjects.filter(
+  const filteredSubjects = $derived(allSubjects.filter(
     (subjectItem) =>
       !searchQuery ||
       subjectItem.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (subjectItem.description || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ));
 
-  $: paginatedSubjects = filteredSubjects.slice(
+  const paginatedSubjects = $derived(filteredSubjects.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
-  $: totalPages = Math.max(1, Math.ceil(filteredSubjects.length / itemsPerPage));
+  ));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredSubjects.length / itemsPerPage)));
 
   function handleOpenCreate() {
     editingSubject = null;
@@ -59,7 +59,7 @@ import { subjectStore } from '$lib/api';
     <h3><Icon name="menu_book" size="lg" /> Mata Pelajaran</h3>
     <div class="desc">Daftar mapel yang tersedia untuk lowongan les.</div>
   </div>
-  <button type="button" class="btn btn-primary" on:click={handleOpenCreate}>
+  <button type="button" class="btn btn-primary" onclick={handleOpenCreate}>
     <Icon name="add" size="sm" /> Tambah Mapel
   </button>
 </div>
@@ -100,7 +100,7 @@ import { subjectStore } from '$lib/api';
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEdit(subjectItem)}
+                      onclick={() => handleOpenEdit(subjectItem)}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -108,7 +108,7 @@ import { subjectStore } from '$lib/api';
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => {
+                      onclick={() => {
                         deletingSubjectId = subjectItem.id;
                         deleteDialogOpen = true;
                       }}
@@ -134,7 +134,7 @@ import { subjectStore } from '$lib/api';
             type="button"
             class="page-btn"
             disabled={currentPage <= 1}
-            on:click={() => currentPage--}
+            onclick={() => currentPage--}
           >
             &laquo;
           </button>
@@ -142,7 +142,7 @@ import { subjectStore } from '$lib/api';
             <button
               type="button"
               class="page-btn {currentPage === pageNumber ? 'active' : ''}"
-              on:click={() => { currentPage = pageNumber; }}
+              onclick={() => { currentPage = pageNumber; }}
             >
               {pageNumber}
             </button>
@@ -151,7 +151,7 @@ import { subjectStore } from '$lib/api';
             type="button"
             class="page-btn"
             disabled={currentPage >= totalPages}
-            on:click={() => currentPage++}
+            onclick={() => currentPage++}
           >
             &raquo;
           </button>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import type { JobPost, User } from '$lib/shared/types';
@@ -7,23 +7,36 @@
   import { formatCurrencyIDR, getScheduleDaysList } from '$lib/shared/utils';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let job: JobPost | null = null;
-  export let tentor: User | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    job = null,
+    tentor = null,
+    onClose = () => {},
+    onSuccess = () => {}
+  }: {
+    open?: boolean;
+    job?: JobPost | null;
+    tentor?: User | null;
+    onClose?: () => void;
+    onSuccess?: () => void;
+  } = $props();
 
-  let notes: string = '';
+  let notes = $state('');
+  let submitting = $state(false);
 
   async function handleApply() {
-    if (!job) return;
+    if (!job || submitting) return;
     if (!tentor?.id) {
       toastStore.error('Sesi pengajar tidak ditemukan. Silakan login kembali.');
       return;
     }
+    submitting = true;
     const response = await api.applications.create({ jobId: job.id, tentorId: tentor.id, notes: notes.trim() });
+    submitting = false;
     if (!response.error) {
       toastStore.success('Lamaran lowongan les berhasil dikirim ke admin.');
       notes = '';
+      onSuccess();
       onClose();
     } else {
       toastStore.error(response.message);
@@ -65,12 +78,12 @@
     </div>
   {/if}
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
-    <Button variant="primary" on:click={handleApply} icon="send">
-      Kirim Lamaran
+    <Button variant="primary" onclick={handleApply} icon="send" disabled={submitting}>
+      {submitting ? 'Mengirim...' : 'Kirim Lamaran'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

@@ -5,10 +5,10 @@
 
 import { attendanceRepository } from './repository';
 import { getCached, setCache, invalidateCache } from '../../cache';
-import { successResponse, errorResponse, calculatePagination } from '../../types';
-import type { ApiResponse } from '../../types';
-import { validateCreateAttendance, validateUpdateAttendance, getFieldErrors } from './domain';
-import type { AttendanceEntity } from './domain';
+import { successResponse, errorResponse, calculatePagination } from '$lib/api/types';
+import type { ApiResponse } from '$lib/api/types';
+import { validateCreateAttendance, validateUpdateAttendance, getFieldErrors } from '$lib/api/modules/attendance/domain';
+import type { AttendanceEntity } from '$lib/api/modules/attendance/domain';
 
 const CACHE_KEY = 'attendances';
 
@@ -25,7 +25,8 @@ export const attendanceService = {
         data: paginatedData,
         pagination: calculatePagination(totalData, page, limit)
       };
-    } catch {
+    } catch (err) {
+      console.error(`[attendanceService] Error:`, err);
       return errorResponse('Failed to retrieve Attendance data.', 500);
     }
   },
@@ -34,27 +35,29 @@ export const attendanceService = {
       const item = await attendanceRepository.findById(id);
       if (!item) return errorResponse('Attendance not found.', 404);
       return successResponse(item, 'Attendance retrieved successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[attendanceService] Error:`, err);
       return errorResponse('Failed to retrieve Attendance.', 500);
     }
   },
   async create(data: any): Promise<ApiResponse<AttendanceEntity>> {
     const parsed = validateCreateAttendance(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const created = await attendanceRepository.create(parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(created, 'Attendance created successfully.', 201);
-    } catch {
+    } catch (err) {
+      console.error(`[attendanceService] Error:`, err);
       return errorResponse('Failed to create Attendance.', 500);
     }
   },
   async update(id: string, data: any): Promise<ApiResponse<AttendanceEntity>> {
     const parsed = validateUpdateAttendance(data);
     if (!parsed.success) {
-      return { error: true, statusCode: 400, message: 'Validasi gagal.', data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
+      return { error: true, statusCode: 400, message: 'Validasi gagal: ' + Object.entries(getFieldErrors(parsed.error)).map(([k, v]) => `${k}: ${v}`).join(', '), data: null, fieldErrors: getFieldErrors(parsed.error) } as any;
     }
     try {
       const existing = await attendanceRepository.findById(id);
@@ -62,7 +65,8 @@ export const attendanceService = {
       const updated = await attendanceRepository.update(id, parsed.data);
       invalidateCache([CACHE_KEY]);
       return successResponse(updated, 'Attendance updated successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[attendanceService] Error:`, err);
       return errorResponse('Failed to update Attendance.', 500);
     }
   },
@@ -73,7 +77,8 @@ export const attendanceService = {
       await attendanceRepository.softDelete(id);
       invalidateCache([CACHE_KEY]);
       return successResponse({ id }, 'Attendance deleted successfully.');
-    } catch {
+    } catch (err) {
+      console.error(`[attendanceService] Error:`, err);
       return errorResponse('Failed to delete Attendance.', 500);
     }
   }

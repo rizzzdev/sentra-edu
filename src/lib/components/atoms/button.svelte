@@ -1,18 +1,42 @@
+<script lang="ts" module>
+  export type ButtonVariant = 'primary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'accent' | 'secondary';
+</script>
+
 <script lang="ts">
   import { Icon } from '$lib/components/atoms';
+  import type { Snippet } from 'svelte';
 
-  export let type: 'button' | 'submit' | 'reset' = 'button';
-  export let variant: 'primary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'accent' | 'secondary' = 'primary';
-  export let size: 'sm' | 'md' | 'lg' = 'md';
-  export let disabled: boolean = false;
-  export let icon: string | undefined = undefined;
-  export let iconFilled: boolean = false;
-  export let fullWidth: boolean = false;
-  export let isIconOnly: boolean = false;
-  export let className: string = '';
-  export let ariaLabel: string | undefined = undefined;
+  let {
+    type = 'button',
+    variant = 'primary',
+    size = 'md',
+    disabled = false,
+    icon = undefined,
+    iconFilled = false,
+    fullWidth = false,
+    isIconOnly = false,
+    className = '',
+    ariaLabel = undefined,
+    children,
+    onclick,
+    ...restProps
+  }: {
+    type?: 'button' | 'submit' | 'reset';
+    variant?: ButtonVariant;
+    size?: 'sm' | 'md' | 'lg';
+    disabled?: boolean;
+    icon?: string | undefined;
+    iconFilled?: boolean;
+    fullWidth?: boolean;
+    isIconOnly?: boolean;
+    className?: string;
+    ariaLabel?: string | undefined;
+    children?: Snippet;
+    onclick?: (e: MouseEvent) => void;
+    [key: string]: any;
+  } = $props();
 
-  $: variantClassMap = {
+  const variantClassMap: Record<string, string> = {
     primary: 'btn-primary',
     outline: 'btn-outline',
     ghost: 'btn-ghost',
@@ -23,11 +47,11 @@
     secondary: 'btn-soft'
   };
 
-  $: sizeClassMap = {
+  const sizeClassMap = $derived<Record<string, string>>({
     sm: isIconOnly ? 'btn btn-sm btn-icon-only' : 'btn btn-sm',
     md: isIconOnly ? 'btn btn-icon-only' : 'btn',
     lg: isIconOnly ? 'btn btn-lg btn-icon-only' : 'btn btn-lg'
-  };
+  });
 </script>
 
 <button
@@ -35,11 +59,11 @@
   {disabled}
   aria-label={ariaLabel}
   class="{sizeClassMap[size]} {variantClassMap[variant]} {fullWidth ? 'w-full' : ''} {className} disabled:cursor-not-allowed disabled:opacity-60"
-  {...$$restProps}
-  on:click
+  {...restProps}
+  {onclick}
 >
   {#if icon}
     <Icon name={icon} size={size === 'sm' ? 'xs' : size === 'lg' ? 'lg' : 'md'} filled={iconFilled} />
   {/if}
-  <slot />
+  {#if children}{@render children()}{/if}
 </button>

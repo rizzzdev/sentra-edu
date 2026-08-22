@@ -4,19 +4,19 @@
   import { INVOICE_STATUS_LABEL, PAYROLL_STATUS_LABEL, getStatusLabel, getStatusBadgeClass } from '$lib/shared/utils/status-map';
 import { userStore, educationLevelStore, classStore, enrollmentStore, attendanceStore, invoiceStore, payrollStore } from '$lib/api';
 
-  $: paidInvs = $invoiceStore.filter((invoiceItem) => invoiceItem.deletedAt === null && invoiceItem.status === 'PAID');
-  $: unpaidInvs = $invoiceStore.filter((invoiceItem) => invoiceItem.deletedAt === null && invoiceItem.status === 'UNPAID');
-  $: revenue = paidInvs.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
-  $: receivable = unpaidInvs.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0);
+  const paidInvs = $derived($invoiceStore.filter((invoiceItem) => invoiceItem.deletedAt === null && invoiceItem.status === 'PAID'));
+  const unpaidInvs = $derived($invoiceStore.filter((invoiceItem) => invoiceItem.deletedAt === null && invoiceItem.status === 'UNPAID'));
+  const revenue = $derived(paidInvs.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0));
+  const receivable = $derived(unpaidInvs.reduce((sum, invoiceItem) => sum + invoiceItem.amount, 0));
 
-  $: paidClaims = $payrollStore.filter((claimItem) => claimItem.deletedAt === null && claimItem.status === 'PAID');
-  $: reqClaims = $payrollStore.filter((claimItem) => claimItem.deletedAt === null && claimItem.status === 'REQUESTED');
-  $: honor = paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
-  $: pendingHonor = reqClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0);
+  const paidClaims = $derived($payrollStore.filter((claimItem) => claimItem.deletedAt === null && claimItem.status === 'PAID'));
+  const reqClaims = $derived($payrollStore.filter((claimItem) => claimItem.deletedAt === null && claimItem.status === 'REQUESTED'));
+  const honor = $derived(paidClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0));
+  const pendingHonor = $derived(reqClaims.reduce((sum, claimItem) => sum + claimItem.totalAmount, 0));
 
   // 6 months SPP vs Honor
   const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-  $: monthItems = Array.from({ length: 6 }, (_, index) => {
+  const monthItems = $derived(Array.from({ length: 6 }, (_, index) => {
     const monthOffset = 5 - index;
     const now = new Date();
     const targetDate = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
@@ -36,12 +36,12 @@ import { userStore, educationLevelStore, classStore, enrollmentStore, attendance
       spp: sppVal,
       honor: honorVal
     };
-  });
+  }));
 
-  $: maxMonthVal = Math.max(1, ...monthItems.map((monthItem) => Math.max(monthItem.spp, monthItem.honor)));
+  const maxMonthVal = $derived(Math.max(1, ...monthItems.map((monthItem) => Math.max(monthItem.spp, monthItem.honor))));
 
   // Invoice recap
-  $: invStatus = (() => {
+  const invStatus = $derived.by(() => {
     const statusMap: Record<string, { count: number; total: number }> = {};
     $invoiceStore
       .filter((invoiceItem) => invoiceItem.deletedAt === null)
@@ -51,10 +51,10 @@ import { userStore, educationLevelStore, classStore, enrollmentStore, attendance
         statusMap[invoiceItem.status].total += invoiceItem.amount;
       });
     return statusMap;
-  })();
+  });
 
   // Payroll claim recap
-  $: claimStatus = (() => {
+  const claimStatus = $derived.by(() => {
     const statusMap: Record<string, { count: number; total: number }> = {};
     $payrollStore
       .filter((claimItem) => claimItem.deletedAt === null)
@@ -64,10 +64,10 @@ import { userStore, educationLevelStore, classStore, enrollmentStore, attendance
         statusMap[claimItem.status].total += claimItem.totalAmount;
       });
     return statusMap;
-  })();
+  });
 
   // Tentor attendance recap
-  $: tentorSessions = (() => {
+  const tentorSessions = $derived.by(() => {
     const sessionMap: Record<string, { total: number; approved: number; submitted: number }> = {};
     $attendanceStore
       .filter((attendanceItem) => attendanceItem.deletedAt === null)
@@ -78,14 +78,14 @@ import { userStore, educationLevelStore, classStore, enrollmentStore, attendance
         if (attendanceItem.status === 'SUBMITTED') sessionMap[attendanceItem.tentorId].submitted++;
       });
     return sessionMap;
-  })();
+  });
 
-  $: sortedTentorIds = Object.keys(tentorSessions).sort(
+  const sortedTentorIds = $derived(Object.keys(tentorSessions).sort(
     (firstId, secondId) => tentorSessions[secondId].total - tentorSessions[firstId].total
-  );
+  ));
 
   // Level recap
-  $: levelPrograms = (() => {
+  const levelPrograms = $derived.by(() => {
     const map: Record<string, number> = {};
     $enrollmentStore
       .filter((enrollmentItem) => enrollmentItem.deletedAt === null)
@@ -96,7 +96,7 @@ import { userStore, educationLevelStore, classStore, enrollmentStore, attendance
         map[name] = (map[name] || 0) + 1;
       });
     return map;
-  })();
+  });
 
   function getUserName(userId: string): string {
     return $userStore.find((userItem) => userItem.id === userId)?.fullName || 'Tentor';

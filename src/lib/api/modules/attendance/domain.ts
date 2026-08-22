@@ -10,14 +10,15 @@ import type { Attendance } from '$generated/prisma/client';
 
 /** Schema for creating a new Attendance */
 export const CreateAttendanceSchema = z.object({
-  jobId: z.string().optional(),
+  id: z.string().optional(),
   enrollmentId: z.string().min(1, 'Program les wajib dipilih'),
   tentorId: z.string().min(1, 'Tentor wajib dipilih'),
-  sessionDate: z.string().min(1, 'Tanggal sesi wajib diisi'),
+  sessionDate: z.union([z.string(), z.date()]).transform((val) => typeof val === 'string' ? new Date(val) : val),
   startTime: z.string().min(1, 'Waktu mulai wajib diisi'),
   endTime: z.string().min(1, 'Waktu selesai wajib diisi'),
   topic: z.string().trim().min(3, 'Materi pembelajaran minimal 3 karakter').max(500, 'Materi maksimal 500 karakter'),
   studentNotes: z.string().trim().max(1000, 'Catatan maksimal 1000 karakter').optional().default(''),
+  status: z.enum(['SUBMITTED', 'APPROVED', 'REJECTED']).optional().default('SUBMITTED'),
   latitudeCheckIn: z.number().nullable().optional(),
   longitudeCheckIn: z.number().nullable().optional(),
   isRadiusValid: z.boolean().default(true),

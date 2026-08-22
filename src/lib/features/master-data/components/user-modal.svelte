@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { SelectSearch } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon, Input } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import type { User, UserRole } from '$lib/shared/types';
@@ -7,32 +8,40 @@
   import { ROLE_LABEL } from '$lib/shared/utils';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let editingUser: User | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingUser = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingUser?: User | null;
+    onClose?: () => void;
+  } = $props();
 
-  let fullName: string = '';
-  let email: string = '';
-  let phone: string = '';
-  let role: UserRole = 'TENTOR';
-  let password: string = '';
-  let isActive: string = 'true';
+  let fullName = $state('');
+  let email = $state('');
+  let phone = $state('');
+  let role = $state<UserRole>('TENTOR');
+  let password = $state('');
+  let isActive = $state('true');
 
-  $: if (editingUser) {
-    fullName = editingUser.fullName;
-    email = editingUser.email;
-    phone = editingUser.phone || '';
-    role = editingUser.role;
-    password = '';
-    isActive = editingUser.isActive !== false ? 'true' : 'false';
-  } else {
-    fullName = '';
-    email = '';
-    phone = '';
-    role = 'TENTOR';
-    password = '';
-    isActive = 'true';
-  }
+  $effect(() => {
+    if (editingUser) {
+      fullName = editingUser.fullName;
+      email = editingUser.email;
+      phone = editingUser.phone || '';
+      role = editingUser.role;
+      password = '';
+      isActive = editingUser.isActive !== false ? 'true' : 'false';
+    } else {
+      fullName = '';
+      email = '';
+      phone = '';
+      role = 'TENTOR';
+      password = '';
+      isActive = 'true';
+    }
+  });
 
   async function handleSubmit() {
     if (!fullName.trim() || !email.trim()) {
@@ -66,7 +75,7 @@
 </script>
 
 <Modal {open} {onClose} title={editingUser ? 'Ubah Pengguna' : 'Tambah Pengguna'} icon="person_add" maxWidth="500px">
-  <form id="form-user" on:submit|preventDefault={handleSubmit}>
+  <form id="form-user" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <div class="field">
       <label for="f_fullName">Nama Lengkap <i class="req">*</i></label>
       <Input
@@ -138,12 +147,12 @@
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-user" icon="save">
       {editingUser ? 'Simpan Perubahan' : 'Tambah Pengguna'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

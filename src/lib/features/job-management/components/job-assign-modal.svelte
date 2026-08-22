@@ -1,6 +1,6 @@
 <script lang="ts">
 import { userStore, classStore, notificationStore } from '$lib/api';
-  import { Modal } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import { formatCurrencyIDR } from '$lib/shared/utils';
@@ -8,25 +8,31 @@ import { userStore, classStore, notificationStore } from '$lib/api';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let job: JobPost | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    job = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    job?: JobPost | null;
+    onClose?: () => void;
+  } = $props();
 
-  $: selectedJobClass = job ? $classStore.find((classItem) => classItem.id === job?.classId) : null;
-  $: selectedJobLevel = selectedJobClass ? selectedJobClass.educationLevelId : null;
+  let selectedJobClass = $derived(job ? $classStore.find((classItem) => classItem.id === job?.classId) : null);
+  let selectedJobLevel = $derived(selectedJobClass ? selectedJobClass.educationLevelId : null);
 
-  $: matchingTentors = $userStore.filter((userItem) => {
+  let matchingTentors = $derived($userStore.filter((userItem) => {
     if (userItem.role !== 'TENTOR' || userItem.deletedAt !== null) return false;
     if (!job) return false;
     const subjectMatch = (userItem.subjectIds || []).includes(job.subjectId);
     const levelMatch = !selectedJobLevel || (userItem.levelIds || []).includes(selectedJobLevel);
     return subjectMatch && levelMatch;
-  });
+  }));
 
-  $: otherTentors = $userStore.filter((userItem) => {
+  let otherTentors = $derived($userStore.filter((userItem) => {
     if (userItem.role !== 'TENTOR' || userItem.deletedAt !== null) return false;
     return !matchingTentors.some((matchingUser) => matchingUser.id === userItem.id);
-  });
+  }));
 
   function getInitials(name: string): string {
     return name.split(' ').filter(Boolean).slice(0, 2).map((word) => word[0].toUpperCase()).join('');
@@ -80,7 +86,7 @@ import { userStore, classStore, notificationStore } from '$lib/api';
               <div class="text-muted-fg text-xs">{tentorItem.education || '—'} · {tentorItem.experienceYears || 0} thn</div>
             </div>
           </div>
-          <Button variant="primary" size="sm" on:click={() => handleAssign(tentorItem.id, tentorItem.fullName)} icon="how_to_reg">
+          <Button variant="primary" size="sm" onclick={() => handleAssign(tentorItem.id, tentorItem.fullName)} icon="how_to_reg">
             Tugaskan
           </Button>
         </div>
@@ -100,7 +106,7 @@ import { userStore, classStore, notificationStore } from '$lib/api';
               <div class="text-muted-fg text-xs">{tentorItem.education || '—'}</div>
             </div>
           </div>
-          <Button variant="outline" size="sm" on:click={() => handleAssign(tentorItem.id, tentorItem.fullName)} icon="how_to_reg">
+          <Button variant="outline" size="sm" onclick={() => handleAssign(tentorItem.id, tentorItem.fullName)} icon="how_to_reg">
             Tugaskan
           </Button>
         </div>
@@ -108,9 +114,9 @@ import { userStore, classStore, notificationStore } from '$lib/api';
     {/if}
   {/if}
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Tutup
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

@@ -10,6 +10,7 @@ import type { Job } from '$generated/prisma/client';
 
 /** Schema for creating a new Job */
 export const CreateJobSchema = z.object({
+  id: z.string().optional(),
   title: z.string().trim().min(3, 'Judul minimal 3 karakter').max(120, 'Judul maksimal 120 karakter'),
   classId: z.string().optional(),
   subjectId: z.string().optional(),

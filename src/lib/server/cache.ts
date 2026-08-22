@@ -1,5 +1,5 @@
 /**
- * Simple in-memory cache with TTL
+ * Simple in-memory cache with TTL — Server-side only
  */
 
 interface CacheEntry {

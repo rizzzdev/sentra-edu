@@ -1515,6 +1515,8 @@ export const UserScalarFieldEnum = {
   position: 'position',
   education: 'education',
   experienceYears: 'experienceYears',
+  subjectIds: 'subjectIds',
+  levelIds: 'levelIds',
   school: 'school',
   address: 'address',
   occupation: 'occupation',
@@ -1546,6 +1548,7 @@ export const ClassLevelScalarFieldEnum = {
   className: 'className',
   educationLevelId: 'educationLevelId',
   description: 'description',
+  baseRatePer90min: 'baseRatePer90min',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -1614,12 +1617,11 @@ export const JobScalarFieldEnum = {
   subjectId: 'subjectId',
   packageId: 'packageId',
   jobMode: 'jobMode',
+  jobType: 'jobType',
   tentorFee: 'tentorFee',
-  transportAllowance: 'transportAllowance',
   sessionDurationMinutes: 'sessionDurationMinutes',
   scheduleDays: 'scheduleDays',
   scheduleTime: 'scheduleTime',
-  scheduleEndTime: 'scheduleEndTime',
   studentCount: 'studentCount',
   location: 'location',
   latitude: 'latitude',
@@ -1629,7 +1631,6 @@ export const JobScalarFieldEnum = {
   studentId: 'studentId',
   enrollmentId: 'enrollmentId',
   notes: 'notes',
-  additionalNotes: 'additionalNotes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -1655,16 +1656,11 @@ export type JobApplicationScalarFieldEnum = (typeof JobApplicationScalarFieldEnu
 
 export const AttendanceScalarFieldEnum = {
   id: 'id',
-  jobId: 'jobId',
   enrollmentId: 'enrollmentId',
   tentorId: 'tentorId',
-  subjectIds: 'subjectIds',
-  classIds: 'classIds',
   sessionDate: 'sessionDate',
   startTime: 'startTime',
   endTime: 'endTime',
-  durationMinutes: 'durationMinutes',
-  sessionsCount: 'sessionsCount',
   topic: 'topic',
   studentNotes: 'studentNotes',
   status: 'status',
@@ -1736,7 +1732,6 @@ export const CandidateScalarFieldEnum = {
   subjectIds: 'subjectIds',
   levelIds: 'levelIds',
   cvUrl: 'cvUrl',
-  source: 'source',
   status: 'status',
   notes: 'notes',
   interviewDate: 'interviewDate',
@@ -1826,20 +1821,6 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
- * Reference to a field of type 'UserRole'
- */
-export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
-    
-
-
-/**
- * Reference to a field of type 'UserRole[]'
- */
-export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole[]'>
-    
-
-
-/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -1861,20 +1842,6 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
- * Reference to a field of type 'CandidateStatus'
- */
-export type EnumCandidateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CandidateStatus'>
-    
-
-
-/**
- * Reference to a field of type 'CandidateStatus[]'
- */
-export type ListEnumCandidateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CandidateStatus[]'>
-    
-
-
-/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -1889,20 +1856,6 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
 
 
 /**
- * Reference to a field of type 'EnrollmentStatus'
- */
-export type EnumEnrollmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EnrollmentStatus'>
-    
-
-
-/**
- * Reference to a field of type 'EnrollmentStatus[]'
- */
-export type ListEnumEnrollmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EnrollmentStatus[]'>
-    
-
-
-/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1913,90 +1866,6 @@ export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, '
  * Reference to a field of type 'Float[]'
  */
 export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-/**
- * Reference to a field of type 'JobMode'
- */
-export type EnumJobModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobMode'>
-    
-
-
-/**
- * Reference to a field of type 'JobMode[]'
- */
-export type ListEnumJobModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobMode[]'>
-    
-
-
-/**
- * Reference to a field of type 'JobStatus'
- */
-export type EnumJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobStatus'>
-    
-
-
-/**
- * Reference to a field of type 'JobStatus[]'
- */
-export type ListEnumJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'ApplicationStatus'
- */
-export type EnumApplicationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationStatus'>
-    
-
-
-/**
- * Reference to a field of type 'ApplicationStatus[]'
- */
-export type ListEnumApplicationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'AttendanceStatus'
- */
-export type EnumAttendanceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AttendanceStatus'>
-    
-
-
-/**
- * Reference to a field of type 'AttendanceStatus[]'
- */
-export type ListEnumAttendanceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AttendanceStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'InvoiceStatus'
- */
-export type EnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceStatus'>
-    
-
-
-/**
- * Reference to a field of type 'InvoiceStatus[]'
- */
-export type ListEnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'PayrollStatus'
- */
-export type EnumPayrollStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PayrollStatus'>
-    
-
-
-/**
- * Reference to a field of type 'PayrollStatus[]'
- */
-export type ListEnumPayrollStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PayrollStatus[]'>
     
 
 /**

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Icon, Input } from '$lib/components/atoms';
-  import { Modal } from '$lib/components/molecules';
+  import { Input } from '$lib/components/atoms';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import {toastStore} from '$lib/shared/stores';
   import type { User } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
@@ -8,31 +8,39 @@
   import { ParentMasterSchema } from '$lib/features/student-enrollment';
   import { ZodError } from 'zod';
 
-  export let open: boolean = false;
-  export let editingParent: User | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingParent = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingParent?: User | null;
+    onClose?: () => void;
+  } = $props();
 
-  let fullName: string = '';
-  let email: string = '';
-  let phone: string = '';
-  let occupation: string = '';
-  let address: string = '';
+  let fullName = $state('');
+  let email = $state('');
+  let phone = $state('');
+  let occupation = $state('');
+  let address = $state('');
 
-  $: if (open) {
-    if (editingParent) {
-      fullName = editingParent.fullName;
-      email = editingParent.email;
-      phone = editingParent.phone || '';
-      occupation = editingParent.occupation || '';
-      address = editingParent.address || '';
-    } else {
-      fullName = '';
-      email = '';
-      phone = '';
-      occupation = '';
-      address = '';
+  $effect(() => {
+    if (open) {
+      if (editingParent) {
+        fullName = editingParent.fullName;
+        email = editingParent.email;
+        phone = editingParent.phone || '';
+        occupation = editingParent.occupation || '';
+        address = editingParent.address || '';
+      } else {
+        fullName = '';
+        email = '';
+        phone = '';
+        occupation = '';
+        address = '';
+      }
     }
-  }
+  });
 
   async function handleSubmit() {
     try {
@@ -72,7 +80,7 @@
   title={editingParent ? 'Ubah Data Orang Tua' : 'Tambah Data Orang Tua'}
   {onClose}
 >
-  <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-5 py-2">
+  <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="flex flex-col gap-5 py-2">
     <div class="field">
       <label for="wm-name">Nama Lengkap Orang Tua <i class="req">*</i></label>
       <Input
@@ -128,7 +136,7 @@
     </div>
 
     <div class="modal-foot pt-3.5 border-t-0">
-      <Button variant="outline" on:click={onClose}>
+      <Button variant="outline" onclick={onClose}>
         Batal
       </Button>
       <Button type="submit" variant="primary" icon="save">

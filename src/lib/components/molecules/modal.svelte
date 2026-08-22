@@ -1,11 +1,24 @@
 <script lang="ts">
   import { Icon } from '$lib/components/atoms';
+  import type { Snippet } from 'svelte';
 
-  export let title: string = '';
-  export let icon: string = 'edit_note';
-  export let maxWidth: string = 'max-w-lg';
-  export let open: boolean = true;
-  export let onClose: () => void = () => {};
+  let {
+    title = '',
+    icon = 'edit_note',
+    maxWidth = 'max-w-lg',
+    open = true,
+    onClose = () => {},
+    children,
+    footer
+  }: {
+    title?: string;
+    icon?: string;
+    maxWidth?: string;
+    open?: boolean;
+    onClose?: () => void;
+    children?: Snippet;
+    footer?: Snippet;
+  } = $props();
 
   function handleBackdropClick(event: MouseEvent) {
     if (event.target === event.currentTarget) {
@@ -30,16 +43,16 @@
     return 'max-w-3xl';
   }
 
-  $: maxWidthClass = getMaxWidthClass(maxWidth);
+  const maxWidthClass = $derived(getMaxWidthClass(maxWidth));
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if open}
   <div
     class="modal-overlay"
-    on:click={handleBackdropClick}
-    on:keydown={handleKeydown}
+    onclick={handleBackdropClick}
+    onkeydown={handleKeydown}
     role="presentation"
     tabindex="-1"
   >
@@ -58,7 +71,7 @@
         <button
           type="button"
           class="modal-x"
-          on:click={onClose}
+          onclick={onClose}
           aria-label="Tutup jendela modal"
         >
           <Icon name="close" size="sm" />
@@ -67,13 +80,13 @@
 
       <!-- Body -->
       <div class="modal-body">
-        <slot />
+        {#if children}{@render children()}{/if}
       </div>
 
-      <!-- Footer (optional slot) -->
-      {#if $$slots.footer}
+      <!-- Footer (optional) -->
+      {#if footer}
         <div class="modal-foot">
-          <slot name="footer" />
+          {@render footer()}
         </div>
       {/if}
     </div>

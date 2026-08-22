@@ -7,31 +7,25 @@
   import Skeleton from '$lib/components/atoms/skeleton.svelte';
   import AlertBanner from '$lib/components/molecules/alert-banner.svelte';
 
-  let searchQuery: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
-  let isLoading: boolean = true;
-  let errorMessage: string | null = null;
+  import { userStore } from '$lib/api';
+  import { api } from '$lib/api/client';
 
-  import { onMount } from 'svelte';
-import { userStore } from '$lib/api';
-import { api } from '$lib/api/client';
-  onMount(() => {
-    // Simulasi loading state fetching data
-    setTimeout(() => {
-      isLoading = false;
-    }, 600);
-  });
+  let searchQuery = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
+  const userLoading = userStore.loading;
+  const isLoading = $derived($userLoading);
+  let errorMessage = $state<string | null>(null);
 
   // Student Master Modal State
-  let studentModalOpen: boolean = false;
-  let editingStudent: User | null = null;
-  let deleteStudentDialogOpen: boolean = false;
-  let deleteStudentId: string | null = null;
+  let studentModalOpen = $state(false);
+  let editingStudent = $state<User | null>(null);
+  let deleteStudentDialogOpen = $state(false);
+  let deleteStudentId = $state<string | null>(null);
 
-  $: allStudents = $userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT');
+  const allStudents = $derived($userStore.filter((userItem) => userItem.deletedAt === null && userItem.role === 'STUDENT'));
 
-  $: filteredStudents = allStudents.filter((studentUser) => {
+  const filteredStudents = $derived(allStudents.filter((studentUser) => {
     const query = searchQuery.toLowerCase();
     if (!query) return true;
     const parentName = studentUser.parentId ? ($userStore.find((parentUser) => parentUser.id === studentUser.parentId)?.fullName || '') : '';
@@ -42,10 +36,10 @@ import { api } from '$lib/api/client';
       (studentUser.school || '').toLowerCase().includes(query) ||
       parentName.toLowerCase().includes(query)
     );
-  });
+  }));
 
-  $: paginatedStudents = filteredStudents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  $: totalPagesStudents = Math.max(1, Math.ceil(filteredStudents.length / itemsPerPage));
+  const paginatedStudents = $derived(filteredStudents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
+  const totalPagesStudents = $derived(Math.max(1, Math.ceil(filteredStudents.length / itemsPerPage)));
 
   function getParentName(parentId?: string): string {
     if (!parentId) return '—';
@@ -76,7 +70,7 @@ import { api } from '$lib/api/client';
     <button
       type="button"
       class="btn btn-primary"
-      on:click={() => { editingStudent = null; studentModalOpen = true; }}
+      onclick={() => { editingStudent = null; studentModalOpen = true; }}
     >
       <Icon name="person_add" size="sm" /> Tambah Murid Master
     </button>
@@ -146,7 +140,7 @@ import { api } from '$lib/api/client';
             <!-- 2. ERROR STATE -->
             <tr>
               <td colspan="6" class="!p-4">
-                <AlertBanner variant="destructive" message={errorMessage} onRetry={() => { errorMessage = null; isLoading = true; setTimeout(() => isLoading = false, 600); }} />
+                <AlertBanner variant="destructive" message={errorMessage} onRetry={async () => { errorMessage = null; await userStore.refetch(); }} />
               </td>
             </tr>
           {:else if paginatedStudents.length === 0}
@@ -156,7 +150,7 @@ import { api } from '$lib/api/client';
                 <Icon name="inventory_2" size="lg" className="opacity-50 mb-2 block mx-auto text-4xl" />
                 <div class="font-medium">{searchQuery ? 'Tidak ada data murid yang cocok dengan pencarian.' : 'Belum ada Data Master Murid.'}</div>
                 {#if !searchQuery}
-                  <button type="button" class="btn btn-outline btn-sm mt-4 inline-flex mx-auto" on:click={() => { editingStudent = null; studentModalOpen = true; }}>
+                  <button type="button" class="btn btn-outline btn-sm mt-4 inline-flex mx-auto" onclick={() => { editingStudent = null; studentModalOpen = true; }}>
                     <Icon name="add" size="sm" /> Tambah Murid
                   </button>
                 {/if}
@@ -188,7 +182,7 @@ import { api } from '$lib/api/client';
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => { editingStudent = student; studentModalOpen = true; }}
+                      onclick={() => { editingStudent = student; studentModalOpen = true; }}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -196,7 +190,7 @@ import { api } from '$lib/api/client';
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => { deleteStudentId = student.id; deleteStudentDialogOpen = true; }}
+                      onclick={() => { deleteStudentId = student.id; deleteStudentDialogOpen = true; }}
                     >
                       <Icon name="delete" size="sm" />
                     </button>
@@ -215,11 +209,11 @@ import { api } from '$lib/api/client';
           Menampilkan {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredStudents.length)} dari {filteredStudents.length} murid
         </div>
         <div class="page-btns">
-          <button type="button" class="page-btn" disabled={currentPage <= 1} on:click={() => currentPage--}>&laquo;</button>
+          <button type="button" class="page-btn" disabled={currentPage <= 1} onclick={() => currentPage--}>&laquo;</button>
           {#each Array.from({ length: totalPagesStudents }, (_, index) => index + 1) as pageNumber}
-            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" on:click={() => { currentPage = pageNumber; }}>{pageNumber}</button>
+            <button type="button" class="page-btn {currentPage === pageNumber ? 'active' : ''}" onclick={() => { currentPage = pageNumber; }}>{pageNumber}</button>
           {/each}
-          <button type="button" class="page-btn" disabled={currentPage >= totalPagesStudents} on:click={() => currentPage++}>&raquo;</button>
+          <button type="button" class="page-btn" disabled={currentPage >= totalPagesStudents} onclick={() => currentPage++}>&raquo;</button>
         </div>
       </div>
     {/if}

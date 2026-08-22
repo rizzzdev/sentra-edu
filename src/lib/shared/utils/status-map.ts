@@ -24,7 +24,7 @@ export const ENROLLMENT_STATUS_LABEL: Record<string, string> = {
 // ── Job Status ──────────────────────────────────────────────
 export const JOB_STATUS_LABEL: Record<string, string> = {
   AVAILABLE: 'Tersedia',
-  NEGOTIATING: 'Negosiasi',
+  NEGOTIATING: 'Menunggu Persetujuan',
   ASSIGNED: 'Ditugaskan',
   CANCELLED: 'Dibatalkan'
 };

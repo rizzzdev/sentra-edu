@@ -1,29 +1,38 @@
 <script lang="ts">
 import { educationLevelStore } from '$lib/api';
-  import { Modal, SelectSearch } from '$lib/components/molecules';
+  import { SelectSearch } from '$lib/components/molecules';
+  import Modal from '$lib/components/molecules/modal.svelte';
   import { Icon, Input } from '$lib/components/atoms';
   import {toastStore} from '$lib/shared/stores';
   import type { ClassLevel } from '$lib/shared/types';
   import { Button } from '$lib/components/atoms';
   import { api } from '$lib/api/client';
 
-  export let open: boolean = false;
-  export let editingClass: ClassLevel | null = null;
-  export let onClose: () => void = () => {};
+  let {
+    open = false,
+    editingClass = null,
+    onClose = () => {}
+  }: {
+    open?: boolean;
+    editingClass?: ClassLevel | null;
+    onClose?: () => void;
+  } = $props();
 
-  let className: string = '';
-  let educationLevelId: string = '';
-  let description: string = '';
+  let className = $state('');
+  let educationLevelId = $state('');
+  let description = $state('');
 
-  $: if (editingClass) {
-    className = editingClass.className;
-    educationLevelId = editingClass.educationLevelId;
-    description = editingClass.description || '';
-  } else {
-    className = '';
-    educationLevelId = $educationLevelStore.filter((levelItem) => levelItem.deletedAt === null)[0]?.id || '';
-    description = '';
-  }
+  $effect(() => {
+    if (editingClass) {
+      className = editingClass.className;
+      educationLevelId = editingClass.educationLevelId;
+      description = editingClass.description || '';
+    } else {
+      className = '';
+      educationLevelId = $educationLevelStore.filter((levelItem) => levelItem.deletedAt === null)[0]?.id || '';
+      description = '';
+    }
+  });
 
   async function handleSubmit() {
     if (!className.trim() || !educationLevelId) {
@@ -49,7 +58,7 @@ import { educationLevelStore } from '$lib/api';
 </script>
 
 <Modal {open} {onClose} title={editingClass ? 'Ubah Kelas' : 'Tambah Kelas'} icon="school" maxWidth="500px">
-  <form id="form-class" on:submit|preventDefault={handleSubmit}>
+  <form id="form-class" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
     <div class="field">
       <label for="f_className">Nama Kelas <i class="req">*</i></label>
       <Input
@@ -85,12 +94,12 @@ import { educationLevelStore } from '$lib/api';
     </div>
   </form>
 
-  <svelte:fragment slot="footer">
-    <Button variant="outline" on:click={onClose} icon="close">
+  {#snippet footer()}
+    <Button variant="outline" onclick={onClose} icon="close">
       Batal
     </Button>
     <Button type="submit" variant="primary" form="form-class" icon="save">
       {editingClass ? 'Simpan Perubahan' : 'Tambah Kelas'}
     </Button>
-  </svelte:fragment>
+  {/snippet}
 </Modal>

@@ -10,19 +10,19 @@
 import { packageStore } from '$lib/api';
   import { api } from '$lib/api/client';
 
-  let searchQuery: string = '';
-  let modeFilter: string = '';
-  let currentPage: number = 1;
-  const itemsPerPage: number = 8;
+  let searchQuery = $state('');
+  let modeFilter = $state('');
+  let currentPage = $state(1);
+  const itemsPerPage = 8;
 
-  let packageModalOpen: boolean = false;
-  let editingPackage: PackagePlan | null = null;
-  let deleteDialogOpen: boolean = false;
-  let deletingPackageId: string | null = null;
+  let packageModalOpen = $state(false);
+  let editingPackage = $state<PackagePlan | null>(null);
+  let deleteDialogOpen = $state(false);
+  let deletingPackageId = $state<string | null>(null);
 
-  $: allPackages = $packageStore.filter((packageItem) => packageItem.deletedAt === null);
+  const allPackages = $derived($packageStore.filter((packageItem) => packageItem.deletedAt === null));
 
-  $: filteredPackages = allPackages.filter((packageItem) => {
+  const filteredPackages = $derived(allPackages.filter((packageItem) => {
     const query = searchQuery.toLowerCase();
     const matchesSearch =
       !query ||
@@ -30,13 +30,13 @@ import { packageStore } from '$lib/api';
       (packageItem.description || '').toLowerCase().includes(query);
     const matchesMode = !modeFilter || packageItem.mode === modeFilter;
     return matchesSearch && matchesMode;
-  });
+  }));
 
-  $: paginatedPackages = filteredPackages.slice(
+  const paginatedPackages = $derived(filteredPackages.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
-  $: totalPages = Math.max(1, Math.ceil(filteredPackages.length / itemsPerPage));
+  ));
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredPackages.length / itemsPerPage)));
 
   function handleOpenCreatePackage() {
     editingPackage = null;
@@ -68,7 +68,7 @@ import { packageStore } from '$lib/api';
       Master paket les: mode Private/Kelompok x periode Bulanan/Harian. Biaya orang tua (SPP) dan honor tentor per sesi dikonfigurasi di sini.
     </div>
   </div>
-  <button type="button" class="btn btn-primary" on:click={handleOpenCreatePackage}>
+  <button type="button" class="btn btn-primary" onclick={handleOpenCreatePackage}>
     <Icon name="add" size="sm" /> Tambah Paket
   </button>
 </div>
@@ -147,7 +147,7 @@ import { packageStore } from '$lib/api';
                       type="button"
                       class="btn-icon"
                       data-tip="Ubah"
-                      on:click={() => handleOpenEditPackage(packageItem)}
+                      onclick={() => handleOpenEditPackage(packageItem)}
                     >
                       <Icon name="edit" size="sm" />
                     </button>
@@ -155,7 +155,7 @@ import { packageStore } from '$lib/api';
                       type="button"
                       class="btn-icon btn-icon-danger"
                       data-tip="Hapus"
-                      on:click={() => {
+                      onclick={() => {
                         deletingPackageId = packageItem.id;
                         deleteDialogOpen = true;
                       }}
@@ -181,7 +181,7 @@ import { packageStore } from '$lib/api';
             type="button"
             class="page-btn"
             disabled={currentPage <= 1}
-            on:click={() => currentPage--}
+            onclick={() => currentPage--}
           >
             &laquo;
           </button>
@@ -189,7 +189,7 @@ import { packageStore } from '$lib/api';
             <button
               type="button"
               class="page-btn {currentPage === pageNum ? 'active' : ''}"
-              on:click={() => { currentPage = pageNum; }}
+              onclick={() => { currentPage = pageNum; }}
             >
               {pageNum}
             </button>
@@ -198,7 +198,7 @@ import { packageStore } from '$lib/api';
             type="button"
             class="page-btn"
             disabled={currentPage >= totalPages}
-            on:click={() => currentPage++}
+            onclick={() => currentPage++}
           >
             &raquo;
           </button>
